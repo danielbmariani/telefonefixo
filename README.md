@@ -11,7 +11,7 @@ autorizaram. Sem tela, sem aplicativo, sem gravação. Projeto sem fins lucrativ
 - Documentação: `docs/` (visão, arquitetura, provisionamento, LGPD/ECA Digital, segurança, parceiros).
 - Bancada: `bancada/` (evidências dos testes com aparelhos reais; capturas e documentação de
   terceiros ficam fora do repositório).
-- Licença: a definir antes de tornar o repositório público.
+- Licença: GNU AGPL-3.0 (arquivo `LICENSE`). Quem modificar e rodar o serviço para terceiros precisa publicar o código modificado.
 
 Segredos nunca entram aqui: credenciais ficam em `~/.config/rede-aberta/*.env` (local) e em
 `/etc/rede-aberta/portal.env` (servidor); os scripts de `portal/deploy/` leem de lá.
