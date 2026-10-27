@@ -1,7 +1,7 @@
-# Portal — Rede Aberta (caminho 3, zero-touch)
+# Portal do Telefone Fixo
 
-Código do portal da rede aberta, partindo do `telefone_fixo/web/` e implementando o
-plano do `docs/09-plano-caminho-3-zero-touch.md`: cadastro da família, apelido + ID,
+Código do site e da lógica de chamadas do Telefone Fixo (plano original em
+`docs/09-plano-caminho-3-zero-touch.md`): cadastro da família, apelido + ID,
 MAC + serial, fila de cadastro no GDMS, servidor de provisionamento (`cfgMAC.xml`),
 observador de registro SIP, amizades por ID, horários, histórico, painel da ONG e
 auditoria append-only em cada etapa.
@@ -25,7 +25,7 @@ flask run
 - Jobs que em produção rodam por timer: `flask gdms-fila`, `flask jobs-rapidos` (1 min),
   `flask reconciliar`, `flask exportar-auditoria` (diário).
 
-Testes (42, sem rede, SQLite temporário):
+Testes (82, sem rede, SQLite temporário):
 
 ```bash
 python3 -m pytest -q
@@ -59,7 +59,7 @@ rede/
   templates/, static/, textos/ (termos, privacidade, consentimento: RASCUNHOS para o jurídico)
 agi/                 check_call.py, check_group.py, log_call.py (usam rede.servicos), conf_leave.py, hora_certa.py
 deploy/              extensions.conf (6 dígitos), realtime (extconfig/sorcery/odbc), systemd, nginx, grants.sql
-tests/               42 testes: fluxo HTTP E1-E3, provisionamento, estados/jobs, amizades/chamadas, ONG, unitários
+tests/               82 testes: fluxo HTTP, provisionamento, estados/jobs, amizades/chamadas, celulares, custos, LGPD, segurança
 ```
 
 ## Estados do telefone
@@ -68,17 +68,11 @@ tests/               42 testes: fluxo HTTP E1-E3, provisionamento, estados/jobs,
 com `erro_gdms_conflito`, `erro_dados`, `sem_boot`, `sem_registro`, `desativado`. Toda transição
 grava `device_state_history` + `audit_log` (ver `rede/estados.py`).
 
-## O que a bancada ainda precisa confirmar (doc 09, seção 7)
+## Bancada
 
-- Códigos de erro do `device/add` já vêm da tabela oficial (`gdms_client.ERROS_DEVICE_ADD`);
-  confirmar 30011 entre contas diferentes (B13) e 30010 com serial real (B14).
-- E5 por API (`GDMS_ENVIO_MODO=api`, `device/config/xml`): o GDMS aceita e entrega a aparelho
-  offline? (B06b). Se não, `manual` abre tarefa no painel e `flask gdms-xml <id>` imprime o XML.
-- `GDMS_XML_CONTEUDO=ponteiro` (só P237 + travas) basta? Senão `completo` (B09).
-- Webhook: `flask gdms-eventos` depois que o site estiver em HTTPS; conferir que o evento chega (B06c).
-- P-values do GRP2601 para provisionamento (P237/P6767/P194/P193) e travas de menu:
-  `grandstream_xml.py` marca o que é "A CONFIRMAR".
-- O GRP usa os P-values base do GXP (P72 = # envia). Confirmar.
+Zero-touch pelo GDMS, boot, XML, webhook, reset e conflito foram confirmados com aparelhos reais;
+o registro de cada teste está em `bancada/README.md` (B01 a B23). O que ainda falta está marcado
+lá como pendente.
 
 ## Decisões de implementação
 
@@ -87,6 +81,7 @@ grava `device_state_history` + `audit_log` (ver `rede/estados.py`).
 - **Segredos no banco**: `senha_sip` (o Asterisk exige em claro em `ps_auths`), `prov_tokens.token`
   (vai na URL do P237) e `telefones.admin_senha` ficam em claro, mesma classe de exposição; nunca
   aparecem em `audit_log` (`auditoria.redigir`). Rotação pelo portal ("Reconfigurar").
-- **Celular da família (Groundwire)** ainda não foi portado: o dialplan devolve "número inválido"
-  para 8/9 + ID e o AGI registra `FAMILIA_NAO_CONFIGURADA`.
+- **Celular da família** sai por um tronco SIP (Nvoip) para até dois números por família: a criança
+  disca 9 + ID para o primeiro e 8 + ID para o segundo; o número recebe de volta pelo mesmo tronco.
+  Minutos limitados por criança e por dia (`servicos/custos.py`); ver `bancada/B23-tronco-celular-dos-pais.md`.
 - **Rate limits** em memória (um processo). Com mais workers do gunicorn, mover para o banco.
