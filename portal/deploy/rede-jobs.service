@@ -1,0 +1,12 @@
+[Unit]
+Description=Rede Aberta - jobs de 1 minuto (fila GDMS + observador SIP)
+After=rede-portal.service
+
+[Service]
+Type=oneshot
+User=rede
+Group=rede
+WorkingDirectory=/opt/rede-aberta/portal
+EnvironmentFile=/etc/rede-aberta/portal.env
+Environment=FLASK_APP=wsgi:app
+ExecStart=/bin/sh -c '/opt/rede-aberta/venv/bin/flask gdms-fila && /opt/rede-aberta/venv/bin/flask jobs-rapidos'

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Painel | Painel{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.casos') }}">Casos</a>
+  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.tarefas') }}">Tarefas</a>
+  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.telefones') }}">Telefones</a>
+  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.auditoria_view') }}">Auditoria</a>
+</div>
+<div class="row g-3">
+  <div class="col-md-6"><div class="card"><div class="card-body"><h6>Funil (30 dias)</h6>
+    <table class="table table-sm mb-0">{% for nome, n in funil %}<tr><td>{{ nome }}</td><td class="text-end fw-bold">{{ n }}</td></tr>{% endfor %}</table></div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><h6>Telefones por estado</h6>
+    <table class="table table-sm mb-0">{% for e, n in por_estado.items() %}<tr><td>{{ e }}</td><td class="text-end fw-bold">{{ n }}</td></tr>{% else %}<tr><td class="text-muted">nenhum</td></tr>{% endfor %}</table>
+    <small class="text-muted">Última reconciliação: {% if ultima_rec %}{{ ultima_rec.ts|datahora }} · {{ ultima_rec.detalhes }}{% else %}nunca{% endif %}</small></div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><h6>Casos abertos ({{ casos|length }})</h6>
+    {% for c in casos %}<div class="small border-bottom py-1"><span class="badge bg-{{ 'danger' if c.gravidade == 'alta' else ('warning text-dark' if c.gravidade == 'media' else 'secondary') }}">{{ c.tipo }}</span> {{ c.descricao }}
+      {% if c.telefone_id %}<a href="{{ url_for('admin.linha_tempo', telefone_id=c.telefone_id) }}">linha do tempo</a>{% endif %}</div>{% else %}<span class="text-muted">nenhum</span>{% endfor %}</div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><h6>Tarefas abertas ({{ tarefas|length }})</h6>
+    {% for t in tarefas %}<div class="small border-bottom py-1">{{ t.criado_em|datahora }} · {{ t.descricao }}</div>{% else %}<span class="text-muted">nenhuma</span>{% endfor %}</div></div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Excluir conta{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-12 col-md-8 col-lg-6">
+<h1 class="h2 mb-3 mt-2">Excluir minha conta</h1>
+<div class="card border-danger"><div class="card-body">
+<p class="text-danger fw-bold">Esta ação é irreversível.</p>
+<p>Serão removidos: login, horários, amizades, histórico e os telefones:</p>
+<ul>{% for c in criancas %}<li>{{ c.apelido }} (ID {{ c.id_rede|idfmt }})</li>{% endfor %}</ul>
+<p class="small text-muted">Mantemos apenas o registro de auditoria sem dados pessoais (quando a conta existiu e foi excluída), por 1 ano, conforme a política de privacidade.</p>
+<form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+<div class="mb-3"><label class="form-label" for="confirmacao">Digite <strong>EXCLUIR</strong>:</label><input class="form-control" id="confirmacao" name="confirmacao" autocomplete="off"></div>
+<a class="btn btn-secondary" href="{{ url_for('familia.inicio') }}">Cancelar</a> <button class="btn btn-danger">Excluir minha conta</button></form>
+</div></div></div></div>
+{% endblock %}

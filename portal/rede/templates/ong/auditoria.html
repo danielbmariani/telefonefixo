@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Auditoria | Painel{% endblock %}
+{% block content %}
+<h5>Auditoria <small class="text-muted">(cada consulta é registrada)</small></h5>
+<form class="row g-2 mb-3">
+  <div class="col-md-3"><input class="form-control" name="acao" value="{{ f.acao or '' }}" placeholder="ação (ex.: telefone_gdms_ok)"></div>
+  <div class="col-md-2"><input class="form-control" name="objeto_tipo" value="{{ f.objeto_tipo or '' }}" placeholder="objeto_tipo"></div>
+  <div class="col-md-2"><input class="form-control" name="objeto_id" value="{{ f.objeto_id or '' }}" placeholder="objeto_id"></div>
+  <div class="col-md-3"><input class="form-control" name="request_id" value="{{ f.request_id or '' }}" placeholder="request_id"></div>
+  <div class="col-md-2"><button class="btn btn-outline-dark w-100">Consultar</button></div>
+</form>
+{% if linhas %}
+<table class="table table-sm"><thead><tr><th>ts</th><th>ator</th><th>ação</th><th>objeto</th><th>ip</th><th>detalhes</th><th>request</th></tr></thead><tbody>
+{% for l in linhas %}<tr><td class="text-nowrap">{{ l.ts|datahora }}</td><td class="small">{{ l.ator_tipo }}:{{ l.ator_id or '' }}</td><td>{{ l.acao }}</td><td class="small">{{ l.objeto_tipo }} {{ l.objeto_id }}</td><td class="small">{{ l.ip or '' }}</td>
+<td class="small text-muted">{{ l.detalhes or '' }}</td><td class="small font-monospace">{{ (l.request_id or '')[:8] }}</td></tr>{% endfor %}</tbody></table>
+{% endif %}
+{% endblock %}

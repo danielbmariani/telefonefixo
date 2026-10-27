@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Telefone {{ tel.id }} | Painel{% endblock %}
+{% block content %}
+<h5>Telefone #{{ tel.id }} <span class="font-monospace">{{ tel.mac|mac }}</span> <span class="badge bg-secondary">{{ tel.estado }}</span></h5>
+<p class="text-muted">Criança {{ crianca.apelido if crianca else '?' }} (ID {{ crianca.id_rede if crianca else '?' }}) · modelo {{ tel.modelo }} · serial {{ tel.serial }} · XML v{{ tel.xml_versao }}{% if tel.loja %} · loja: {{ tel.loja }}{% endif %}</p>
+<table class="table table-sm"><thead><tr><th>Quando</th><th>Fonte</th><th>Evento</th><th>Ator</th></tr></thead><tbody>
+{% for e in eventos %}<tr><td class="text-nowrap">{{ e.ts|datahora }}</td><td><span class="badge bg-light text-dark">{{ e.fonte }}</span></td>
+<td>{{ e.texto }}{% if e.detalhes %}<br><small class="text-muted">{{ e.detalhes }}</small>{% endif %}</td><td class="small">{{ e.ator }}</td></tr>{% endfor %}</tbody></table>
+{% endblock %}

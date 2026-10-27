@@ -1,0 +1,11 @@
+[Unit]
+Description=Rede Aberta - reconciliacao e export diarios
+
+[Service]
+Type=oneshot
+User=rede
+Group=rede
+WorkingDirectory=/opt/rede-aberta/portal
+EnvironmentFile=/etc/rede-aberta/portal.env
+Environment=FLASK_APP=wsgi:app
+ExecStart=/bin/sh -c '/opt/rede-aberta/venv/bin/flask reconciliar && /opt/rede-aberta/venv/bin/flask exportar-auditoria --destino /var/backups/rede-aberta/auditoria'

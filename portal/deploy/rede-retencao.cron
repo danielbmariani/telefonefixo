@@ -1,0 +1,2 @@
+# /etc/cron.d/rede-retencao — retencao diaria das tabelas somente-acrescimo (deploy/retencao.sql, copiado para /etc/rede-aberta)
+17 4 * * * root sudo -u postgres psql -d telefone -q -f /etc/rede-aberta/retencao.sql >> /var/log/rede-aberta/retencao.log 2>&1

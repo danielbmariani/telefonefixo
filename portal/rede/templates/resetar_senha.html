@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Nova senha | {{ nome_rede }}{% endblock %}
+{% block content %}
+<div class="auth-card"><h1 class="h2 mb-4">Nova senha</h1>
+<div class="card"><div class="card-body">
+<form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+  <div class="mb-3"><label class="form-label" for="senha">Nova senha</label><input class="form-control form-control-lg" type="password" id="senha" name="senha" minlength="8" required autocomplete="new-password"></div>
+  <div class="mb-3"><label class="form-label" for="senha2">Repita a senha</label><input class="form-control form-control-lg" type="password" id="senha2" name="senha2" minlength="8" required autocomplete="new-password"></div>
+  <button class="btn btn-primary btn-lg w-100">Salvar</button></form>
+</div></div></div>
+{% endblock %}

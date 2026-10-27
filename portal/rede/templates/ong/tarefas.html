@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Tarefas | Painel{% endblock %}
+{% block content %}
+<h5>Tarefas manuais</h5>
+<p class="text-muted small">Cada tarefa aqui é um passo que a API do GDMS ainda não cobre. A meta é esta lista ficar vazia.</p>
+{% for t in tarefas %}
+<div class="card mb-2 {% if t.estado == 'aberta' %}border-warning{% endif %}"><div class="card-body py-2">
+  <div><span class="badge bg-{{ 'warning text-dark' if t.estado == 'aberta' else 'secondary' }}">{{ t.tipo }}</span> <small class="text-muted">#{{ t.id }} · {{ t.criado_em|datahora }}</small>
+    {% if t.telefone_id %}<a class="small ms-2" href="{{ url_for('admin.linha_tempo', telefone_id=t.telefone_id) }}">telefone</a>{% endif %}</div>
+  <div class="mt-1">{{ t.descricao }}</div>
+  {% if t.estado == 'aberta' %}
+  <form method="post" class="d-flex gap-2 mt-2"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="tarefa_id" value="{{ t.id }}">
+    <input class="form-control form-control-sm" name="motivo" placeholder="O que foi feito (obrigatório)" required><button class="btn btn-sm btn-success">Concluir</button></form>
+  {% else %}<small class="text-muted">{{ t.estado }} por {{ t.concluido_por }} em {{ t.concluido_em|datahora }}: {{ t.motivo }}</small>{% endif %}
+</div></div>
+{% else %}<p class="text-muted">Nenhuma tarefa.</p>{% endfor %}
+{% endblock %}

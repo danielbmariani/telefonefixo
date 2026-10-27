@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Cartão de {{ crianca.apelido }}</title>
+<style>@page{margin:1.5cm}body{font-family:Arial,Helvetica,sans-serif;color:#222;max-width:600px;margin:0 auto;padding:16px}table{table-layout:fixed}td{word-break:break-word}
+h1{font-size:22px;margin-bottom:4px}.id{font-size:clamp(28px,9vw,40px);font-weight:bold;font-family:'Courier New',monospace;letter-spacing:4px;margin:10px 0 20px}
+table{width:100%;border-collapse:collapse}th{text-align:left;font-size:12px;color:#888;text-transform:uppercase;padding:6px 12px;border-bottom:2px solid #ddd}
+td{padding:10px 12px;border-bottom:1px solid #eee;font-size:16px}td.ext{font-size:20px;font-weight:bold;font-family:'Courier New',monospace;width:140px}
+.tip{margin-top:24px;padding:12px;background:#f8f8f8;border-radius:6px;font-size:13px;color:#555}@media print{.no-print{display:none}}</style></head>
+<body>
+<h1>{{ crianca.apelido }}</h1><div>Meu número:</div><div class="id">{{ crianca.id_rede|idfmt }}</div>
+<table><thead><tr><th>Amigo</th><th>Discar</th></tr></thead><tbody>
+{% for a in amigos %}<tr><td>{{ a.apelido }}</td><td class="ext">{{ a.id_rede }}#</td></tr>{% endfor %}
+{% for nome, disca in celulares %}<tr><td>{{ nome }} (celular)</td><td class="ext">{{ disca }}#</td></tr>{% endfor %}
+<tr><td>Hora certa</td><td class="ext">100#</td></tr></tbody></table>
+<div class="tip">Para ligar: tire do gancho, disque o número e aperte <strong>#</strong>. Para abrir uma chamada em grupo, disque <strong>0</strong> antes do número.</div>
+<p class="no-print" style="margin-top:20px;text-align:center"><button onclick="window.print()" style="padding:10px 24px;font-size:16px">Imprimir</button></p>
+</body></html>

@@ -1,0 +1,2 @@
+# /etc/cron.d/rede-backup — copia diaria do banco, 14 dias, so root le. Copia externa: ver docs/14.
+30 3 * * * root /usr/local/sbin/rede-backup-db

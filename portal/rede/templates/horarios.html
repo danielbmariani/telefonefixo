@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Horários de {{ crianca.apelido }}{% endblock %}
+{% block content %}
+<div class="card mb-3 mt-2 {% if silencio_ate %}border-warning{% endif %}"><div class="card-body">
+  <h2 class="h5 mb-1">Silenciar agora</h2>
+  {% if silencio_ate %}
+    <p class="mb-2">O telefone está silenciado até <strong>{{ silencio_ate }}</strong>. Não faz nem recebe ligações até lá.</p>
+    <form method="post" data-enviando="Reativando…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="reativar">
+      <button class="btn btn-primary">Reativar o telefone</button></form>
+  {% else %}
+    <p class="text-muted small mb-2">Para uma visita, o dever de casa ou um castigo. Vale por cima dos horários abaixo.</p>
+    <form method="post" class="d-flex flex-wrap gap-2" data-enviando="Silenciando…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="silenciar">
+      {% for chave, rotulo in duracoes.items() %}<button class="btn btn-outline-secondary" name="duracao" value="{{ chave }}">{{ rotulo|capitalize }}</button>{% endfor %}
+    </form>
+  {% endif %}
+</div></div>
+
+<h2 class="h5 mb-1">Horários fixos</h2>
+<p class="text-muted small mb-3">Sem restrição, o telefone funciona o dia todo. Configure horários para limitar o uso.</p>
+
+<form method="post" id="scheduleForm">
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="pattern_count" id="patternCount" value="0">
+
+  <div id="patterns"></div>
+
+  <button type="button" class="btn btn-outline-primary w-100 mb-3" onclick="addPattern()">
+    <i class="bi bi-plus-circle me-1"></i> Adicionar horário
+  </button>
+
+  <button type="submit" class="btn btn-primary w-100 mb-4">Salvar horários</button>
+</form>
+
+{% if not tem %}
+<p class="text-center text-muted small">Nenhum horário configurado. O telefone funciona o dia todo.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const DAY_NAMES = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+const DAY_FULL = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+let patternIndex = 0;
+
+function makeTimeSelect(name, selectedH, selectedM) {
+  let hours = '';
+  for (let h = 0; h < 24; h++) {
+    const v = String(h).padStart(2, '0');
+    hours += `<option value="${v}" ${h === selectedH ? 'selected' : ''}>${v}</option>`;
+  }
+  let mins = '';
+  [0, 15, 30, 45].forEach(m => {
+    const v = String(m).padStart(2, '0');
+    mins += `<option value="${v}" ${m === selectedM ? 'selected' : ''}>${v}</option>`;
+  });
+  return `
+    <div class="d-flex align-items-center gap-1">
+      <select class="form-select form-select-sm" name="start_h_${name}">${hours.replace(`value="${String(selectedH).padStart(2,'0')}"`, `value="${String(selectedH).padStart(2,'0')}" selected`)}</select>
+      <span class="fw-bold">:</span>
+      <select class="form-select form-select-sm" name="start_m_${name}">${mins}</select>
+    </div>`;
+}
+
+function addPattern(startH, startM, endH, endM, selectedDays) {
+  startH = startH ?? 10;
+  startM = startM ?? 0;
+  endH = endH ?? 22;
+  endM = endM ?? 0;
+  selectedDays = selectedDays || [];
+
+  const idx = patternIndex++;
+  document.getElementById('patternCount').value = patternIndex;
+
+  // Build hours options
+  function hOpts(sel) {
+    let s = '';
+    for (let h = 0; h < 24; h++) {
+      const v = String(h).padStart(2, '0');
+      s += `<option value="${v}" ${h === sel ? 'selected' : ''}>${v}</option>`;
+    }
+    return s;
+  }
+  function mOpts(sel) {
+    let s = '';
+    [0, 15, 30, 45].forEach(m => {
+      const v = String(m).padStart(2, '0');
+      s += `<option value="${v}" ${m === sel ? 'selected' : ''}>${v}</option>`;
+    });
+    return s;
+  }
+
+  // Build day chips
+  let dayChips = '';
+  for (let d = 0; d < 7; d++) {
+    const active = selectedDays.includes(d);
+    dayChips += `
+      <input type="checkbox" class="btn-check" id="day_${idx}_${d}"
+             name="days_${idx}" value="${d}" ${active ? 'checked' : ''} autocomplete="off">
+      <label class="btn btn-sm ${active ? 'btn-primary' : 'btn-outline-primary'} rounded-pill"
+             for="day_${idx}_${d}" onclick="setTimeout(()=>toggleChipStyle(this), 10)">${DAY_NAMES[d]}</label>`;
+  }
+
+  const card = document.createElement('div');
+  card.className = 'card mb-3';
+  card.id = `pattern_${idx}`;
+  card.innerHTML = `
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div class="row g-2 flex-grow-1">
+          <div class="col-6">
+            <label class="form-label small text-muted mb-1">Início</label>
+            <div class="d-flex align-items-center gap-1">
+              <select class="form-select form-select-sm" name="start_h_${idx}">${hOpts(startH)}</select>
+              <span class="fw-bold">:</span>
+              <select class="form-select form-select-sm" name="start_m_${idx}">${mOpts(startM)}</select>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label small text-muted mb-1">Fim</label>
+            <div class="d-flex align-items-center gap-1">
+              <select class="form-select form-select-sm" name="end_h_${idx}">${hOpts(endH)}</select>
+              <span class="fw-bold">:</span>
+              <select class="form-select form-select-sm" name="end_m_${idx}">${mOpts(endM)}</select>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-danger ms-2 mt-3" onclick="removePattern(${idx})" title="Remover">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      <div class="d-flex flex-wrap gap-1" role="group">
+        ${dayChips}
+      </div>
+      <div class="mt-2">
+        <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 text-muted" onclick="selectWeekdays(${idx})">Dias úteis</button>
+        <span class="text-muted mx-1">|</span>
+        <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 text-muted" onclick="selectAll(${idx})">Todos</button>
+      </div>
+    </div>`;
+
+  document.getElementById('patterns').appendChild(card);
+}
+
+function removePattern(idx) {
+  const el = document.getElementById(`pattern_${idx}`);
+  if (el) el.remove();
+}
+
+function toggleChipStyle(label) {
+  const input = document.getElementById(label.getAttribute('for'));
+  if (input.checked) {
+    label.classList.remove('btn-outline-primary');
+    label.classList.add('btn-primary');
+  } else {
+    label.classList.remove('btn-primary');
+    label.classList.add('btn-outline-primary');
+  }
+}
+
+function selectWeekdays(idx) {
+  for (let d = 0; d < 7; d++) {
+    const cb = document.getElementById(`day_${idx}_${d}`);
+    const label = document.querySelector(`label[for="day_${idx}_${d}"]`);
+    cb.checked = d < 5;
+    if (d < 5) {
+      label.classList.remove('btn-outline-primary');
+      label.classList.add('btn-primary');
+    } else {
+      label.classList.remove('btn-primary');
+      label.classList.add('btn-outline-primary');
+    }
+  }
+}
+
+function selectAll(idx) {
+  for (let d = 0; d < 7; d++) {
+    const cb = document.getElementById(`day_${idx}_${d}`);
+    const label = document.querySelector(`label[for="day_${idx}_${d}"]`);
+    cb.checked = true;
+    label.classList.remove('btn-outline-primary');
+    label.classList.add('btn-primary');
+  }
+}
+
+// Load existing patterns from server
+const existingPatterns = {{ patterns_json|safe }};
+if (existingPatterns.length > 0) {
+  existingPatterns.forEach(p => addPattern(p.sh, p.sm, p.eh, p.em, p.days));
+}
+</script>
+{% endblock %}

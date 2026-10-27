@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Autorização | {{ nome_rede }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+{% set passo_atual = 3 %}{% include "_passos.html" %}
+<h1 class="h2 mb-1">Antes de cadastrar a criança</h1>
+<p class="text-muted mb-4">A lei pede que o responsável autorize, de forma específica, o uso dos dados da criança. Leia e marque cada item. Guardamos a versão exata do texto que você aceitou.</p>
+<form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+{% for t in pendentes %}
+<div class="card mb-3 {% if t == 'crianca' %}border-primary{% endif %}"><div class="card-body">
+  <h5 class="mb-2">{% if t == 'termos' %}Termos de uso{% elif t == 'privacidade' %}Política de privacidade{% else %}Dados da criança{% endif %}
+    <small class="text-muted fw-normal fs-6">versão {{ versoes[t] }}</small></h5>
+  <div class="border rounded p-3 bg-light" style="max-height: 220px; overflow: auto; white-space: pre-wrap; font-size: .92rem;">{{ textos[t] }}</div>
+  <div class="form-check mt-3">
+    <input class="form-check-input" type="checkbox" name="aceito_{{ t }}" value="sim" id="aceito_{{ t }}" required>
+    <label class="form-check-label" for="aceito_{{ t }}">
+      {% if t == 'crianca' %}<strong>Sou responsável legal e autorizo o uso dos dados da criança (apelido, ID e registro de ligações) para o funcionamento da rede.</strong>
+      {% else %}Li e aceito.{% endif %}
+    </label>
+  </div>
+</div></div>
+{% endfor %}
+<button class="btn btn-primary btn-lg w-100" type="submit">Continuar</button>
+</form></div></div>
+{% endblock %}

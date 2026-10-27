@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Casos | Painel{% endblock %}
+{% block content %}
+<h5>Casos <small class="text-muted">({{ estado }})</small> <a class="small ms-2" href="?estado=aberto">abertos</a> · <a class="small" href="?estado=resolvido">resolvidos</a> · <a class="small" href="?estado=todos">todos</a></h5>
+{% for c in casos %}
+<div class="card mb-2"><div class="card-body py-2">
+  <div class="d-flex justify-content-between"><div><span class="badge bg-{{ 'danger' if c.gravidade == 'alta' else ('warning text-dark' if c.gravidade == 'media' else 'secondary') }}">{{ c.tipo }}</span>
+    <small class="text-muted ms-2">#{{ c.id }} · {{ c.criado_em|datahora }}</small></div>
+    {% if c.telefone_id %}<a class="small" href="{{ url_for('admin.linha_tempo', telefone_id=c.telefone_id) }}">linha do tempo</a>{% endif %}</div>
+  <div class="mt-1">{{ c.descricao }}</div>
+  {% if c.detalhes %}<pre class="small text-muted mb-1">{{ c.detalhes }}</pre>{% endif %}
+  {% if c.estado == 'aberto' %}
+  <form method="post" class="d-flex gap-2 mt-2"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="caso_id" value="{{ c.id }}">
+    <input class="form-control form-control-sm" name="motivo" placeholder="O que foi feito (obrigatório)" required><button class="btn btn-sm btn-success">Resolver</button></form>
+  {% else %}<small class="text-success">resolvido por {{ c.resolvido_por }} em {{ c.resolvido_em|datahora }}: {{ c.motivo }}</small>{% endif %}
+</div></div>
+{% else %}<p class="text-muted">Nenhum caso.</p>{% endfor %}
+{% endblock %}

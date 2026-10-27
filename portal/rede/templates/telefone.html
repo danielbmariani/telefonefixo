@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Telefone de {{ crianca.apelido }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+{% if not tel or st.estado not in ('registrado', 'ativo') %}{% set passo_atual = 5 %}{% include "_passos.html" %}{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+  <span class="etiqueta-id"><small>ID de {{ crianca.apelido }}</small><span class="numero">{{ crianca.id_rede|idfmt }}</span></span>
+  <a class="btn btn-outline-secondary btn-sm" target="_blank" href="{{ url_for('familia.cartao', crianca_id=crianca.id) }}"><i class="bi bi-printer"></i> Imprimir cartão</a>
+</div>
+
+{% if not tel %}
+<h1 class="h3 mb-2">Conectar o telefone</h1>
+<p>Vire o telefone Grandstream e olhe a etiqueta embaixo. Copie os dois códigos na ordem em que aparecem: primeiro o S/N, depois o MAC. <strong>Não ligue o telefone na tomada ainda.</strong></p>
+<div class="card mb-3"><div class="card-body">
+<form method="post" data-enviando="Registrando…" data-aviso="Estamos registrando o telefone na Grandstream. Leva uns 10 segundos, não feche a página."><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="informar">
+  {% include '_modelos.html' %}
+  <div class="mb-3"><label class="form-label" for="serial">S/N (primeira linha da etiqueta)</label>
+    <input class="form-control form-control-lg font-monospace text-uppercase" id="serial" name="serial" placeholder="35103ZC1D2" required></div>
+  <div class="mb-3"><label class="form-label" for="mac">MAC (segunda linha, 12 letras e números)</label>
+    <input class="form-control form-control-lg font-monospace text-uppercase" id="mac" name="mac" placeholder="C074AD1A2B3C" required>
+    <div class="form-text">Na dúvida entre a letra O e o número 0, digite qualquer um: o site corrige.</div></div>
+  <button class="btn btn-primary btn-lg w-100">Registrar telefone</button>
+</form>
+</div></div>
+{% if desativados %}
+<hr><h6>Telefones anteriores</h6>
+{% for d in desativados %}
+<form method="post" class="d-flex justify-content-between align-items-center mb-2"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="reativar"><input type="hidden" name="telefone_id" value="{{ d.id }}">
+  <span class="font-monospace small">{{ d.mac|mac }}</span><button class="btn btn-outline-secondary btn-sm">Reativar</button></form>
+{% endfor %}
+{% endif %}
+
+{% else %}
+{% set pronto = st.estado in ('registrado', 'ativo') %}
+<div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-1">
+  <h1 class="h3 mb-0">{% if pronto %}Telefone conectado{% else %}Conectando o telefone{% endif %}</h1>
+  <span class="text-muted small">S/N <span class="mono">{{ tel.serial }}</span> · MAC <span class="mono">{{ tel.mac|mac }}</span></span>
+</div>
+<p class="text-muted mb-3" id="resumo">{% if st.estado == 'ativo' %}Tudo pronto. As 7 etapas foram concluídas.{% else %}{{ st.feitos }} de {{ st.total }} etapas. Você faz só as marcadas <strong>Você</strong>. O resto é automático, e esta página se atualiza sozinha.{% endif %}</p>
+
+<ol class="linha" id="status" data-url="{{ url_for('familia.telefone_status', crianca_id=crianca.id) }}" data-assinatura="{{ st.assinatura }}">
+{% for d in st.passos %}
+  <li class="etapa etapa-{{ d.estado }} dono-{{ d.dono }}" id="etapa-{{ d.chave }}">
+    <span class="marca" aria-hidden="true">
+      {% if d.estado == 'feito' %}<i class="bi bi-check-lg"></i>
+      {% elif d.estado == 'esperando' %}<span class="spinner-border spinner-border-sm"></span>
+      {% elif d.estado == 'erro' %}<i class="bi bi-exclamation-lg"></i>
+      {% elif d.estado == 'agora' %}<i class="bi bi-hand-index-thumb"></i>
+      {% else %}{{ loop.index }}{% endif %}
+    </span>
+    <div class="corpo">
+      <div class="cabeca">
+        <span class="dono">{% if d.dono == 'voce' %}Você{% else %}Automático{% endif %}</span>
+        <span class="titulo">{{ d.titulo }}</span>
+        {% if d.estado == 'feito' %}<span class="quando">feito{% if d.quando %} às {{ d.quando[6:] }}{% endif %}</span>
+        {% elif d.estado == 'esperando' %}<span class="quando" id="espera">{{ d.espera }}</span>
+        {% elif d.estado == 'erro' %}<span class="quando">precisa de atenção</span>{% endif %}
+      </div>
+      {% if d.texto %}<p class="texto" id="texto-atual">{{ d.texto }}</p>{% endif %}
+
+      {% if d.chave == 'ligar' and d.estado == 'agora' %}
+        {% with wifi=st.wifi %}{% include '_cabos.html' %}{% endwith %}
+        {% if st.wifi %}{% include '_wifi.html' %}{% endif %}
+        <form method="post" class="mb-1" data-enviando="Anotado…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="liguei">
+          <button class="btn btn-primary btn-lg w-100">Já liguei o telefone</button></form>
+      {% endif %}
+
+      {% if d.chave == 'gdms' and d.estado == 'erro' and st.estado in ('erro_dados', 'erro_gdms_conflito') %}
+        <form method="post" class="corrigir" data-enviando="Registrando…" data-aviso="Enviando a correção para a Grandstream. Leva uns 10 segundos."><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="corrigir">
+          <div class="mb-2"><label class="form-label small" for="serial-c">S/N (primeira linha da etiqueta)</label><input class="form-control font-monospace text-uppercase" id="serial-c" name="serial" value="{{ tel.serial }}" required></div>
+          <div class="mb-2"><label class="form-label small" for="mac-c">MAC (segunda linha)</label><input class="form-control font-monospace text-uppercase" id="mac-c" name="mac" value="{{ tel.mac|mac }}" required></div>
+          <button class="btn btn-primary">Enviar correção</button></form>
+      {% endif %}
+
+      {% if d.chave == 'config' and d.estado == 'erro' and st.estado == 'sem_boot' %}
+        <form method="post" class="corrigir" data-enviando="Registrando…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="corrigir">
+          <p class="small mb-2">Se desconfiar que digitou errado, corrija aqui:</p>
+          <div class="mb-2"><input class="form-control font-monospace text-uppercase" name="serial" value="{{ tel.serial }}" aria-label="S/N" required></div>
+          <div class="mb-2"><input class="form-control font-monospace text-uppercase" name="mac" value="{{ tel.mac|mac }}" aria-label="MAC" required></div>
+          <button class="btn btn-outline-primary">Enviar correção</button></form>
+      {% endif %}
+
+      {% if d.chave == 'ativo' and d.estado in ('agora', 'feito') %}
+        <div class="d-flex flex-wrap gap-2 mt-2">
+          <a class="btn btn-primary" href="{{ url_for('familia.contatos', crianca_id=crianca.id) }}"><i class="bi bi-people"></i> Autorizar amigos</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('familia.crianca_nova') }}">Cadastrar outra criança</a>
+        </div>
+      {% endif %}
+
+      {% if d.chave == 'sip' and d.estado == 'erro' %}
+        <div class="ajuda"><strong>Passo a passo: SIP ALG</strong>
+        <ol class="mb-0 mt-1"><li>Desligue e ligue o roteador e o telefone.</li><li>Se não resolver, abra a configuração do roteador e desative a opção "SIP ALG" (fica em Avançado ou NAT).</li><li>Se não encontrar, nos avise pelo e-mail de suporte informando a marca do roteador.</li></ol></div>
+      {% endif %}
+    </div>
+  </li>
+{% endfor %}
+</ol>
+
+<details class="mb-3"><summary class="text-muted">Opções avançadas</summary>
+<div class="d-flex flex-wrap gap-2 mt-2">
+  <form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="reconfigurar"><button class="btn btn-outline-secondary btn-sm" onclick="return confirm('Gerar nova configuração?')">Reconfigurar</button></form>
+  <form method="post" action="{{ url_for('familia.telefone_senha_admin', crianca_id=crianca.id) }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-secondary btn-sm">Ver senha admin do aparelho</button></form>
+  <form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="remover"><button class="btn btn-outline-danger btn-sm" onclick="return confirm('Remover este telefone? Ele vai parar de funcionar.')">Remover telefone</button></form>
+</div></details>
+{% endif %}
+</div></div>
+{% endblock %}
+{% block scripts %}
+{% if tel and st.estado not in ('ativo', 'desativado') %}
+<script>
+(function(){
+  var el = document.getElementById('status'); if (!el) return;
+  var assinatura = el.dataset.assinatura;
+  setInterval(function(){
+    fetch(el.dataset.url, {credentials: 'same-origin'}).then(r => r.json()).then(function(s){
+      if (s.assinatura && s.assinatura !== assinatura) { location.reload(); return; }
+      var t = document.getElementById('texto-atual'); if (t && s.dica) t.textContent = s.dica;
+      var w = document.getElementById('espera');
+      if (w && s.atual !== null && s.passos && s.passos[s.atual]) w.textContent = s.passos[s.atual].espera || '';
+    }).catch(function(){});
+  }, 10000);
+})();
+</script>
+{% endif %}
+{% endblock %}

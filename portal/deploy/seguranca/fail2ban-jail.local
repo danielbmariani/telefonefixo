@@ -1,0 +1,32 @@
+# /etc/fail2ban/jail.local (deploy/endurecer.sh)
+[DEFAULT]
+bantime = 1h
+findtime = 10m
+maxretry = 5
+backend = systemd
+banaction = iptables-multiport
+
+[sshd]
+enabled = true
+
+[asterisk]
+enabled = true
+backend = auto
+logpath = /var/log/asterisk/security.log
+maxretry = 5
+bantime = 24h
+
+[nginx-limit-req]
+enabled = true
+backend = auto
+logpath = /var/log/nginx/error.log
+maxretry = 20
+findtime = 10m
+bantime = 1h
+
+[nginx-botsearch]
+enabled = true
+backend = auto
+logpath = /var/log/nginx/access.log
+maxretry = 10
+bantime = 24h

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Apelido da criança | {{ nome_rede }}{% endblock %}
+{% block content %}
+<div class="auth-card">
+  {% set passo_atual = 4 %}{% include "_passos.html" %}
+  <h1 class="h2 mb-1">Apelido da criança</h1>
+  <p class="text-muted">É o que aparece no visor do telefone de quem recebe a ligação e para as famílias amigas. De propósito, não pedimos o nome completo nem a data de nascimento.</p>
+  <div class="card"><div class="card-body">
+  <form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3"><label class="form-label" for="apelido">Apelido</label>
+      <input class="form-control form-control-lg" id="apelido" name="apelido" value="{{ apelido }}" maxlength="20" placeholder="ex.: jose07" required autofocus autocomplete="off">
+      <div class="form-text">3 a 20 caracteres: letras minúsculas, números e _. Começa com letra. Depois disso a criança ganha um número de 6 dígitos.</div></div>
+    <button class="btn btn-primary btn-lg w-100">Criar e gerar o ID</button>
+  </form>
+  </div></div>
+</div>
+{% endblock %}

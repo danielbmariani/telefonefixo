@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Contatos de {{ crianca.apelido }}{% endblock %}
+{% block content %}
+<div class="card mb-3 border-primary mt-2"><div class="card-body">
+  <h2 class="h5 mb-1"><i class="bi bi-person-plus me-1"></i> Adicionar amigo pelo ID</h2>
+  <p class="text-muted small mb-2">Peça o ID de 6 números para a outra família. Ele está no cartão da criança e no visor do telefone dela. A ligação só funciona depois que ela aceitar.</p>
+  <form method="post" data-enviando="Pedindo…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="pedir">
+    <div class="mb-2"><label class="form-label" for="id_rede">ID do amigo</label>
+      <input class="form-control form-control-lg mono" id="id_rede" name="id_rede" inputmode="numeric" pattern="[0-9 ]{6,8}" maxlength="8" required autocomplete="off"></div>
+    <div class="mb-2"><label class="form-label" for="mensagem">Quem é {{ crianca.apelido }} para essa família? <span class="text-muted">(opcional)</span></label>
+      <input class="form-control" id="mensagem" name="mensagem" maxlength="80" placeholder="ex.: da 4ª série da Escola X, ou da aula de circo" autocomplete="off">
+      <div class="form-text">Aparece para a outra família junto com o pedido, para ela reconhecer quem está pedindo.</div></div>
+    <button class="btn btn-primary btn-lg">Pedir amizade</button></form>
+</div></div>
+
+{% macro botao(aid, acao, rotulo, cls, confirmar=None) %}
+<form method="post" class="d-inline"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="{{ acao }}"><input type="hidden" name="amizade_id" value="{{ aid }}">
+<button class="btn btn-sm {{ cls }}" {% if confirmar %}onclick="return confirm('{{ confirmar }}')"{% endif %}>{{ rotulo }}</button></form>
+{% endmacro %}
+
+{% if lst.recebidos %}
+<h2 class="h5 mt-4">Pedidos recebidos</h2>
+{% for c in lst.recebidos %}
+<div class="card mb-2 contact-card status-waiting_you"><div class="card-body py-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+  <div><strong>{{ c.apelido }}</strong> <small class="text-muted font-monospace text-nowrap">{{ c.id_fmt }}</small>
+    {% if c.mensagem %}<br><span class="mensagem-pedido">"{{ c.mensagem }}"</span>{% else %}<br><small class="text-muted">Sem apresentação. Se não reconhecer, recuse.</small>{% endif %}</div>
+  <div class="d-flex gap-1 flex-wrap">{{ botao(c.amizade_id, 'aceitar', 'Aceitar', 'btn-success') }}{{ botao(c.amizade_id, 'recusar', 'Recusar', 'btn-outline-secondary') }}{{ botao(c.amizade_id, 'bloquear', 'Bloquear', 'btn-outline-danger', 'Bloquear este contato?') }}</div>
+</div></div>
+{% endfor %}
+{% endif %}
+
+<h2 class="h5 mt-4">Amigos <small class="text-muted fw-normal">({{ lst.amigos|length }})</small></h2>
+{% for c in lst.amigos %}
+<div class="card mb-2 contact-card status-can_call"><div class="card-body py-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+  <div><strong>{{ c.apelido }}</strong><br><small class="text-muted">discar <span class="font-monospace">{{ c.id_rede }}#</span></small></div>
+  <div class="d-flex gap-1">{{ botao(c.amizade_id, 'remover', 'Remover', 'btn-outline-secondary', 'Remover amizade?') }}{{ botao(c.amizade_id, 'bloquear', 'Bloquear', 'btn-outline-danger', 'Bloquear este contato?') }}</div>
+</div></div>
+{% else %}
+<div class="card"><div class="card-body text-center text-muted py-4">Nenhum amigo ainda. Adicione pelo ID acima.</div></div>
+{% endfor %}
+
+{% if lst.enviados %}
+<h2 class="h5 mt-4">Aguardando a outra família</h2>
+{% for c in lst.enviados %}
+<div class="card mb-2 contact-card status-waiting_other"><div class="card-body py-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+  <div><strong>{{ c.apelido }}</strong><br><small class="text-muted font-monospace">{{ c.id_fmt }}</small></div>
+  {{ botao(c.amizade_id, 'remover', 'Cancelar', 'btn-outline-secondary') }}
+</div></div>
+{% endfor %}
+{% endif %}
+
+{% if lst.bloqueados %}
+<details class="mt-3"><summary class="text-muted">Bloqueados ({{ lst.bloqueados|length }})</summary>
+{% for c in lst.bloqueados %}
+<div class="card mb-2 contact-card status-blocked mt-2"><div class="card-body py-2 d-flex justify-content-between align-items-center">
+  <div><strong>{{ c.apelido }}</strong> <small class="text-muted font-monospace">{{ c.id_fmt }}</small></div>
+  {{ botao(c.amizade_id, 'desbloquear', 'Desbloquear', 'btn-outline-secondary') }}
+</div></div>
+{% endfor %}
+</details>
+{% endif %}
+<p class="mt-4"><a class="btn btn-outline-primary" target="_blank" href="{{ url_for('familia.cartao', crianca_id=crianca.id) }}"><i class="bi bi-printer me-1"></i> Imprimir cartão com os amigos</a></p>
+{% endblock %}

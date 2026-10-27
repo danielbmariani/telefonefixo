@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Telefones | Painel{% endblock %}
+{% block content %}
+<form class="d-flex gap-2 mb-3"><input class="form-control" name="q" value="{{ q }}" placeholder="MAC ou ID"><button class="btn btn-outline-dark">Buscar</button></form>
+<table class="table table-sm"><thead><tr><th>#</th><th>MAC</th><th>ID</th><th>Apelido</th><th>Estado</th><th>Informado</th><th>Último prov.</th><th>Último SIP</th><th></th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.id }}</td><td class="font-monospace">{{ r.mac|mac }}</td><td class="font-monospace">{{ r.id_rede }}</td><td>{{ r.apelido }}</td><td><span class="badge bg-secondary">{{ r.estado }}</span></td>
+<td>{{ r.informado_em|datahora }}</td><td>{{ r.ultimo_prov_em|datahora }} {{ r.ultimo_prov_ip or '' }}</td><td>{{ r.ultimo_sip_em|datahora }} {{ r.ultimo_sip_ip or '' }}</td>
+<td><a href="{{ url_for('admin.linha_tempo', telefone_id=r.id) }}">linha do tempo</a></td></tr>{% endfor %}</tbody></table>
+{% endblock %}

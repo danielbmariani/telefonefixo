@@ -1,0 +1,29 @@
+# Credenciais e segredos: nunca
+*.env
+!portal/deploy/portal.env.exemplo
+.env
+portal.env
+*.key
+*.pem
+bancada-operador.txt
+
+# Bancos locais e caches
+*.db
+*.db-wal
+*.db-shm
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Capturas, videos e rascunhos da bancada (ficam so no Dropbox)
+bancada/*.png
+bancada/*.jpg
+bancada/*.mp4
+bancada/_tmp/
+docs/midia/*.mp4
+
+# Documentacao de terceiros (Grandstream): consultar localmente, nao redistribuir
+bancada/referencia-api/
+bancada/referencia-pvalues/

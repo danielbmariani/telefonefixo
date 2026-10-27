@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Contato e denúncias | {{ nome_rede }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+<h1 class="h2 mt-2">Contato e denúncias</h1>
+<p class="text-muted">Este é o canal público do serviço. Ele existe por exigência do Estatuto Digital da Criança e do Adolescente e da LGPD, e também porque queremos saber quando algo deu errado.</p>
+
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h5">Denunciar uso indevido</h2>
+  <p>Se uma criança recebeu ligação de quem não devia, se alguém usou a rede para assediar ou ameaçar, ou se você viu qualquer coisa que coloque uma criança em risco, escreva para <a href="mailto:{{ contato }}">{{ contato }}</a>.</p>
+  <p class="mb-1">Para conseguirmos agir, inclua:</p>
+  <ul>
+    <li>seu nome e um telefone ou e-mail para resposta (a lei não permite tratar denúncia anônima de retirada, mas o seu nome não é repassado a quem foi denunciado);</li>
+    <li>o ID da criança envolvida, se souber, e o dia e a hora aproximados;</li>
+    <li>o que aconteceu, em poucas linhas.</li>
+  </ul>
+  <p class="mb-0">Respondemos em até 48 horas úteis. Casos graves são comunicados às autoridades. Em situação de perigo imediato, ligue 190. Para violência contra criança, o Disque 100 funciona 24 horas.</p>
+</div></div>
+
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h5">Seus dados</h2>
+  <p>Para pedir acesso, correção, exclusão ou cópia dos dados, ou para qualquer dúvida sobre privacidade, escreva para <a href="mailto:{{ privacidade }}">{{ privacidade }}</a>. Respondemos em até 15 dias. Quem tem conta pode baixar tudo na hora em "Meus dados", no rodapé, e excluir a conta pelo próprio site.</p>
+</div></div>
+
+<div class="card"><div class="card-body">
+  <h2 class="h5">Dúvidas e problemas com o telefone</h2>
+  <p class="mb-0">Mesmo endereço: <a href="mailto:{{ contato }}">{{ contato }}</a>. Diga o apelido da criança e o que apareceu na tela do site.</p>
+</div></div>
+</div></div>
+{% endblock %}

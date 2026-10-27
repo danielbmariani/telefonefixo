@@ -1,0 +1,8 @@
+{# Barra de progresso do cadastro. Uso: {% include "_passos.html" with context %} com a variável passo_atual (1..5). #}
+{% set nomes = ['Conta', 'E-mail', 'Aceite', 'Criança', 'Telefone'] %}
+<ol class="passos" aria-label="Etapas do cadastro">
+{% for n in nomes %}
+  {% set i = loop.index %}
+  <li class="{% if i < passo_atual %}feito{% elif i == passo_atual %}atual{% endif %}" {% if i == passo_atual %}aria-current="step"{% endif %}><span>{{ i }}. {{ n }}</span></li>
+{% endfor %}
+</ol>

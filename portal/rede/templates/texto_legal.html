@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }} | {{ nome_rede }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+<h1 class="h2 mt-2">{{ titulo }} <small class="text-muted fs-6 fw-normal">versão {{ versao }}</small></h1>
+<div class="card mt-3"><div class="card-body" style="white-space: pre-wrap;">{{ texto }}</div></div>
+</div></div>
+{% endblock %}

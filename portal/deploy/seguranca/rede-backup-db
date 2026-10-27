@@ -1,0 +1,9 @@
+#!/bin/sh
+# /usr/local/sbin/rede-backup-db — pg_dump do banco telefone, gzip, 600 root, mantem 14 dias
+set -eu
+DEST=/var/backups/rede-aberta/db
+mkdir -p "$DEST"; chmod 700 "$DEST"
+F="$DEST/telefone-$(date +%Y%m%d-%H%M).sql.gz"
+sudo -u postgres pg_dump -d telefone | gzip -9 > "$F.tmp" && mv "$F.tmp" "$F" && chmod 600 "$F"
+find "$DEST" -name 'telefone-*.sql.gz' -mtime +14 -delete
+echo "$(date -Is) ok $(du -h "$F" | cut -f1)" >> /var/log/rede-aberta/backup.log
