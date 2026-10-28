@@ -20,7 +20,7 @@ AQUI="$(cd "$(dirname "$0")/.." && pwd)"
 echo "==> Empacotando codigo"
 TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
 tar -C "$AQUI" -czf "$TMP/codigo.tgz" --exclude='__pycache__' --exclude='*.pyc' --exclude='rede-dev.db' \
-    rede agi deploy/asterisk deploy/rede-grupo.service deploy/seguranca/systemd-endurecimento.conf requirements.txt wsgi.py
+    rede agi deploy/asterisk deploy/rede-grupo.service deploy/seguranca/systemd-endurecimento.conf deploy/seguranca/logrotate-asterisk-rede requirements.txt wsgi.py
 
 echo "==> Enviando"
 "${SSH[@]}" "sudo rm -rf /tmp/grupos-envio && mkdir -p /tmp/grupos-envio && chmod 700 /tmp/grupos-envio"
@@ -117,6 +117,7 @@ install -o asterisk -g asterisk -m 640 $PORTAL/deploy/asterisk/musiconhold-rede.
 grep -q '^#include musiconhold-rede.conf' /etc/asterisk/musiconhold.conf 2>/dev/null || printf '\n#include musiconhold-rede.conf\n' >> /etc/asterisk/musiconhold.conf
 install -o asterisk -g asterisk -m 640 $PORTAL/deploy/asterisk/extensions.conf /etc/asterisk/extensions.conf
 rm -f /etc/asterisk/confbridge.conf.rede 2>/dev/null || true
+install -m 644 $PORTAL/deploy/seguranca/logrotate-asterisk-rede /etc/logrotate.d/asterisk-rede
 for m in res_http_websocket res_stasis res_ari res_ari_events res_ari_channels res_ari_bridges res_ari_playbacks res_ari_asterisk res_stasis_playback res_stasis_answer res_stasis_snoop res_stasis_recording res_stasis_device_state app_stasis; do
   sed -i "/^noload = $m.so/d" /etc/asterisk/modules.conf
 done
@@ -141,5 +142,6 @@ echo "--- sons"; ls /usr/share/asterisk/sounds/rede/frases | wc -l; ls /usr/shar
 echo "--- rede-grupo"; journalctl -u rede-grupo --since "-1 min" --no-pager -o cat | tail -5
 echo "--- erros asterisk"; journalctl -u asterisk --since "-2 min" --no-pager 2>/dev/null | grep -iE "error|warning" | grep -iv "deprecat" | tail -5 || true
 curl -s -o /dev/null -w "portal: HTTP %{http_code}\n" http://127.0.0.1:5000/entrar
+echo "--- disco"; df -h / | tail -1; du -sh $SONS
 REMOTO
 echo "==> fim"

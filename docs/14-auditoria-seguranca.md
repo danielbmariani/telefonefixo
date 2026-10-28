@@ -73,6 +73,7 @@ duplicar os do Flask; `www` redireciona; após o reinício, tronco registrado e 
 5. **Limite de taxa em memória** continua existindo como segunda camada; a primeira passa a ser o nginx. Com mais de um servidor, trocar por Redis.
 6. **Cópia externa do backup** (item 3): um `rclone` para um bucket da Oracle Object Storage ou do Backblaze, criptografado. Sem isso, backup e banco morrem juntos num incidente de conta.
 7. **Registro de acesso do nginx** guarda IPs por 6 meses; é dado pessoal com finalidade de segurança, declarado na política.
+8. **Disco cheio** (achado em 28/10): o `messages.log` do Asterisk não girava (o logrotate do pacote casa com `messages`, sem `.log`) e os scanners de SIP escreveram 4,6 milhões de linhas em 25/10 (2,3 GB em dois arquivos). No mesmo dia um `sox` em loop (bug já corrigido em `voz.py`) encheu o disco com um wav de 40 GB; o portal, o banco e o rsyslog pararam de gravar até a limpeza. Correção: `deploy/seguranca/logrotate-asterisk-rede` (diário, 50 MB, 7 cópias comprimidas), instalado pelo `endurecer.sh` e pelo `grupos.sh`; o `grupos.sh` passa a imprimir o uso do disco no fim. Falta um aviso automático de disco acima de 80% (pode entrar no `rede-diario`).
 
 ## 5. Checklist antes do piloto com famílias de fora
 
@@ -80,6 +81,8 @@ duplicar os do Flask; `www` redireciona; após o reinício, tronco registrado e 
 - [ ] 2FA na Cloudflare, Oracle, GDMS e Google; trocar a senha do GDMS.
 - [ ] Nvoip (sem 2FA no painel): senha única no gerenciador e ticket pedindo 2FA.
 - [x] Conferir a security list da VCN na Oracle (27/10, sem sobras).
+- [x] Rotação dos logs do Asterisk (28/10, item 8 da seção 4).
+- [ ] Aviso de disco acima de 80% no `rede-diario`.
 - [ ] Criar `contato@` e `privacidade@` no Email Routing da Cloudflare e testar.
 - [ ] Cópia externa do backup.
 - [ ] Repetir esta auditoria depois de qualquer mudança no dialplan ou nas rotas do portal (os testes em `tests/test_seguranca.py`, `test_lgpd.py` e o roteiro `scratchpad/audit_dyn.py` cobrem o essencial).

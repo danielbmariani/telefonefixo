@@ -265,6 +265,11 @@ atendeu", "Voce e o unico"), de saber quem nao atendeu e de registrar o tempo de
 - Testes: `tests/test_grupos.py` (servico e site) e `tests/test_grupo_ari.py` (fluxo completo, ninguem
   atendeu, quem ligou desistiu, entrada tardia e limite, bloqueios, sem audio de apelido).
 - Bancada: B25 (pendente, precisa de um softphone como terceiro participante).
+- Instalado no servidor em 28/10/2026: serviços `asterisk`, `rede-grupo` e `rede-portal` ativos, app `grupo` registrada no ARI, piper
+  com a voz `pt_BR-faber-medium`, 19 frases, 4 tons e os apelidos das crianças cadastradas. Teste de fumaça por ARI (chamada local
+  para `01` com um número inexistente) percorreu Stasis, serviço, decisão, frase e registro em `call_logs` sem tocar aparelho.
+  Tropeços: a primeira versão de `gerar_tons` travou o sox e gravou um wav de 40 GB que encheu o disco (apagado, tons refeitos,
+  rotação de log adicionada; doc 14 item 8).
 
 Amizade removida ou bloqueada depois de o grupo existir: ninguem e tirado do grupo automaticamente; a
 regra do clique ja impede os dois de caírem na mesma chamada, e a pagina de cada familia mostra o que falta.

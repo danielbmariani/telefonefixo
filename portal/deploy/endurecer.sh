@@ -47,6 +47,8 @@ for m in chan_iax2 chan_unistim chan_console chan_motif chan_audiosocket res_pho
   grep -q "^noload = $m.so" /etc/asterisk/modules.conf || sed -i "/^noload = chan_sip.so/a noload = $m.so" /etc/asterisk/modules.conf
 done
 grep -q '^security.log => security' /etc/asterisk/logger.conf || echo 'security.log => security' >> /etc/asterisk/logger.conf
+install -m 644 $S/logrotate-asterisk-rede /etc/logrotate.d/asterisk-rede
+rm -f /var/log/asterisk/messages.log.[0-9]* 2>/dev/null || true
 systemctl restart asterisk; sleep 3
 systemctl enable --now fail2ban >/dev/null; systemctl restart fail2ban
 echo "[4/8] rpcbind desligado"
