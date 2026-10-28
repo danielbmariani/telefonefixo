@@ -14,7 +14,7 @@ fase 1. Para cada uma há uma recomendação; basta confirmar ou mudar.
 3. **Tamanho do ID.** 6 dígitos aleatórios começando por 2 a 7. Alternativa:
    5 dígitos (60 mil IDs). Recomendação: 6.
 4. **Caixa postal.** Fora do MVP. Decidir se entra na fase 3 e com que regras.
-5. **Chamada em grupo.** Mantém (já existe, as crianças gostam). Confirmar.
+5. **Chamada em grupo.** O "0 + ID" do v1 não serve para a rede nova; proposta completa (grupo com nome montado pelos pais, `0` + dígito, toca em todos, voz anuncia quem entra e sai) em `docs/16-chamada-em-grupo.md`. Decisões pendentes no fim do doc 16.
 6. **Celular da família.** A numeração já prevê 9+ID e 8+ID (dois ramais da
    família) e o dialplan tem o gancho (`BLOCK_PARENT`). Três caminhos, avaliados
    em 26/10/2026:
