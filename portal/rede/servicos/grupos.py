@@ -15,7 +15,7 @@ from .contas import ErroUsuario, _cfg
 from . import criancas as svc_cri, amizades as svc_ami, horarios as svc_hor
 
 NOME_MIN, NOME_MAX = 2, 20
-MAX_MEMBROS = 8                 # contando a dona
+MAX_MEMBROS = 4                 # contando a dona: igual ao limite da chamada, para todo o grupo caber nela (decisao de 28/10)
 MAX_GRUPOS_POR_CRIANCA = 9      # codigos 1..9
 CODIGOS = range(1, 10)
 
@@ -74,7 +74,7 @@ def criar(conn, familia_id, dona, nome, membros_ids):
     if not ids_:
         raise ErroUsuario('Escolha pelo menos um amigo para o grupo.')
     if len(ids_) + 1 > MAX_MEMBROS:
-        raise ErroUsuario(f'Um grupo tem no máximo {MAX_MEMBROS - 1} amigos.')
+        raise ErroUsuario(f'Um grupo tem no máximo {MAX_MEMBROS} crianças, contando {dona["apelido"]}.')
     amigos = _amigos_ids(conn, dona['id'])
     if any(m not in amigos for m in ids_):
         raise ErroUsuario('Só entram no grupo amigos já aceitos.')

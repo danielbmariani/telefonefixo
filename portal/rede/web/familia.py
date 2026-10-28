@@ -223,7 +223,7 @@ def contatos(crianca_id):
     lst = svc_ami.listar(conn(), c['id'])
     return render_template('contatos.html', crianca=c, lst=lst, active_tab='contatos',
                            grupos=svc_gru.listar_da_crianca(conn(), c), amigos_grupo=svc_gru.amigos_para_grupo(conn(), c),
-                           max_na_chamada=_cfg().GRUPO_MAX_NA_CHAMADA)
+                           max_membros=svc_gru.MAX_MEMBROS)
 
 
 def _pagina_pedir(c, valores=None):

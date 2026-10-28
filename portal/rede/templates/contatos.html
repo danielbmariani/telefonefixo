@@ -70,7 +70,7 @@
     <h2 id="h-grupos">Grupos para ligar juntos <span class="conta">{{ grupos|length }}</span></h2>
     {% if amigos_grupo %}<a class="btn btn-outline-primary btn-sm" href="{{ url_for('familia.grupo_novo', crianca_id=crianca.id) }}"><i class="bi bi-plus-lg me-1"></i> Criar grupo</a>{% endif %}
   </div>
-  <p class="bloco-sub">Um grupo toca em todas as casas de uma vez. No telefone, {{ crianca.apelido }} disca o número do grupo e <span class="mono">#</span>, como faz com um amigo. Só entra quem já é amigo de todos os que estão na chamada; até {{ max_na_chamada }} de uma vez.</p>
+  <p class="bloco-sub">Um grupo toca em todas as casas de uma vez. No telefone, {{ crianca.apelido }} disca o número do grupo e <span class="mono">#</span>, como faz com um amigo. Até {{ max_membros }} crianças por grupo, e só entra quem já é amigo de todos os que estão na chamada.</p>
   {% if grupos %}
   <ul class="lista">
   {% for gr in grupos %}

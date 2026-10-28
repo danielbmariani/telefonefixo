@@ -5,14 +5,14 @@
   <h1 class="h3 mb-0">Criar grupo para ligar juntos</h1>
   <a class="small" href="{{ url_for('familia.contatos', crianca_id=crianca.id) }}#grupos">Voltar aos amigos</a>
 </div>
-<p class="text-muted mb-3">O grupo ganha um número curto no telefone de cada criança. Quem disca faz tocar em todas as casas de uma vez; até {{ max_na_chamada }} na mesma chamada. As outras famílias veem o grupo na página do filho e podem tirá-lo quando quiserem.</p>
+<p class="text-muted mb-3">O grupo ganha um número curto no telefone de cada criança. Quem disca faz tocar em todas as casas de uma vez. Um grupo tem até {{ max_membros }} crianças, contando {{ crianca.apelido }}. As outras famílias veem o grupo na página do filho e podem tirá-lo quando quiserem.</p>
 {% if amigos_grupo %}
 <div class="card mb-3"><div class="card-body">
   <form method="post" action="{{ url_for('familia.contatos', crianca_id=crianca.id) }}" data-enviando="Criando…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="grupo_criar">
     <div class="mb-3"><label class="form-label" for="grupo_nome">Nome do grupo</label>
       <input class="form-control form-control-lg" id="grupo_nome" name="nome" maxlength="20" placeholder="ex.: Turma do futebol" required autocomplete="off" value="{{ nome or '' }}">
       <div class="form-text">Até 20 caracteres. Aparece no visor do telefone de quem recebe e é falado na chamada.</div></div>
-    <fieldset class="mb-3"><legend class="form-label fs-6 mb-2">Quem entra <span class="fw-normal text-muted">(amigos já aceitos de {{ crianca.apelido }}, até {{ max_membros - 1 }})</span></legend>
+    <fieldset class="mb-3"><legend class="form-label fs-6 mb-2">Quem entra <span class="fw-normal text-muted">(amigos já aceitos de {{ crianca.apelido }}, até {{ max_membros - 1 }}: todo o grupo cabe na chamada)</span></legend>
       {% for a in amigos_grupo %}
       <div class="form-check form-check-lg"><input class="form-check-input" type="checkbox" name="membros" value="{{ a.crianca_id }}" id="membro-{{ a.crianca_id }}" {% if a.marcado %}checked{% endif %}>
         <label class="form-check-label" for="membro-{{ a.crianca_id }}">{{ a.apelido }}</label></div>

@@ -157,8 +157,10 @@ apelido):
 Quem ligou não é "dono" da chamada: se José desligar, os outros continuam. É o comportamento esperado
 de um telefone (e o contrário surpreende criança).
 
-Limites: 4 na chamada (3 membros + quem ligou) por padrão, 5 no máximo. Grupo pode ter mais membros do
-que isso (até 8); os que não couberem ouvem *"A chamada está cheia."*
+Limites: 4 na chamada (3 membros + quem ligou) por padrão. O grupo tem o mesmo tamanho, 4 crianças contando
+quem criou, para todo o grupo sempre caber na chamada (decisão do Daniel em 28/10; a versão anterior permitia
+8 no grupo, e "até 7" num formulário contra "até 4" no outro confundia). *"A chamada está cheia"* só acontece
+numa entrada tardia por acaso de corrida. Turma maior vira dois grupos.
 
 ### 3.3 Como a família monta (o lado do site)
 

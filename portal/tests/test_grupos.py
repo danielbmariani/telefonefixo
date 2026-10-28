@@ -43,6 +43,17 @@ def rede4(client, app):
     return {'jose': jose, 'beto': beto, 'alice': alice, 'theo': theo}
 
 
+def test_grupo_do_tamanho_da_chamada(app, rede4):
+    """Grupo tem no maximo 4 criancas contando a dona (igual ao limite da chamada): a 5a e recusada."""
+    j, b, a, t = rede4['jose'], rede4['beto'], rede4['alice'], rede4['theo']
+    lia, = _familia(app.test_client(), app, 'l@x.com', ['lia'])
+    _amigos(app, j, lia)
+    with app.engine.begin() as conn:
+        with pytest.raises(ErroUsuario, match='no máximo 4 crianças'):
+            grupos.criar(conn, _fam_id(app, j), j, 'Grande', [b['id'], a['id'], t['id'], lia['id']])
+        assert grupos.criar(conn, _fam_id(app, j), j, 'Certo', [b['id'], a['id'], t['id']])['nome'] == 'Certo'
+
+
 def _fam_id(app, c):
     with app.engine.begin() as conn:
         return conn.execute(text('SELECT familia_id FROM criancas WHERE id=:i'), {'i': c['id']}).scalar()
