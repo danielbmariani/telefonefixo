@@ -20,7 +20,7 @@ AQUI="$(cd "$(dirname "$0")/.." && pwd)"
 echo "==> Empacotando codigo"
 TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
 tar -C "$AQUI" -czf "$TMP/codigo.tgz" --exclude='__pycache__' --exclude='*.pyc' --exclude='rede-dev.db' \
-    rede agi deploy/asterisk deploy/rede-grupo.service requirements.txt wsgi.py
+    rede agi deploy/asterisk deploy/rede-grupo.service deploy/seguranca/systemd-endurecimento.conf requirements.txt wsgi.py
 
 echo "==> Enviando"
 "${SSH[@]}" "sudo rm -rf /tmp/grupos-envio && mkdir -p /tmp/grupos-envio && chmod 700 /tmp/grupos-envio"
@@ -123,6 +123,10 @@ done
 
 echo "[6/6] servico rede-grupo e reinicios"
 install -m 644 $PORTAL/deploy/rede-grupo.service /etc/systemd/system/rede-grupo.service
+# o portal (sandbox do endurecer.sh) precisa gravar os audios de apelido e de grupo em $SONS
+for u in rede-portal rede-jobs rede-diario; do
+  [ -d /etc/systemd/system/$u.service.d ] && install -m 644 $PORTAL/deploy/seguranca/systemd-endurecimento.conf /etc/systemd/system/$u.service.d/endurecimento.conf || true
+done
 systemctl daemon-reload
 systemctl restart asterisk
 sleep 4
