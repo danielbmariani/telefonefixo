@@ -35,7 +35,7 @@
       <span class="selo" aria-hidden="true"><svg viewBox="0 0 64 64" fill="currentColor"><path d="M22 17c2-2 5-1 6 1l3 6c1 2 0 4-2 5l-2 1c2 5 6 9 11 11l1-2c1-2 3-3 5-2l6 3c2 1 3 4 1 6l-3 3c-2 2-5 2-8 1-12-4-21-13-25-25-1-3-1-6 1-8z"/></svg></span>
       <span>
         <span class="nome">{{ nome_rede }}</span>
-        {% if crianca %}<span class="sub">{{ crianca.apelido }} · ID {{ crianca.id_rede|idfmt }}</span>{% else %}<span class="sub">telefone para ligar para os amigos</span>{% endif %}
+        {% if crianca %}<span class="sub">{{ crianca.apelido }} · ID {{ crianca.id_rede|idfmt }}</span>{% else %}<span class="sub">sem tela, sem aplicativo, sem acesso externo</span>{% endif %}
       </span>
     </a>
     <nav class="topo-acoes" aria-label="Conta">
