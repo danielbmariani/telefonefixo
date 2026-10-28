@@ -5,8 +5,8 @@
 {% block content %}
 <section class="heroi">
   <div class="container">
-    <div class="row g-4 gx-lg-5 align-items-center">
-      <div class="col-lg-7">
+    <div class="row">
+      <div class="col-lg-8">
         <p class="rotulo-tf sub-nome">Projeto sem fins lucrativos · código aberto · sem mensalidade</p>
         <h1 class="pergunta">Quer adiar o celular sem isolar suas crianças?</h1>
         <p class="precisa">Você precisa… de um <mark class="marca-texto">telefone fixo</mark>.</p>
@@ -15,22 +15,6 @@
         <div class="acoes">
           <a class="btn btn-primary" href="{{ url_for('auth.cadastrar') }}">Começar</a>
           <a class="btn btn-outline-secondary" href="#como-funciona">Como funciona</a>
-        </div>
-      </div>
-      <div class="col-lg-5">
-        {# O cartao impresso que fica ao lado do telefone: a unica peca que a crianca le. Nomes ficticios. #}
-        <div class="cartao-ilustra" aria-hidden="true">
-          <div class="topo-cartao"><img src="{{ url_for('static', filename='marca/simbolo-negativo.svg') }}" alt=""><span>{{ nome_rede }}</span></div>
-          <div class="meu">
-            <span class="tf-id"><span class="tf-id__rotulo">Helena · meu número</span>
-              <span class="tf-id__casas"><span class="tf-id__casa">4</span><span class="tf-id__casa">8</span><span class="tf-id__casa">2</span><span class="tf-id__casa">9</span><span class="tf-id__casa">1</span><span class="tf-id__casa">3</span></span></span>
-          </div>
-          <ul>
-            <li><span>Miguel</span><span class="numero">10 53 77</span></li>
-            <li><span>Alice</span><span class="numero">73 10 06</span></li>
-            <li><span>Gabriel</span><span class="numero">55 82 40</span></li>
-            <li><span>Theo</span><span class="numero">39 08 12</span></li>
-          </ul>
         </div>
       </div>
     </div>
