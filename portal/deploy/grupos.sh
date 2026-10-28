@@ -88,7 +88,7 @@ grep -q '^REDE_GRUPO_MAX_NA_CHAMADA=' $ENVP || echo "REDE_GRUPO_MAX_NA_CHAMADA=4
 mkdir -p $SONS; chown rede:rede $SONS; chmod 755 $SONS
 ln -sfn $SONS /usr/share/asterisk/sounds/rede
 # frases, tons e apelidos/grupos que ainda nao tem audio, como usuario rede (le o portal.env)
-sudo -u rede env $(grep -v '^#' $ENVP | xargs) $VENV/bin/python - <<'PY'
+sudo -u rede bash -c "cd $PORTAL; set -a; . $ENVP; set +a; exec $VENV/bin/python -" <<'PY'
 import os
 from rede import db, voz
 from rede.config import Config

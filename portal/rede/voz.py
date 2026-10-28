@@ -83,7 +83,10 @@ def gerar_frases(cfg):
     """Todas as frases fixas (roda no deploy). Devolve quantas gravou."""
     n = 0
     for nome, texto in FRASES.items():
-        if gerar(cfg, texto, caminho(cfg, 'frases', nome)):
+        destino = caminho(cfg, 'frases', nome)
+        if os.path.exists(destino):
+            continue
+        if gerar(cfg, texto, destino):
             n += 1
     return n
 
@@ -107,14 +110,23 @@ def tem_grupo(cfg, grupo_id):
 def gerar_tons(cfg):
     """Tres sons curtos e distintos (ritmo e altura diferentes, doc 16 secao 3.4): entrou (duas notas subindo),
     saiu (duas notas descendo), erro (uma nota grave). E o tom de chamando para a espera (1 s ligado, 4 s
-    desligado, 425 Hz, padrao brasileiro)."""
+    desligado, 425 Hz, padrao brasileiro). Gera cada nota num arquivo e junta: o sox com dois `synth` na
+    mesma linha nao termina."""
     if not shutil.which('sox'):
         return False
     d = os.path.join(cfg.VOZ_DIR, 'tons'); os.makedirs(d, exist_ok=True)
     m = os.path.join(cfg.VOZ_DIR, 'moh-chamando'); os.makedirs(m, exist_ok=True)
-    comum = ['-r', '8000', '-c', '1', '-b', '16']
-    subprocess.run(['sox', '-n'] + comum + [os.path.join(d, 'entrou.wav'), 'synth', '0.12', 'sine', '660', 'synth', '0.12', 'sine', '880', ':', 'vol', '0.4'], check=True)
-    subprocess.run(['sox', '-n'] + comum + [os.path.join(d, 'saiu.wav'), 'synth', '0.12', 'sine', '880', 'synth', '0.12', 'sine', '660', ':', 'vol', '0.4'], check=True)
-    subprocess.run(['sox', '-n'] + comum + [os.path.join(d, 'erro.wav'), 'synth', '0.35', 'sine', '330', 'vol', '0.4'], check=True)
-    subprocess.run(['sox', '-n'] + comum + [os.path.join(m, 'chamando.wav'), 'synth', '1', 'sine', '425', 'vol', '0.3', 'pad', '0', '4'], check=True)
+    fmt = ['-r', '8000', '-c', '1', '-b', '16']
+
+    def nota(destino, segundos, hz):
+        subprocess.run(['sox', '-n'] + fmt + [destino, 'synth', str(segundos), 'sine', str(hz), 'vol', '0.4'], check=True, timeout=30)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        a, b = os.path.join(tmp, 'a.wav'), os.path.join(tmp, 'b.wav')
+        nota(a, 0.12, 660); nota(b, 0.12, 880)
+        subprocess.run(['sox', a, b, os.path.join(d, 'entrou.wav')], check=True, timeout=30)
+        subprocess.run(['sox', b, a, os.path.join(d, 'saiu.wav')], check=True, timeout=30)
+        nota(os.path.join(d, 'erro.wav'), 0.35, 330)
+        nota(a, 1, 425)
+        subprocess.run(['sox', a, os.path.join(m, 'chamando.wav'), 'pad', '0', '4'], check=True, timeout=30)
     return True
