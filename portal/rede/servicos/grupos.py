@@ -232,10 +232,19 @@ def pode_entrar(conn, id_rede, participantes_ids):
 
 def registrar_chamada(conn, tempos, quando_texto, atendida=True, grupo_id=None):
     """`tempos`: {id_rede: [(inicio_epoch, fim_epoch)]} por participante. Uma linha de call_logs por
-    participante (callee 'GRUPO:<id do grupo>', para o historico mostrar o nome), com o tempo em comum com cada um dos outros em block_reason
+    participante (callee 'GRUPO:<id do grupo>', para o historico mostrar o nome; duracao = tempo com alguem), com o tempo em comum com cada um dos outros em block_reason
     ('id:segundos,...'), como o historico ja mostra. `atendida=False` (ninguem entrou): status NOANSWER."""
-    def total(iv):
-        return sum(max(0, int(f - i)) for i, f in iv)
+    def total(iv, outros_ivs):
+        # tempo em que este participante esteve na chamada com pelo menos um outro: toque, espera
+        # sozinho e "voce e o unico" nao contam (pedido do Daniel, 28/10)
+        pontos = sorted({p for a, b in iv for p in (a, b)} | {p for o in outros_ivs for a, b in o for p in (a, b)})
+        s = 0
+        for a, b in zip(pontos, pontos[1:]):
+            eu = any(i <= a and b <= f for i, f in iv)
+            alguem = any(i <= a and b <= f for o in outros_ivs for i, f in o)
+            if eu and alguem:
+                s += int(b - a)
+        return s
 
     def comum(a, b):
         s = 0
@@ -245,7 +254,7 @@ def registrar_chamada(conn, tempos, quando_texto, atendida=True, grupo_id=None):
         return s
     for pid, iv in tempos.items():
         outros = ','.join(f'{o}:{comum(iv, ov)}' for o, ov in tempos.items() if o != pid)
-        dur = total(iv)
+        dur = total(iv, [ov for o, ov in tempos.items() if o != pid])
         conn.execute(insert(db.call_logs).values(caller_ext=pid, callee_ext=f'GRUPO:{grupo_id}' if grupo_id else 'GRUPO', timestamp=quando_texto,
                                                  status='ALLOWED' if (dur > 0 and atendida) else 'NOANSWER', duration_seconds=dur,
                                                  block_reason=outros or None))

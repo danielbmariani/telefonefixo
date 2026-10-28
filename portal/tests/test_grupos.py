@@ -136,7 +136,8 @@ def test_registrar_chamada_no_historico(client, app, rede4):
         rows = conn.execute(text("SELECT caller_ext, callee_ext, status, duration_seconds, block_reason FROM call_logs ORDER BY caller_ext")).all()
     assert len(rows) == 2 and all(r[1].startswith('GRUPO') and r[2] == 'ALLOWED' for r in rows)
     por = {r[0]: r for r in rows}
-    assert por[j['id_rede']][3] == 100 and por[j['id_rede']][4] == f'{b["id_rede"]}:60'
+    # jose ficou 100 s na chamada, mas so 60 s com alguem: toque e espera sozinho nao contam
+    assert por[j['id_rede']][3] == 60 and por[j['id_rede']][4] == f'{b["id_rede"]}:60'
     assert por[b['id_rede']][3] == 60 and por[b['id_rede']][4] == f'{j["id_rede"]}:60'
     # com o id do grupo, a aba Ligacoes mostra o nome do grupo (mesmo depois de o grupo acabar)
     with app.engine.begin() as conn:
