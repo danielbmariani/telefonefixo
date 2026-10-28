@@ -91,12 +91,14 @@ async def main():
             await pg.evaluate('([x,y]) => window.__toque(x,y)', [box['x'] + 24, box['y'] + box['height'] / 2]); await pg.wait_for_timeout(450)
             await loc.click()
             await pg.locator(sel).first.type(texto, delay=55); await pg.wait_for_timeout(500)
-        async def cartao(titulo, sub, espera):
+        async def cartao(titulo, sub, espera, letreiro=True):
+            estilo_h1 = 'font-weight:800;font-stretch:125%;text-transform:uppercase;letter-spacing:.03em;font-size:40px' if letreiro else 'font-weight:800;font-size:34px;letter-spacing:-.01em'
             # cartao de abertura/fechamento no padrao da faixa: fundo azul-estatal, simbolo negativo, fio laranja embaixo
-            await pg.goto('about:blank'); await pg.set_content(f"""<html><head><style>@font-face{{font-family:Archivo;src:url({U}/static/fontes/archivo.woff2) format('woff2');font-weight:100 900;font-stretch:62% 125%}}</style></head>
+            # set_content mantem a origem da pagina atual: indo antes a uma pagina do site, fonte e simbolo carregam do servidor local
+            await pg.goto(U + '/entrar'); await pg.evaluate("window.__legenda('')"); await pg.set_content(f"""<html><head><style>@font-face{{font-family:Archivo;src:url({U}/static/fontes/archivo.woff2) format('woff2');font-weight:100 900;font-stretch:62% 125%}}</style></head>
               <body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#1D4F91;color:#fff;font-family:Archivo,system-ui,sans-serif;text-align:center;padding:32px;border-bottom:8px solid #E8761E;box-sizing:border-box">
-              <div><img src="{U}/static/marca/simbolo-negativo.svg" style="width:120px;height:120px;margin:0 auto 28px;display:block">
-              <h1 style="font-size:40px;line-height:1.1;margin:0 0 18px;font-weight:800;font-stretch:125%;text-transform:uppercase;letter-spacing:.03em">{titulo}</h1><p style="font-size:22px;color:rgba(255,255,255,.88);margin:0">{sub}</p></div></body></html>""")
+              <div style="max-width:100%"><svg viewBox="0 0 200 200" style="width:120px;height:120px;margin:0 auto 28px;display:block"><g transform="translate(100 100)"><circle r="96" fill="#FFFFFF"/><g fill="#1D4F91"><circle cx="16" cy="59.9" r="9"/><circle cx="-16" cy="59.9" r="9"/><circle cx="-43.8" cy="43.8" r="9"/><circle cx="-59.9" cy="16" r="9"/><circle cx="-59.9" cy="-16" r="9"/><circle cx="-43.8" cy="-43.8" r="9"/><circle cx="-16" cy="-59.9" r="9"/><circle cx="16" cy="-59.9" r="9"/><circle cx="43.8" cy="-43.8" r="9"/><circle cx="59.9" cy="-16" r="9"/><circle r="24"/></g><path d="M60 42 L76 53" stroke="#1D4F91" stroke-width="9" stroke-linecap="round" fill="none"/></g></svg>
+              <h1 style="{estilo_h1};line-height:1.1;margin:0 0 18px;overflow-wrap:anywhere">{titulo}</h1><p style="font-size:22px;color:rgba(255,255,255,.88);margin:0">{sub}</p></div></body></html>""")
             await pg.evaluate("document.fonts.ready")
             await pg.wait_for_timeout(int(espera * 1000))
 
@@ -104,7 +106,7 @@ async def main():
         # 1. landing
         await pg.goto(U + '/'); await pg.evaluate("localStorage.setItem('legenda','')"); await pg.wait_for_timeout(800)
         await legenda('1. A família entra em telefonefixo.org e cria a conta.', 3)
-        await toque('a:has-text("Criar a conta da família")')
+        await toque('.heroi a:has-text("Começar")')
         # 2. cadastro
         await legenda('Nome, e-mail e senha. Só isso.', 1.5)
         await digitar('#nome', 'Mãe do José'); await digitar('#email', 'mae.do.jose@exemplo.org')
@@ -166,7 +168,7 @@ async def main():
         await pg.locator('.mensagem-pedido').first.scroll_into_view_if_needed(); await pg.wait_for_timeout(800)
         await toque('form:has(input[name=acao][value=aceitar]) button', 1.5)
         await legenda('Pronto. José e Beto podem se ligar. Ninguém de fora consegue.', 3.5)
-        await cartao('telefonefixo.org', 'Sem tela, sem aplicativo.<br>Só quem a família autoriza.<br><br>Projeto sem fins lucrativos, de código aberto.', 4)
+        await cartao('telefonefixo.org', 'Sem tela, sem aplicativo.<br>Só quem a família autoriza.<br><br>Projeto sem fins lucrativos, de código aberto.', 4, letreiro=False)
         estado['ativo'] = False; await tarefa
         await ctx.close(); await b.close()
     srv.shutdown()
