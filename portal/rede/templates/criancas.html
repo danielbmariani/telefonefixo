@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Crianças | {{ nome_rede }}{% endblock %}
 {% block content %}
+{% from "_id.html" import casas %}
 <div class="d-flex justify-content-between align-items-center mb-3 mt-2"><h1 class="h2 mb-0">Crianças</h1>
   <a class="btn btn-outline-primary btn-sm" href="{{ url_for('familia.crianca_nova') }}"><i class="bi bi-plus-lg"></i> Adicionar</a></div>
 <div class="row g-3">
@@ -8,7 +9,7 @@
   <div class="col-12 col-sm-6"><div class="card h-100"><div class="card-body">
     <div class="d-flex justify-content-between align-items-start gap-2">
       <h2 class="h4 mb-1">{{ c.apelido }}</h2>
-      <span class="etiqueta-id"><small>ID</small><span class="numero fs-5">{{ c.id_rede|idfmt }}</span></span>
+      {{ casas(c.id_rede, 'ID', pequeno=True) }}
     </div>
     <p class="small mb-3 mt-2">Telefone:
       {% if tel %}<span class="badge bg-{{ 'success' if tel.estado in ('registrado','ativo') else 'warning text-dark' }}">{{ tel.estado|replace('_', ' ') }}</span>

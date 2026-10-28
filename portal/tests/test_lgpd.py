@@ -99,3 +99,15 @@ def test_previa_de_compartilhamento(client, app):
     assert 'property="og:title" content="Telefone Fixo: adiar o celular sem isolar as crianças"' in h
     assert 'name="twitter:card" content="summary_large_image"' in h
     assert client.get('/static/og.png').status_code == 200
+
+
+def test_fontes_hospedadas_no_proprio_site(client):
+    # Identidade de 28/10: Archivo e IBM Plex Mono servidas daqui. Nenhum pedido sai para o Google
+    # Fonts (o IP de quem visita nao vai para terceiros so para carregar uma fonte).
+    h = client.get('/').get_data(as_text=True)
+    assert 'fonts.googleapis.com' not in h and 'fonts.gstatic.com' not in h
+    assert client.get('/static/fontes/archivo.woff2').status_code == 200
+    assert client.get('/static/fontes/ibm-plex-mono-500.woff2').status_code == 200
+    assert client.get('/static/marca/simbolo-negativo.svg').status_code == 200
+    csp = client.get('/').headers['Content-Security-Policy']
+    assert 'googleapis' not in csp

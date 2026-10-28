@@ -29,12 +29,12 @@ INIT = r"""
     let el = document.getElementById('legenda-video');
     if (!el) { el = document.createElement('div'); el.id = 'legenda-video'; document.documentElement.appendChild(el);
       const s = document.createElement('style'); s.textContent = `
-        #legenda-video{position:fixed;left:12px;right:12px;bottom:14px;z-index:99999;background:#1f2328;color:#fff;border-radius:16px;
-          padding:16px 18px;font:700 20px/1.3 'Atkinson Hyperlegible',system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.35);
-          border-left:8px solid #e8542c;opacity:0;transition:opacity .35s}
+        #legenda-video{position:fixed;left:12px;right:12px;bottom:14px;z-index:99999;background:#1D4F91;color:#fff;border-radius:4px;
+          padding:16px 18px;font:700 20px/1.3 Archivo,system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.35);
+          border-bottom:4px solid #E8761E;opacity:0;transition:opacity .35s}
         #legenda-video.on{opacity:1}
-        .toque{position:fixed;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:rgba(232,84,44,.55);
-          border:3px solid #e8542c;z-index:99998;animation:toque .6s ease-out forwards;pointer-events:none}
+        .toque{position:fixed;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:rgba(232,118,30,.55);
+          border:3px solid #E8761E;z-index:99998;animation:toque .6s ease-out forwards;pointer-events:none}
         @keyframes toque{from{transform:scale(.4);opacity:1}to{transform:scale(1.6);opacity:0}}`; document.documentElement.appendChild(s); }
     el.textContent = t; el.className = t ? 'on' : ''; if (document.body) document.body.style.paddingBottom = '130px';
   }
@@ -92,10 +92,12 @@ async def main():
             await loc.click()
             await pg.locator(sel).first.type(texto, delay=55); await pg.wait_for_timeout(500)
         async def cartao(titulo, sub, espera):
-            await pg.goto('about:blank'); await pg.set_content(f"""<html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;font-family:'Atkinson Hyperlegible',system-ui,sans-serif;text-align:center;padding:32px">
-              <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
-              <div><div style="width:120px;height:120px;border-radius:50%;background:#e8542c;margin:0 auto 28px;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 64 64" width="70"><path d="M22 17c2-2 5-1 6 1l3 6c1 2 0 4-2 5l-2 1c2 5 6 9 11 11l1-2c1-2 3-3 5-2l6 3c2 1 3 4 1 6l-3 3c-2 2-5 2-8 1-12-4-21-13-25-25-1-3-1-6 1-8z" fill="#fff"/></svg></div>
-              <h1 style="font-size:40px;line-height:1.1;margin:0 0 18px;color:#1f2328">{titulo}</h1><p style="font-size:22px;color:#3b4149;margin:0">{sub}</p></div></body></html>""")
+            # cartao de abertura/fechamento no padrao da faixa: fundo azul-estatal, simbolo negativo, fio laranja embaixo
+            await pg.goto('about:blank'); await pg.set_content(f"""<html><head><style>@font-face{{font-family:Archivo;src:url({U}/static/fontes/archivo.woff2) format('woff2');font-weight:100 900;font-stretch:62% 125%}}</style></head>
+              <body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#1D4F91;color:#fff;font-family:Archivo,system-ui,sans-serif;text-align:center;padding:32px;border-bottom:8px solid #E8761E;box-sizing:border-box">
+              <div><img src="{U}/static/marca/simbolo-negativo.svg" style="width:120px;height:120px;margin:0 auto 28px;display:block">
+              <h1 style="font-size:40px;line-height:1.1;margin:0 0 18px;font-weight:800;font-stretch:125%;text-transform:uppercase;letter-spacing:.03em">{titulo}</h1><p style="font-size:22px;color:rgba(255,255,255,.88);margin:0">{sub}</p></div></body></html>""")
+            await pg.evaluate("document.fonts.ready")
             await pg.wait_for_timeout(int(espera * 1000))
 
         await cartao('Telefone Fixo', 'Como funciona, do zero ao primeiro amigo.<br><br>Dois minutos.', 3.5)

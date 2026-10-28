@@ -75,3 +75,46 @@ auditoria está no scratchpad da sessão). Problemas encontrados e corrigidos no
 - Textos encurtados: resumo da página do telefone, descrições dos modelos.
 
 Regra que fica: toda tela nova passa pela captura em 390 px antes de ir para o ar.
+
+## Identidade visual (28/10/2026)
+
+O Daniel trouxe um pacote de identidade (`telefone-fixo-identidade.zip`: manual da marca, logos em SVG,
+favicon, fontes, tokens, componentes e a página inicial aplicada em 1280 e 390 px). A ideia: o disco do
+telefone e a linguagem gráfica das estatais de telecomunicação dos anos 1970 a 1990 (Telebrás, orelhão,
+lista telefônica, formulário de repartição), relida com WCAG 2.2 AA, alvos de 44 px e foco visível.
+"Parece um serviço público que funciona." O site inteiro foi refeito só na estética; nenhum texto mudou.
+
+O que entrou:
+- **Faixa**: cabeçalho azul-estatal (#1D4F91) com fio laranja (#E8761E) de 4 px embaixo; rodapé em
+  azul-profundo com o fio em cima. Símbolo negativo (disco branco) a 44 px e o nome em letreiro
+  (Archivo 800, largura 125 %, caixa alta). No celular o nome quebra em duas linhas; com a conta aberta
+  (três botões) fica só o símbolo.
+- **Tipografia**: Archivo (variável, eixos de peso e largura) e IBM Plex Mono 500 para ID, S/N, MAC,
+  horários e números do cartão. Corpo de 18 px (17 no celular). Fontes hospedadas em
+  `static/fontes/` como woff2 (subconjunto latino, 117 KB + 18 KB); o Google Fonts saiu do site e da CSP.
+- **Forma**: cantos de 4 px em tudo, fios de 1 e 2 px em vez de sombras, círculo só para o que é furo
+  do disco (número de passo, ponto de estado do aviso, marcador da linha do tempo). Botões com 48 px
+  (44 nos pequenos), anel de foco laranja-texto de 3 px.
+- **Componentes aplicados**: Passo (furo azul com algarismo mono) em "Como funciona" e na lista dos
+  cabos; Princípio (fio azul em cima, sem ícone) nos três "só"; Aviso (bloco cinza com ponto colorido)
+  nos alertas; Campo (rótulo em caixa alta espaçada, borda de 2 px); IdCrianca (`_id.html`: seis casas
+  com fio azul embaixo, agrupadas 2+2+2 como no resto do site e nos cartões já impressos; o manual
+  sugere 3+3, mantivemos a convenção existente); Cartão (`cartao.html`: faixa azul, lista zebrada,
+  números em mono, legível em preto e branco); Faixa no cabeçalho e rodapé.
+- **Página inicial** conforme a aplicação do pacote: rótulo, pergunta como título, "Você precisa… de um
+  telefone fixo" com marca-texto amarelo (uma vez por tela), botões Começar e Como funciona, o cartão
+  impresso ilustrado ao lado (nomes fictícios), três princípios em cinza, "Como funciona" com letreiro
+  à esquerda e cinco furos à direita, faixa azul-profunda com rótulo amarelo e link "Ver o código"
+  (repositório público), perguntas com letreiro à esquerda.
+- **Favicon e prévia**: `static/marca/` (favicon.svg, .ico, apple-touch-icon) e `static/og.png` do pacote.
+- O desenho dos cabos e dos modelos trocou o coral antigo pelo laranja-orelhão e o azul-mar pelo
+  azul-estatal; o gráfico do histórico ficou azul; os chips de dia da semana deixaram de ser pílulas.
+
+Fora por enquanto: tema escuro (o manual traz os tokens; Bootstrap tem muitas utilidades de cor nos
+templates e isso pede uma passada própria) e ícones Lucide (seguem os Bootstrap Icons, de traço parecido).
+
+Auditoria: 25 telas em 390 e 1280 px (script `auditar2.py` no scratchpad da sessão, derivado do roteiro
+do vídeo). Corrigido no mesmo dia: nome da marca invadia os botões no celular; letreiro "Perguntas comuns"
+a 48 px invadia a coluna ao lado (agora até 36 px); linha do celular cadastrado quebrava no meio do número;
+hover preso do mouse do Playwright fazia um botão de contorno parecer preenchido (artefato de captura, não
+do site: o script agora afasta o mouse antes de cada captura). Sem estouro horizontal em nenhuma tela.
