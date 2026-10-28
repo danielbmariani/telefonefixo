@@ -94,7 +94,7 @@ async def main():
         async def cartao(titulo, sub, espera):
             await pg.goto('about:blank'); await pg.set_content(f"""<html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;font-family:'Atkinson Hyperlegible',system-ui,sans-serif;text-align:center;padding:32px">
               <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
-              <div><div style="width:120px;height:120px;border-radius:50%;background:#e8542c;margin:0 auto 28px;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 64 64" width="70"><path d="M22 17c2-2 5-1 6 1l3 6c1 2 0 4-2 5l-2 1c2 5 6 9 11 11l1-2c1-2 3-3 5-2l6 3c2 1 3 4 1 6l-3 3c-2 2-5 2-8 1-12-4-21-13-25-25-1-3-1-6 1-8z" fill="#fff"/></svg></div>
+              <div><svg viewBox="0 0 200 200" style="width:120px;height:120px;margin:0 auto 28px;display:block"><g transform="translate(100 100)"><circle r="96" fill="#d9480f"/><g fill="#fff"><circle cx="16" cy="59.9" r="9"/><circle cx="-16" cy="59.9" r="9"/><circle cx="-43.8" cy="43.8" r="9"/><circle cx="-59.9" cy="16" r="9"/><circle cx="-59.9" cy="-16" r="9"/><circle cx="-43.8" cy="-43.8" r="9"/><circle cx="-16" cy="-59.9" r="9"/><circle cx="16" cy="-59.9" r="9"/><circle cx="43.8" cy="-43.8" r="9"/><circle cx="59.9" cy="-16" r="9"/><circle r="24"/></g><path d="M60 42 L76 53" stroke="#fff" stroke-width="9" stroke-linecap="round" fill="none"/></g></svg>
               <h1 style="font-size:40px;line-height:1.1;margin:0 0 18px;color:#1f2328">{titulo}</h1><p style="font-size:22px;color:#3b4149;margin:0">{sub}</p></div></body></html>""")
             await pg.wait_for_timeout(int(espera * 1000))
 
