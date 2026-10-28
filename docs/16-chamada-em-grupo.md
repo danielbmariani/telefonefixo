@@ -229,13 +229,16 @@ anotado para depois.
 Total na casa de 5 dias de trabalho. Risco técnico principal: o `Originate` assíncrono e o registro de
 tempo por participante; ambos têm referência na comunidade e o v1 já tinha a parte do registro.
 
-## 5. Decisões para o Daniel
+## 5. Decisões (28/10/2026)
 
-1. Confirmar o conceito: grupo com nome montado pelos pais, discado com `0` + dígito, toca em todos.
-2. Limite: 4 na chamada (recomendado) ou 5.
-3. Quem liga não "manda" na chamada (recomendado) ou a chamada acaba quando quem ligou desliga.
-4. Nome da seção: "Grupos para ligar juntos" (recomendado) ou "Chamada em grupo".
-5. Tirar já o `0` + ID antigo (recomendado, junto com a entrada do novo).
+1. Conceito: grupo com nome montado pelos pais, toca em todos. **Em aberto**: numeração por criança
+   (`0` + dígito, `01#`, `02#`) ou número de 6 dígitos igual para todos os membros. Daniel pediu
+   explicação; aguarda escolha.
+2. Limite na chamada: **4** (3 membros + quem ligou). Confirmado.
+3. A chamada **continua até todos desligarem**; quem ligou não manda nela. Confirmado.
+4. O `0` + ID continua **só no projeto antigo** (`telefone_fixo` v1, instância separada). Na rede nova
+   sai, junto com a regra de "cair na sala" ao ligar para alguém que está numa sala. Confirmado.
+5. Nome da seção: "Grupos para ligar juntos" (recomendado), ainda sem resposta.
 
 ## 6. Fontes
 
