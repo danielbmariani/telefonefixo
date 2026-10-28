@@ -126,7 +126,7 @@ def telefone(crianca_id):
                 flash('Nova configuração gerada. O telefone vai aplicar na próxima checagem ou ao ser religado.', 'success')
             elif acao == 'remover' and tel:
                 svc_tel.desativar(conn(), tel['id'], 'familia', g.familia['id'], motivo='familia_removeu', cfg=_cfg())
-                flash('Telefone removido. Em alguns minutos ele volta à configuração de fábrica e pode ser cadastrado por outra família.', 'success')
+                flash('Telefone removido. Em alguns minutos ele volta à configuração de fábrica.', 'success')
             elif acao == 'reativar':
                 antigo = request.form.get('telefone_id', type=int)
                 t = svc_tel.por_id(conn(), antigo) if antigo else None
