@@ -10,7 +10,7 @@ from conftest import post, cadastrar_e_entrar, criar_crianca, crianca_row, telef
 from rede import estados
 from rede.estados import TransicaoInvalida
 from rede.servicos import sip, reconciliacao, gdms_fila, telefones
-from rede.tempo import agora
+from rede.tempo import agora, agora_sp_texto
 
 
 def _prep(client, app):
@@ -75,7 +75,7 @@ def test_observador_registra_e_ativa(client, app):
     # primeira chamada (100#) -> ativo
     with app.engine.begin() as conn:
         conn.execute(text("INSERT INTO call_logs (caller_ext, callee_ext, timestamp, status, duration_seconds) "
-                          "VALUES (:c, '100', '2026-10-23 10:00:00', 'ALLOWED', 5)"), {'c': c['id_rede']})
+                          "VALUES (:c, '100', :t, 'ALLOWED', 5)"), {'c': c['id_rede'], 't': agora_sp_texto()})   # depois do registro
         sip.observar(conn, app.cfg)
     assert telefone_row(app, cid)['estado'] == 'ativo'
     assert 'jobs_rapidos_executados' in acoes(app)
