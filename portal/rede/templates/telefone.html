@@ -20,9 +20,10 @@
   {% else %}
   <p class="mb-2"><strong>Não desligue o telefone</strong> da tomada nem do cabo de rede até aparecer "pronto" aqui. Leva uns 4 minutos. Esta página se atualiza sozinha.</p>
   {% endif %}
+  {% set ns = namespace(atual=False) %}
   <ul class="checklist mb-0">
   {% for p in zeramento.passos %}
-    <li><i class="bi {% if p.feito %}bi-check-circle-fill{% else %}bi-circle{% endif %}"></i> <span>{{ p.titulo }}</span></li>
+    <li>{% if p.feito %}<i class="bi bi-check-circle-fill"></i>{% elif not ns.atual and zeramento.fase == 'andamento' %}{% set ns.atual = True %}<span class="spinner-border spinner-border-sm text-warning" role="status" aria-label="em andamento"></span>{% else %}<i class="bi bi-circle"></i>{% endif %} <span>{{ p.titulo }}{% if not p.feito and ns.atual and loop.index0 == zeramento.passos|selectattr('feito')|list|length %}<span class="text-muted"> ... aguardando</span>{% endif %}</span></li>
   {% endfor %}
   </ul>
 </div></div>
