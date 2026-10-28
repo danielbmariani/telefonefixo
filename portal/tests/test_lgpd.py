@@ -96,6 +96,6 @@ def test_previa_de_compartilhamento(client, app):
     r = client.get('/')
     h = r.data.decode()
     assert 'property="og:image" content="http://teste/static/og.png"' in h
-    assert 'property="og:title" content="Telefone Fixo, um telefone só para ligar para os amigos"' in h
+    assert 'property="og:title" content="Telefone Fixo: adiar o celular sem isolar as crianças"' in h
     assert 'name="twitter:card" content="summary_large_image"' in h
     assert client.get('/static/og.png').status_code == 200

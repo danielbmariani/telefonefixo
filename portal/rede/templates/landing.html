@@ -1,20 +1,18 @@
 {% extends "base.html" %}
-{% block title %}{{ nome_rede }}, um telefone só para ligar para os amigos{% endblock %}
+{% block title %}{{ nome_rede }}: adiar o celular sem isolar as crianças{% endblock %}
 {% block main_class %}{% endblock %}
 {% block flash_class %}container mt-3{% endblock %}
 {% block content %}
 <section class="heroi">
   <div class="container">
     <div class="row">
-      <div class="col-lg-8">
-        <h1>Um telefone que só faz uma coisa: ligar para os amigos.</h1>
-        <p class="chamada mt-3">Sem tela e sem aplicativo. A criança disca o número do amigo e conversa.
-          Quem pode ligar para quem, e em que horário, é decidido pelas duas famílias.</p>
-        <div class="d-flex flex-wrap gap-2 mt-4">
-          <a class="btn btn-primary btn-lg" href="{{ url_for('auth.cadastrar') }}">Criar a conta da família</a>
-          <a class="btn btn-outline-secondary btn-lg" href="#como-funciona">Como funciona</a>
-        </div>
-        <p class="text-muted mt-3 mb-0">Sem mensalidade. Projeto sem fins lucrativos, de código aberto.</p>
+      <div class="col-lg-9">
+        <h1 class="nome-projeto">{{ nome_rede }}</h1>
+        <p class="sub-nome">Projeto sem fins lucrativos, com código aberto, sem mensalidade.</p>
+        <p class="pergunta mt-4">Quer adiar o celular sem isolar suas crianças? Você precisa… de um telefone fixo.</p>
+        <p class="chamada">Sem tela, sem aplicativo, sem acesso externo. A criança disca o número do amigo e conversa.
+          Quem pode ligar para quem, e em que horário, é decidido pelas famílias.</p>
+        <a class="btn btn-outline-secondary mt-2" href="#como-funciona">Como funciona</a>
       </div>
     </div>
   </div>
@@ -26,36 +24,25 @@
       <div class="col-md-4"><div class="vantagem"><div class="icone icone-fio"><i class="bi bi-telephone"></i></div>
         <h3>Só voz</h3><p>Sem tela, sem jogo, sem rede social. O telefone faz e recebe ligações.</p></div></div>
       <div class="col-md-4"><div class="vantagem"><div class="icone icone-mar"><i class="bi bi-people"></i></div>
-        <h3>Só quem a família aprovou</h3><p>Cada amizade precisa do sim das duas famílias. Ninguém de fora consegue ligar para a criança, nem ela para fora.</p></div></div>
+        <h3>Só quem a família aprovou</h3><p>Cada amizade precisa do sim das famílias. Ninguém de fora consegue ligar para a criança, nem ela para fora.</p></div></div>
       <div class="col-md-4"><div class="vantagem"><div class="icone icone-sol"><i class="bi bi-clock"></i></div>
-        <h3>No horário da casa</h3><p>Você define quando o telefone funciona. Fora do horário, uma mensagem avisa com educação.</p></div></div>
+        <h3>No horário da casa</h3><p>Você define quando o telefone funciona. Fora do horário, uma mensagem avisa.</p></div></div>
     </div>
   </div>
 </section>
 
 <section class="secao" id="como-funciona">
   <div class="container">
-    <div class="row g-4 gx-lg-5">
-      <div class="col-lg-6">
+    <div class="row">
+      <div class="col-lg-8">
         <h2>Como funciona</h2>
         <ol class="como mt-3">
-          <li><div><strong>Compre o telefone</strong><span>Um telefone IP Grandstream, modelo GRP2601 (cabo de rede) ou GRP2602W (Wi-Fi), à venda em lojas comuns. Qualquer família pode comprar; não vendemos nada.</span></div></li>
+          <li><div><strong>Compre o telefone</strong><span>Um telefone IP Grandstream, modelo GRP2601 (cabo de rede) ou GRP2602W (Wi-Fi), à venda em lojas comuns. As famílias fazem a compra diretamente, no site ou na loja da sua escolha; não vendemos nada.</span></div></li>
           <li><div><strong>Crie a conta e escolha o apelido da criança</strong><span>A conta é do responsável. A criança ganha um apelido e um número de 6 dígitos, o ID dela na rede.</span></div></li>
-          <li><div><strong>Digite os dois códigos da etiqueta</strong><span>Número de série (S/N) e MAC, impressos na etiqueta embaixo do aparelho. O site prepara a configuração.</span></div></li>
+          <li><div><strong>Digite os dois códigos da etiqueta</strong><span>Número de série (S/N) e MAC, impressos na etiqueta embaixo do aparelho. O site prepara a configuração e avisa quando o sistema está pronto.</span></div></li>
           <li><div><strong>Ligue o telefone no roteador e na tomada</strong><span>Ele se configura sozinho em alguns minutos. Você acompanha pelo site.</span></div></li>
-          <li><div><strong>Troque IDs com as outras famílias</strong><span>Peça a amizade pelo ID. Quando a outra família aceitar, as crianças já podem se ligar.</span></div></li>
+          <li><div><strong>Troque IDs com as outras famílias</strong><span>Descubra o ID da outra criança e peça amizade pelo site. Quando a outra família aceita, as crianças podem ligar uma para a outra.</span></div></li>
         </ol>
-      </div>
-      <div class="col-lg-5 offset-lg-1">
-        <h2>Para quem é</h2>
-        <p class="mt-3">Para famílias que querem adiar o celular sem isolar a criança. Ligar para um amigo
-          é uma das melhores partes do dia. O telefone devolve isso, sem a parte que preocupa.</p>
-        <div class="card mt-4"><div class="card-body">
-          <h6>O que a criança vê</h6>
-          <p class="mb-2">Um telefone de mesa com teclado numérico. Um cartão com o próprio número e os números dos amigos.</p>
-          <h6 class="mt-3">O que o responsável vê</h6>
-          <p class="mb-0">Pedidos de amizade, horários, a lista de ligações e o estado do telefone. Nada de escutar conversas: o conteúdo das ligações não é gravado.</p>
-        </div></div>
       </div>
     </div>
   </div>

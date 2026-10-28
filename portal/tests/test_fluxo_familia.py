@@ -152,8 +152,8 @@ def test_csrf_obrigatorio(client, app):
 def test_pagina_inicial_publica_e_reenvio_de_codigo(client, app):
     import re
     r = client.get('/')
-    assert r.status_code == 200 and 'ligar para os amigos' in r.get_data(as_text=True)
-    assert 'Criar a conta da fam' in r.get_data(as_text=True)
+    assert r.status_code == 200 and 'adiar o celular sem isolar' in r.get_data(as_text=True)
+    assert 'Criar a conta da fam' not in r.get_data(as_text=True)  # botao grande saiu do topo (27/10)
     # reenvio sem cadastro em andamento -> volta ao cadastro
     r = post(client, '/reenviar-codigo')
     assert r.status_code == 302 and r.headers['Location'].endswith('/cadastrar')

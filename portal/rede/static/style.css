@@ -181,7 +181,10 @@ a { text-decoration-thickness: 1px; text-underline-offset: 3px; }
 /* ---------- Página inicial pública ---------- */
 .heroi { padding: 3.5rem 0 2.5rem; }
 @media (min-width: 992px) { .heroi { padding: 5rem 0 4rem; } }
-.heroi .chamada { font-size: 1.2rem; color: var(--tinta-suave); max-width: 34rem; }
+.heroi .nome-projeto { font-size: clamp(3rem, 10vw, 5.6rem); line-height: 1; letter-spacing: -.02em; margin: 0; }
+.heroi .sub-nome { margin: .9rem 0 0; font-size: .82rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--tinta-suave); }
+.heroi .pergunta { font-size: clamp(1.35rem, 3vw, 1.85rem); font-weight: 700; line-height: 1.25; color: var(--tinta); max-width: 36rem; }
+.heroi .chamada { font-size: 1.2rem; color: var(--tinta-suave); max-width: 36rem; }
 .heroi .marcador { display: inline-block; background: var(--sol-claro); border-radius: 999px; padding: .3rem .9rem; font-weight: 800; font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; color: #6b4e00; margin-bottom: 1rem; }
 .heroi h1 em { font-style: italic; color: var(--fio); }
 .fio { height: 44px; margin: 1rem 0; }
