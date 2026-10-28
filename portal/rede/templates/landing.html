@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{ nome_rede }}: adiar o celular sem isolar as crianças{% endblock %}
 {% block main_class %}{% endblock %}
+{% block topo_class %} quieto{% endblock %}
 {% block flash_class %}container mt-3{% endblock %}
 {% block content %}
 <section class="heroi">
   <div class="container">
     <div class="row">
       <div class="col-lg-9">
-        <h1 class="nome-projeto">{{ nome_rede }}</h1>
+        <h1 class="nome-projeto" id="titulo-principal">{{ nome_rede }}</h1>
         <p class="sub-nome">Projeto sem fins lucrativos, com código aberto, sem mensalidade.</p>
         <p class="pergunta mt-4">Quer adiar o celular sem isolar suas crianças? Você precisa… de um telefone fixo.</p>
         <p class="chamada">Sem tela, sem aplicativo, sem acesso externo. A criança disca o número do amigo e conversa.

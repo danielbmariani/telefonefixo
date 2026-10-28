@@ -64,7 +64,16 @@ a { text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .topo {
   background: var(--creme);
   border-bottom: 1px solid var(--linha);
+  position: sticky; top: 0; z-index: 1030;
+  transition: box-shadow .2s;
 }
+.topo.rolado { box-shadow: 0 2px 10px rgba(31, 35, 40, .08); }
+/* Pagina inicial: o nome grande esta no topo da pagina; o cabecalho mostra so o selo
+   e o nome aparece quando o titulo sai da tela (classe trocada por script). */
+.topo.quieto .marca > span:last-child { opacity: 0; transform: translateY(4px); }
+.topo .marca > span:last-child { transition: opacity .25s, transform .25s; }
+/* Nas paginas da crianca as abas e que ficam fixas; o cabecalho rola normalmente. */
+body.com-abas .topo { position: static; box-shadow: none; }
 .topo .container { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 1rem; }
 .marca { display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; color: var(--tinta); }
 .marca .selo {

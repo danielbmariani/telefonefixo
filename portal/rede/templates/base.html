@@ -26,9 +26,10 @@
   <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23e8542c'/%3E%3Cpath d='M22 17c2-2 5-1 6 1l3 6c1 2 0 4-2 5l-2 1c2 5 6 9 11 11l1-2c1-2 3-3 5-2l6 3c2 1 3 4 1 6l-3 3c-2 2-5 2-8 1-12-4-21-13-25-25-1-3-1-6 1-8z' fill='%23fff'/%3E%3C/svg%3E">
 </head>
-<body>
 {% set logado = session.get('familia_id') %}
-<header class="topo">
+<body{% if logado and crianca %} class="com-abas"{% endif %}>
+<noscript><style>.topo.quieto .marca > span:last-child { opacity: 1; transform: none; }</style></noscript>
+<header class="topo{% block topo_class %}{% endblock %}">
   <div class="container">
     <a class="marca" href="{{ url_for('familia.inicio') }}" aria-label="{{ nome_rede }}, página inicial">
       <span class="selo" aria-hidden="true"><svg viewBox="0 0 64 64" fill="currentColor"><path d="M22 17c2-2 5-1 6 1l3 6c1 2 0 4-2 5l-2 1c2 5 6 9 11 11l1-2c1-2 3-3 5-2l6 3c2 1 3 4 1 6l-3 3c-2 2-5 2-8 1-12-4-21-13-25-25-1-3-1-6 1-8z"/></svg></span>
@@ -93,6 +94,18 @@
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Cabecalho fixo: sombra depois de rolar. Na pagina inicial (.quieto) o nome da marca so aparece
+// quando o titulo grande (#titulo-principal) sai da tela.
+(function () {
+  var topo = document.querySelector('.topo'); if (!topo) return;
+  var sombra = function () { topo.classList.toggle('rolado', window.scrollY > 4); };
+  window.addEventListener('scroll', sombra, { passive: true }); sombra();
+  var titulo = document.getElementById('titulo-principal');
+  if (titulo && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) { topo.classList.toggle('quieto', es[0].isIntersecting); },
+      { rootMargin: '-60px 0px 0px 0px' }).observe(titulo);
+  } else { topo.classList.remove('quieto'); }
+})();
 // Resposta imediata ao enviar qualquer formulario: botao travado com "Enviando..." (ou o texto em
 // data-enviando) e sem envio duplo. O servidor pode levar alguns segundos (ex.: registro no GDMS).
 document.addEventListener('submit', function (ev) {
