@@ -23,6 +23,21 @@ provável é que a **configuração de fábrica aplicou e reiniciou o aparelho**
 diferença: conta apagada, senha admin padrão, travas abertas, servidor de configuração de volta ao
 da Grandstream.
 
+## Segunda rodada (mesmo aparelho, 16:14 a 16:26)
+
+- 16:14:28 "Reativar" no site → `device/add` retCode 0 (MAC estava livre), configuração enviada;
+  16:15:12 o aparelho **ligado, sem religar** buscou a configuração no portal; 16:15:48 registrou no
+  Asterisk; ID de volta no visor. O GDMS empurra para o aparelho online: Rita não precisa de cabo
+  nem de reinício, só "liga, cadastra, espera 2 minutos".
+- Dois bugs achados e corrigidos na hora: o observador declarou `sem_boot` 20 s depois do Reativar
+  (contava o prazo a partir do "já liguei" de domingo; agora Reativar zera essas marcas) e marcou o
+  telefone como `ativo` sem ninguém ligar (contava ligações antigas; agora só depois do registro atual).
+- 16:22:17 "Remover telefone" de novo → 16:23:17 config de fábrica + reset aceitos → 16:25:00 callback
+  de reboot → 16:26:21 `device/delete`. Idêntico à primeira rodada. Nenhuma tarefa de operador.
+- A família agora acompanha isso na aba Telefone ("Zerando o telefone", três passos, "não desligue"
+  até "pronto, pode desligar"), pedido do Daniel durante o teste. O callback de reboot do aparelho
+  removido vira o passo "reiniciou". O "Remover" também dispara a fila na hora, sem esperar o timer.
+
 ## O que fecha
 
 - Fluxo "telefone de segunda mão" sem operador: botão → aparelho zerado em ~2 min → MAC fora da
