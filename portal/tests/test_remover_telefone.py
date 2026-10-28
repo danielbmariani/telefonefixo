@@ -129,3 +129,26 @@ def test_reativar_zera_as_marcas_da_ativacao_anterior(app):
         assert telefones.por_id(conn, t['id'])['estado'] == 'aguardando_boot'
         sip.observar(conn, cfg)
         assert telefones.por_id(conn, t['id'])['estado'] == 'aguardando_boot'   # e nao sem_boot
+
+
+def test_reativado_nao_fica_ativo_por_ligacao_antiga(app):
+    """B12 (28/10): o observador marcava o telefone reativado como 'ativo' por causa das ligacoes de antes."""
+    from rede.servicos import sip, historico
+    cfg = _cfg(app, GDMS_MODO='simulado')
+    with app.engine.begin() as conn:
+        fid = contas.criar_operador(conn, 'f@x.com', 'senha12345', 'F', 'familia')
+        cr = criancas.criar(conn, fid, 'kid', cfg)
+        conn.execute(text("INSERT INTO call_logs (caller_ext, callee_ext, timestamp, status, duration_seconds) VALUES (:c, '100', '2026-10-20 10:00:00', 'ALLOWED', 5)"), {'c': cr['id_rede']})
+        assert historico.primeira_chamada_registrada(conn, cr['id_rede'])
+        assert not historico.primeira_chamada_registrada(conn, cr['id_rede'], agora())
+        t = telefones.informar(conn, cr, 'C074AD000001', 'SN00000000', '1.1.1.1', cfg, familia_id=fid)
+        gdms_fila.processar(conn, cfg)
+        from rede import estados
+        estados.transicionar(conn, t['id'], 'config_entregue', 'telefone', cr['id_rede'])
+        estados.transicionar(conn, t['id'], 'sip_registrado', 'telefone', cr['id_rede'])
+        sip.observar(conn, cfg)
+        assert telefones.por_id(conn, t['id'])['estado'] == 'registrado'
+        conn.execute(text("INSERT INTO call_logs (caller_ext, callee_ext, timestamp, status, duration_seconds) VALUES (:c, '100', :t, 'ALLOWED', 5)"),
+                     {'c': cr['id_rede'], 't': (agora() + timedelta(minutes=1)).strftime('%Y-%m-%d %H:%M:%S')})
+        sip.observar(conn, cfg)
+        assert telefones.por_id(conn, t['id'])['estado'] == 'ativo'

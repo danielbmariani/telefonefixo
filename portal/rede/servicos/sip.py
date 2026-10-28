@@ -71,14 +71,14 @@ def observar(conn, cfg, ref=None):
                     _caso(conn, tel, cr, 'ip_divergente_sip', 'baixa',
                           f'IP do registro SIP ({c["ip"]}) difere do IP do provisionamento ({tel["ultimo_prov_ip"]}).',
                           {'ip_sip': c['ip'], 'ip_prov': tel['ultimo_prov_ip']}, unico=True)
-            elif tel['estado'] == 'registrado' and historico.primeira_chamada_registrada(conn, cr['id_rede']):
+            elif tel['estado'] == 'registrado' and historico.primeira_chamada_registrada(conn, cr['id_rede'], tel['registrado_em']):
                 estados.transicionar(conn, tel['id'], 'primeira_chamada', 'telefone', cr['id_rede'])
                 res['ativos'] += 1
             elif tel['ultimo_sip_ip'] and c['ip'] and tel['ultimo_sip_ip'] != c['ip']:
                 auditoria.registrar(conn, 'sip_registrou_de_ip_novo', 'telefone', cr['id_rede'], 'telefone', tel['id'],
                                     detalhes={'de': tel['ultimo_sip_ip'], 'para': c['ip']})
         else:
-            if tel['estado'] == 'registrado' and not historico.primeira_chamada_registrada(conn, cr['id_rede']):
+            if tel['estado'] == 'registrado' and not historico.primeira_chamada_registrada(conn, cr['id_rede'], tel['registrado_em']):
                 pass
             if tel['estado'] in ('registrado', 'ativo') and tel['ultimo_sip_em'] \
                     and utc(tel['ultimo_sip_em']) < ref - timedelta(hours=1) \
@@ -86,7 +86,7 @@ def observar(conn, cfg, ref=None):
                 auditoria.registrar(conn, 'sip_perdeu_registro', 'sistema', 'sip_observer', 'telefone', tel['id'],
                                     detalhes={'ultimo_sip_em': str(tel['ultimo_sip_em'])})
             # primeira chamada tambem conta sem contato ativo (telefone pode ter saido do ar depois)
-            if tel['estado'] == 'registrado' and historico.primeira_chamada_registrada(conn, cr['id_rede']):
+            if tel['estado'] == 'registrado' and historico.primeira_chamada_registrada(conn, cr['id_rede'], tel['registrado_em']):
                 estados.transicionar(conn, tel['id'], 'primeira_chamada', 'telefone', cr['id_rede'])
                 res['ativos'] += 1
 

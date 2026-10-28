@@ -72,14 +72,19 @@ def tempo_por_contato(conn, id_rede):
     return res
 
 
-def primeira_chamada_registrada(conn, id_rede):
+def primeira_chamada_registrada(conn, id_rede, desde=None):
     """Para o observador: ha alguma chamada ALLOWED feita por este ID (inclusive 100), ou recebida e
-    atendida por ele? Atender tambem prova que o telefone funciona (bancada 26/10/2026: o aparelho 2 so
-    recebeu a primeira ligacao)."""
+    atendida por ele, a partir de `desde` (o registro SIP deste aparelho)? Sem `desde`, qualquer uma.
+    Atender tambem prova que o telefone funciona (bancada 26/10/2026: o aparelho 2 so recebeu a
+    primeira ligacao). Com `desde`, um telefone reativado nao vira "ativo" por ligacoes antigas (B12)."""
     fez = and_(db.call_logs.c.caller_ext == id_rede, db.call_logs.c.status == 'ALLOWED')
     atendeu = and_(db.call_logs.c.callee_ext == id_rede, db.call_logs.c.status == 'ALLOWED',
                    db.call_logs.c.duration_seconds > 0)
-    return conn.execute(select(db.call_logs.c.id).where(or_(fez, atendeu)).limit(1)).first() is not None
+    cond = or_(fez, atendeu)
+    if desde:
+        from ..tempo import texto_sp
+        cond = and_(cond, db.call_logs.c.timestamp >= texto_sp(desde, '%Y-%m-%d %H:%M:%S'))
+    return conn.execute(select(db.call_logs.c.id).where(cond).limit(1)).first() is not None
 
 
 PERDIDAS = ('NOANSWER', 'BUSY', 'CANCEL')
