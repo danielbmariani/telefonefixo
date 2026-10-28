@@ -1,42 +1,15 @@
 <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Cartão de {{ crianca.apelido }}</title>
-<link rel="icon" href="{{ url_for('static', filename='marca/favicon.svg') }}" type="image/svg+xml">
-<style>
-{# Cartao impresso que fica ao lado do telefone (manual da marca, componente Cartao): cores fixas, papel branco,
-   faixa azul, tinta preta; legivel em impressora domestica em preto e branco. #}
-@font-face{font-family:"Archivo";src:url("{{ url_for('static', filename='fontes/archivo.woff2') }}") format("woff2");font-weight:100 900;font-stretch:62% 125%;font-display:swap}
-@font-face{font-family:"IBM Plex Mono";src:url("{{ url_for('static', filename='fontes/ibm-plex-mono-500.woff2') }}") format("woff2");font-weight:500;font-display:swap}
-@page{margin:1.5cm}
-body{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;color:#1A1C24;background:#fff;margin:0;padding:16px;-webkit-font-smoothing:antialiased}
-.cartao{max-width:420px;margin:0 auto;background:#fff;border:2px solid #1A1C24;border-radius:4px;overflow:hidden}
-.topo{background:#1D4F91;color:#fff;border-bottom:4px solid #E8761E;padding:10px 14px;display:flex;align-items:center;gap:10px}
-.topo img{width:32px;height:32px}
-.topo span{font-weight:800;font-stretch:125%;letter-spacing:.05em;font-size:14px;text-transform:uppercase}
-.meu{padding:14px 14px 12px;border-bottom:2px solid #1A1C24}
-h1{font-size:22px;margin:0 0 2px;font-weight:700}
-.rotulo{font-weight:700;font-stretch:112%;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#4A5160}
-.id{font-family:"IBM Plex Mono","Courier New",monospace;font-weight:500;font-size:clamp(30px,9vw,40px);letter-spacing:.12em;margin:6px 0 0;font-variant-numeric:tabular-nums}
-table{width:100%;border-collapse:collapse;table-layout:fixed}
-th{text-align:left;font-weight:700;font-stretch:112%;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#4A5160;padding:8px 14px 6px;border-bottom:1px solid #C4CBD4}
-td{padding:9px 14px;border-bottom:1px solid #C4CBD4;font-size:18px;font-weight:600;word-break:break-word}
-tr:nth-child(even) td{background:#F1F3F5}
-tbody tr:last-child td{border-bottom:0}
-td.ext{font-family:"IBM Plex Mono","Courier New",monospace;font-weight:500;font-size:20px;letter-spacing:.06em;width:120px;text-align:right}
-.tip{max-width:420px;margin:16px auto 0;padding:12px 14px;background:#F1F3F5;border-radius:4px;font-size:15px;color:#1A1C24}
-.tip strong{font-family:"IBM Plex Mono",monospace}
-.no-print{text-align:center;margin-top:20px}
-.no-print button{font:inherit;font-weight:700;font-size:17px;min-height:48px;padding:10px 24px;background:#1D4F91;color:#fff;border:2px solid #1D4F91;border-radius:4px;cursor:pointer}
-.no-print button:focus-visible{outline:3px solid #C2561A;outline-offset:2px}
-@media print{.no-print{display:none}.cartao{break-inside:avoid}}
-</style></head>
+<style>@page{margin:1.5cm}body{font-family:Arial,Helvetica,sans-serif;color:#222;max-width:600px;margin:0 auto;padding:16px}table{table-layout:fixed}td{word-break:break-word}
+h1{font-size:22px;margin-bottom:4px}.id{font-size:clamp(28px,9vw,40px);font-weight:bold;font-family:'Courier New',monospace;letter-spacing:4px;margin:10px 0 20px}
+table{width:100%;border-collapse:collapse}th{text-align:left;font-size:12px;color:#888;text-transform:uppercase;padding:6px 12px;border-bottom:2px solid #ddd}
+td{padding:10px 12px;border-bottom:1px solid #eee;font-size:16px}td.ext{font-size:20px;font-weight:bold;font-family:'Courier New',monospace;width:140px}
+.tip{margin-top:24px;padding:12px;background:#f8f8f8;border-radius:6px;font-size:13px;color:#555}@media print{.no-print{display:none}}</style></head>
 <body>
-<div class="cartao">
-  <div class="topo"><img src="{{ url_for('static', filename='marca/simbolo-negativo.svg') }}" alt=""><span>{{ nome_rede }}</span></div>
-  <div class="meu"><h1>{{ crianca.apelido }}</h1><div class="rotulo">Meu número:</div><div class="id">{{ crianca.id_rede|idfmt }}</div></div>
-  <table><thead><tr><th>Amigo</th><th style="text-align:right">Discar</th></tr></thead><tbody>
-  {% for a in amigos %}<tr><td>{{ a.apelido }}</td><td class="ext">{{ a.id_rede }}#</td></tr>{% endfor %}
-  {% for nome, disca in celulares %}<tr><td>{{ nome }} (celular)</td><td class="ext">{{ disca }}#</td></tr>{% endfor %}
-  <tr><td>Hora certa</td><td class="ext">100#</td></tr></tbody></table>
-</div>
+<h1>{{ crianca.apelido }}</h1><div>Meu número:</div><div class="id">{{ crianca.id_rede|idfmt }}</div>
+<table><thead><tr><th>Amigo</th><th>Discar</th></tr></thead><tbody>
+{% for a in amigos %}<tr><td>{{ a.apelido }}</td><td class="ext">{{ a.id_rede }}#</td></tr>{% endfor %}
+{% for nome, disca in celulares %}<tr><td>{{ nome }} (celular)</td><td class="ext">{{ disca }}#</td></tr>{% endfor %}
+<tr><td>Hora certa</td><td class="ext">100#</td></tr></tbody></table>
 <div class="tip">Para ligar: tire do gancho, disque o número e aperte <strong>#</strong>. Para abrir uma chamada em grupo, disque <strong>0</strong> antes do número.</div>
-<p class="no-print"><button onclick="window.print()">Imprimir</button></p>
+<p class="no-print" style="margin-top:20px;text-align:center"><button onclick="window.print()" style="padding:10px 24px;font-size:16px">Imprimir</button></p>
 </body></html>

@@ -29,12 +29,12 @@ INIT = r"""
     let el = document.getElementById('legenda-video');
     if (!el) { el = document.createElement('div'); el.id = 'legenda-video'; document.documentElement.appendChild(el);
       const s = document.createElement('style'); s.textContent = `
-        #legenda-video{position:fixed;left:12px;right:12px;bottom:14px;z-index:99999;background:#1D4F91;color:#fff;border-radius:4px;
-          padding:16px 18px;font:700 20px/1.3 Archivo,system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.35);
-          border-bottom:4px solid #E8761E;opacity:0;transition:opacity .35s}
+        #legenda-video{position:fixed;left:12px;right:12px;bottom:14px;z-index:99999;background:#1f2328;color:#fff;border-radius:16px;
+          padding:16px 18px;font:700 20px/1.3 'Atkinson Hyperlegible',system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.35);
+          border-left:8px solid #e8542c;opacity:0;transition:opacity .35s}
         #legenda-video.on{opacity:1}
-        .toque{position:fixed;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:rgba(232,118,30,.55);
-          border:3px solid #E8761E;z-index:99998;animation:toque .6s ease-out forwards;pointer-events:none}
+        .toque{position:fixed;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:rgba(232,84,44,.55);
+          border:3px solid #e8542c;z-index:99998;animation:toque .6s ease-out forwards;pointer-events:none}
         @keyframes toque{from{transform:scale(.4);opacity:1}to{transform:scale(1.6);opacity:0}}`; document.documentElement.appendChild(s); }
     el.textContent = t; el.className = t ? 'on' : ''; if (document.body) document.body.style.paddingBottom = '130px';
   }
@@ -91,22 +91,18 @@ async def main():
             await pg.evaluate('([x,y]) => window.__toque(x,y)', [box['x'] + 24, box['y'] + box['height'] / 2]); await pg.wait_for_timeout(450)
             await loc.click()
             await pg.locator(sel).first.type(texto, delay=55); await pg.wait_for_timeout(500)
-        async def cartao(titulo, sub, espera, letreiro=True):
-            estilo_h1 = 'font-weight:800;font-stretch:125%;text-transform:uppercase;letter-spacing:.03em;font-size:40px' if letreiro else 'font-weight:800;font-size:34px;letter-spacing:-.01em'
-            # cartao de abertura/fechamento no padrao da faixa: fundo azul-estatal, simbolo negativo, fio laranja embaixo
-            # set_content mantem a origem da pagina atual: indo antes a uma pagina do site, fonte e simbolo carregam do servidor local
-            await pg.goto(U + '/entrar'); await pg.evaluate("window.__legenda('')"); await pg.set_content(f"""<html><head><style>@font-face{{font-family:Archivo;src:url({U}/static/fontes/archivo.woff2) format('woff2');font-weight:100 900;font-stretch:62% 125%}}</style></head>
-              <body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#1D4F91;color:#fff;font-family:Archivo,system-ui,sans-serif;text-align:center;padding:32px;border-bottom:8px solid #E8761E;box-sizing:border-box">
-              <div style="max-width:100%"><svg viewBox="0 0 200 200" style="width:120px;height:120px;margin:0 auto 28px;display:block"><g transform="translate(100 100)"><circle r="96" fill="#FFFFFF"/><g fill="#1D4F91"><circle cx="16" cy="59.9" r="9"/><circle cx="-16" cy="59.9" r="9"/><circle cx="-43.8" cy="43.8" r="9"/><circle cx="-59.9" cy="16" r="9"/><circle cx="-59.9" cy="-16" r="9"/><circle cx="-43.8" cy="-43.8" r="9"/><circle cx="-16" cy="-59.9" r="9"/><circle cx="16" cy="-59.9" r="9"/><circle cx="43.8" cy="-43.8" r="9"/><circle cx="59.9" cy="-16" r="9"/><circle r="24"/></g><path d="M60 42 L76 53" stroke="#1D4F91" stroke-width="9" stroke-linecap="round" fill="none"/></g></svg>
-              <h1 style="{estilo_h1};line-height:1.1;margin:0 0 18px;overflow-wrap:anywhere">{titulo}</h1><p style="font-size:22px;color:rgba(255,255,255,.88);margin:0">{sub}</p></div></body></html>""")
-            await pg.evaluate("document.fonts.ready")
+        async def cartao(titulo, sub, espera):
+            await pg.goto('about:blank'); await pg.set_content(f"""<html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;font-family:'Atkinson Hyperlegible',system-ui,sans-serif;text-align:center;padding:32px">
+              <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+              <div><div style="width:120px;height:120px;border-radius:50%;background:#e8542c;margin:0 auto 28px;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 64 64" width="70"><path d="M22 17c2-2 5-1 6 1l3 6c1 2 0 4-2 5l-2 1c2 5 6 9 11 11l1-2c1-2 3-3 5-2l6 3c2 1 3 4 1 6l-3 3c-2 2-5 2-8 1-12-4-21-13-25-25-1-3-1-6 1-8z" fill="#fff"/></svg></div>
+              <h1 style="font-size:40px;line-height:1.1;margin:0 0 18px;color:#1f2328">{titulo}</h1><p style="font-size:22px;color:#3b4149;margin:0">{sub}</p></div></body></html>""")
             await pg.wait_for_timeout(int(espera * 1000))
 
         await cartao('Telefone Fixo', 'Como funciona, do zero ao primeiro amigo.<br><br>Dois minutos.', 3.5)
         # 1. landing
         await pg.goto(U + '/'); await pg.evaluate("localStorage.setItem('legenda','')"); await pg.wait_for_timeout(800)
         await legenda('1. A família entra em telefonefixo.org e cria a conta.', 3)
-        await toque('.heroi a:has-text("Começar")')
+        await toque('.topo-acoes a:has-text("Criar conta")')
         # 2. cadastro
         await legenda('Nome, e-mail e senha. Só isso.', 1.5)
         await digitar('#nome', 'Mãe do José'); await digitar('#email', 'mae.do.jose@exemplo.org')
@@ -168,7 +164,7 @@ async def main():
         await pg.locator('.mensagem-pedido').first.scroll_into_view_if_needed(); await pg.wait_for_timeout(800)
         await toque('form:has(input[name=acao][value=aceitar]) button', 1.5)
         await legenda('Pronto. José e Beto podem se ligar. Ninguém de fora consegue.', 3.5)
-        await cartao('telefonefixo.org', 'Sem tela, sem aplicativo.<br>Só quem a família autoriza.<br><br>Projeto sem fins lucrativos, de código aberto.', 4, letreiro=False)
+        await cartao('telefonefixo.org', 'Sem tela, sem aplicativo.<br>Só quem a família autoriza.<br><br>Projeto sem fins lucrativos, de código aberto.', 4)
         estado['ativo'] = False; await tarefa
         await ctx.close(); await b.close()
     srv.shutdown()

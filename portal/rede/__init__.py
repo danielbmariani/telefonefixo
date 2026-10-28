@@ -20,8 +20,8 @@ from .email_envio import criar_mailer
 # Scripts e estilos inline existem nos templates (polling, feedback de envio, horarios); por isso 'unsafe-inline'.
 # Nenhum dado de usuario entra em <script> sem json.dumps, e o Jinja escapa o resto.
 CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-       "font-src 'self' https://cdn.jsdelivr.net; img-src 'self' data:; "
+       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+       "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:; "
        "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'")
 
 

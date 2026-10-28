@@ -96,7 +96,7 @@ function addPattern(startH, startM, endH, endM, selectedDays) {
     dayChips += `
       <input type="checkbox" class="btn-check" id="day_${idx}_${d}"
              name="days_${idx}" value="${d}" ${active ? 'checked' : ''} autocomplete="off">
-      <label class="btn btn-sm ${active ? 'btn-primary' : 'btn-outline-primary'}"
+      <label class="btn btn-sm ${active ? 'btn-primary' : 'btn-outline-primary'} rounded-pill"
              for="day_${idx}_${d}" onclick="setTimeout(()=>toggleChipStyle(this), 10)">${DAY_NAMES[d]}</label>`;
   }
 

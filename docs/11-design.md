@@ -118,3 +118,14 @@ do vídeo). Corrigido no mesmo dia: nome da marca invadia os botões no celular;
 a 48 px invadia a coluna ao lado (agora até 36 px); linha do celular cadastrado quebrava no meio do número;
 hover preso do mouse do Playwright fazia um botão de contorno parecer preenchido (artefato de captura, não
 do site: o script agora afasta o mouse antes de cada captura). Sem estouro horizontal em nenhuma tela.
+
+## Revisão de 28/10/2026 (tarde): identidade desfeita
+
+O Daniel olhou o site com a identidade aplicada e não gostou: "essa tentativa de estatal não funcionou".
+Uma segunda rodada (disco grande, carimbo, fio espiral, fichas, páginas amarelas) pareceu "muito poluída e
+confusa"; uma terceira, só com contornos escuros nos botões, agradou nos botões mas não salvou o conjunto.
+Decisão: voltar ao design de 27/10 à noite (Atkinson Hyperlegible, fundo branco, coral como única ação),
+exatamente como estava depois das correções de texto da Carol. O pacote de identidade fica guardado em
+`~/Desktop/telefone-fixo-identidade.zip` e a seção acima registra o que foi tentado. Lição registrada:
+aplicar identidade não pode mexer em texto nem na ordem dos blocos, e mudança de visual inteira merece uma
+prova numa página só antes de ir para o site todo.

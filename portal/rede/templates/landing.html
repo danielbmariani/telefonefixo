@@ -9,13 +9,11 @@
     <div class="row">
       <div class="col-lg-9">
         <h1 class="nome-projeto" id="titulo-principal">{{ nome_rede }}</h1>
-        <p class="sub-nome rotulo-tf">Projeto sem fins lucrativos, com código aberto, sem mensalidade.</p>
-        <p class="pergunta">Quer adiar o celular sem isolar suas crianças? Você precisa… de um <mark class="marca-texto">telefone fixo</mark>.</p>
+        <p class="sub-nome">Projeto sem fins lucrativos, com código aberto, sem mensalidade.</p>
+        <p class="pergunta mt-4">Quer adiar o celular sem isolar suas crianças? Você precisa… de um telefone fixo.</p>
         <p class="chamada">Sem tela, sem aplicativo, sem acesso externo. A criança disca o número do amigo e conversa.
           Quem pode ligar para quem, e em que horário, é decidido pelas famílias.</p>
-        <div class="acoes">
-          <a class="btn btn-outline-secondary" href="#como-funciona">Como funciona</a>
-        </div>
+        <a class="btn btn-outline-secondary mt-2" href="#como-funciona">Como funciona</a>
       </div>
     </div>
   </div>
@@ -23,12 +21,12 @@
 
 <section class="secao secao-areia">
   <div class="container">
-    <div class="row g-4 gx-lg-5">
-      <div class="col-md-4"><div class="principio">
+    <div class="row g-3">
+      <div class="col-md-4"><div class="vantagem"><div class="icone icone-fio"><i class="bi bi-telephone"></i></div>
         <h3>Só voz</h3><p>Sem tela, sem jogo, sem rede social. O telefone faz e recebe ligações.</p></div></div>
-      <div class="col-md-4"><div class="principio">
+      <div class="col-md-4"><div class="vantagem"><div class="icone icone-mar"><i class="bi bi-people"></i></div>
         <h3>Só quem a família aprovou</h3><p>Cada amizade precisa do sim das famílias. Ninguém de fora consegue ligar para a criança, nem ela para fora.</p></div></div>
-      <div class="col-md-4"><div class="principio">
+      <div class="col-md-4"><div class="vantagem"><div class="icone icone-sol"><i class="bi bi-clock"></i></div>
         <h3>No horário da casa</h3><p>Você define quando o telefone funciona. Fora do horário, uma mensagem avisa.</p></div></div>
     </div>
   </div>
@@ -36,16 +34,10 @@
 
 <section class="secao" id="como-funciona">
   <div class="container">
-    <div class="row g-4 gx-lg-5">
-      <div class="col-lg-4">
-        <div class="secao-titulo">
-          <h2 class="letreiro">Como funciona</h2>
-          <span class="fio-curto" aria-hidden="true"></span>
-          <p class="nota">Leva uns 5 minutos. Precisa do e-mail do responsável.</p>
-        </div>
-      </div>
+    <div class="row">
       <div class="col-lg-8">
-        <ol class="como">
+        <h2>Como funciona</h2>
+        <ol class="como mt-3">
           <li><div><strong>Compre o telefone</strong><span>Um telefone IP Grandstream, modelo GRP2601 (cabo de rede) ou GRP2602W (Wi-Fi), à venda em lojas comuns. As famílias fazem a compra diretamente, no site ou na loja da sua escolha; não vendemos nada.</span></div></li>
           <li><div><strong>Crie a conta e escolha o apelido da criança</strong><span>A conta é do responsável. A criança ganha um apelido e um número de 6 dígitos, o ID dela na rede.</span></div></li>
           <li><div><strong>Digite os dois códigos da etiqueta</strong><span>Número de série (S/N) e MAC, impressos na etiqueta embaixo do aparelho. O site prepara a configuração e avisa quando o sistema está pronto.</span></div></li>
@@ -57,9 +49,9 @@
   </div>
 </section>
 
-<section class="secao secao-azul">
+<section class="secao secao-tinta">
   <div class="container">
-    <div class="row g-4 gx-lg-5 align-items-center">
+    <div class="row g-4 align-items-center">
       <div class="col-lg-7">
         <h2>Sem fins lucrativos, com código aberto</h2>
         <p class="mt-3 mb-0">Todo o código é aberto. Não há plano pago, anúncio nem venda de dados.
@@ -67,8 +59,7 @@
       </div>
       <div class="col-lg-4 offset-lg-1">
         <a class="btn btn-claro btn-lg w-100" href="{{ url_for('auth.cadastrar') }}">Começar</a>
-        <p class="text-muted small mt-2 mb-3 text-center">Leva uns 5 minutos. Precisa do e-mail do responsável.</p>
-        <p class="text-center mb-0"><a href="https://github.com/danielbmariani/telefonefixo" rel="noopener">Ver o código</a></p>
+        <p class="text-muted small mt-2 mb-0 text-center">Leva uns 5 minutos. Precisa do e-mail do responsável.</p>
       </div>
     </div>
   </div>
@@ -76,23 +67,16 @@
 
 <section class="secao">
   <div class="container">
-    <div class="row g-4 gx-lg-5">
-      <div class="col-lg-4">
-        <div class="secao-titulo">
-          <h2 class="letreiro">Perguntas comuns</h2>
-          <span class="fio-curto" aria-hidden="true"></span>
-        </div>
+    <div class="row"><div class="col-lg-8">
+      <h2>Perguntas comuns</h2>
+      <div class="faq mt-3">
+        <details><summary>Precisa de internet?</summary><p>Sim. O GRP2601 liga no roteador por cabo de rede; o GRP2602W usa o Wi-Fi da casa. As ligações passam pela internet, sem custo por minuto.</p></details>
+        <details><summary>Dá para ligar para celular ou telefone comum?</summary><p>Não. A rede é fechada: só telefones da rede ligam entre si. É isso que garante que não entra ninguém de fora.</p></details>
+        <details><summary>Quanto custa?</summary><p>Só o aparelho, comprado por você em qualquer loja. A rede não cobra nada.</p></details>
+        <details><summary>A criança usa o site?</summary><p>Não. O site é do responsável. A criança usa só o telefone e o cartão com os números.</p></details>
+        <details><summary>E se mudarmos de ideia?</summary><p>Você exclui a conta pelo site. O telefone deixa de funcionar na rede e os dados são apagados, como descrito na política de privacidade.</p></details>
       </div>
-      <div class="col-lg-8">
-        <div class="faq">
-          <details><summary>Precisa de internet?</summary><p>Sim. O GRP2601 liga no roteador por cabo de rede; o GRP2602W usa o Wi-Fi da casa. As ligações passam pela internet, sem custo por minuto.</p></details>
-          <details><summary>Dá para ligar para celular ou telefone comum?</summary><p>Não. A rede é fechada: só telefones da rede ligam entre si. É isso que garante que não entra ninguém de fora.</p></details>
-          <details><summary>Quanto custa?</summary><p>Só o aparelho, comprado por você em qualquer loja. A rede não cobra nada.</p></details>
-          <details><summary>A criança usa o site?</summary><p>Não. O site é do responsável. A criança usa só o telefone e o cartão com os números.</p></details>
-          <details><summary>E se mudarmos de ideia?</summary><p>Você exclui a conta pelo site. O telefone deixa de funcionar na rede e os dados são apagados, como descrito na política de privacidade.</p></details>
-        </div>
-      </div>
-    </div>
+    </div></div>
   </div>
 </section>
 {% endblock %}

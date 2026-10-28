@@ -1,8 +1,0 @@
-{# ID da crianca em casas separadas (manual da marca, componente IdCrianca), agrupado 2+2+2 como
-   em todo o resto do site e no cartao. Uso: {% from "_id.html" import casas %}{{ casas(id_rede, 'ID de jose') }} #}
-{% macro casas(id_rede, rotulo, pequeno=False) -%}
-<span class="tf-id{% if pequeno %} tf-id--pequeno{% endif %}" role="img" aria-label="{{ rotulo }}: {{ id_rede|idfmt }}">
-  <span class="tf-id__rotulo" aria-hidden="true">{{ rotulo }}</span>
-  <span class="tf-id__casas" aria-hidden="true">{% for d in id_rede %}<span class="tf-id__casa">{{ d }}</span>{% endfor %}</span>
-</span>
-{%- endmacro %}
