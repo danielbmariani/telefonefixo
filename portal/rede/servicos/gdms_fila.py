@@ -68,6 +68,15 @@ def reenviar_config(conn, telefone_id):
                                              proxima_em=agora(), criado_em=agora()))
 
 
+def zerar(conn, telefone_id):
+    """Telefone removido da rede (desativado): manda a configuracao de fabrica ao aparelho pelo GDMS,
+    pede o reset de fabrica e, numa passada seguinte, tira o MAC da organizacao. Tudo automatico;
+    a tarefa de operador 'remover_gdms' so nasce se o device/delete falhar varias vezes."""
+    cancelar(conn, telefone_id)
+    conn.execute(insert(db.gdms_fila).values(telefone_id=telefone_id, estado='pendente', etapa='zerar', tentativas=0,
+                                             proxima_em=agora(), criado_em=agora()))
+
+
 def cancelar(conn, telefone_id):
     conn.execute(update(db.gdms_fila).where(and_(db.gdms_fila.c.telefone_id == telefone_id,
                                                  db.gdms_fila.c.estado == 'pendente')).values(estado='cancelada', atualizado_em=agora()))
@@ -143,6 +152,9 @@ def processar(conn, cfg, http=None, ref=None, cliente=None):
                          .values(estado='ok' if ok else 'erro', ultimo_ret_code=rc, ultima_msg=(msg or '')[:300], atualizado_em=ref))
             auditoria.registrar(conn, 'gdms_teclas_enviadas' if ok else 'gdms_teclas_falhou', 'sistema', 'gdms_fila',
                                 'telefone', tel['id'], detalhes={'ret_code': rc, 'msg': (msg or '')[:120]})
+            continue
+        if item['etapa'] in ('zerar', 'remover_gdms'):
+            _zerar_ou_remover(conn, item, tel, cfg, http, ref, cliente)
             continue
         if item['etapa'] == 'config':
             # Retentativa so do envio da configuracao (E5); o device/add ja passou
@@ -231,6 +243,73 @@ def processar(conn, cfg, http=None, ref=None, cliente=None):
                 auditoria.registrar(conn, 'gdms_cadastro_retentativa', 'sistema', 'gdms_fila', 'telefone', tel['id'],
                                     detalhes={'tentativa': tentativa, 'proxima_em_min': espera, 'msg': msg[:200]})
     return n
+
+
+ESPERA_REMOVER_MIN = 3   # entre zerar o aparelho e tirar do GDMS: o reset precisa sair com o MAC ainda na org
+
+
+def _zerar_ou_remover(conn, item, tel, cfg, http, ref, cliente):
+    """etapa 'zerar': config de fabrica (device/config/xml) + reset (task/add tipo 2), e agenda 'remover_gdms'.
+    etapa 'remover_gdms': device/delete, com backoff; esgotado, abre tarefa de operador."""
+    def fechar(estado, rc=None, msg='', **mais):
+        conn.execute(update(db.gdms_fila).where(db.gdms_fila.c.id == item['id'])
+                     .values(estado=estado, ultimo_ret_code=rc, ultima_msg=(msg or '')[:300], atualizado_em=ref, **mais))
+    if not tel or tel['estado'] != 'desativado':
+        fechar('cancelada', msg='telefone nao esta desativado'); return
+    if cfg.GDMS_MODO == 'desligado':
+        fechar('cancelada', msg='GDMS desligado'); return
+    if cfg.GDMS_MODO == 'simulado':
+        fechar('ok', rc=0, msg='simulado')
+        auditoria.registrar(conn, 'gdms_removido', 'sistema', 'gdms_fila', 'telefone', tel['id'], detalhes={'simulado': True})
+        return
+    try:
+        cli = cliente or criar_cliente(cfg, conn, tel['id'], http=http)
+        if not cli.token_valido():
+            cli.obter_token(cfg.GDMS_USERNAME, cfg.GDMS_PASSWORD)
+    except Exception as e:  # noqa: BLE001
+        cli = None
+        fechar('pendente', msg=f'token: {e}', proxima_em=ref + timedelta(minutes=BACKOFF_MIN[0]), tentativas=(item['tentativas'] or 0) + 1)
+    if not cli:
+        return
+    if item['etapa'] == 'zerar':
+        det = {}
+        try:
+            resp = cli.configurar_xml(tel['mac'], svc_tel.gerar_xml_zerado(conn, tel), cfg.GDMS_ORG_ID, aplicar=True)
+            ok, rc, msg = gdms_client.resultado_simples(resp)
+            det['config_fabrica'] = {'ok': ok, 'ret_code': rc, 'msg': (msg or '')[:120]}
+        except Exception as e:  # noqa: BLE001
+            det['config_fabrica'] = {'ok': False, 'msg': f'{type(e).__name__}: {e}'[:120]}
+        try:
+            resp = cli.criar_tarefa([tel['mac']], 2, cfg.GDMS_ORG_ID)
+            ok, rc, msg = gdms_client.resultado_simples(resp)
+            det['reset_fabrica'] = {'ok': ok, 'ret_code': rc, 'msg': (msg or '')[:120]}
+        except Exception as e:  # noqa: BLE001
+            det['reset_fabrica'] = {'ok': False, 'msg': f'{type(e).__name__}: {e}'[:120]}
+        auditoria.registrar(conn, 'telefone_zerado_pedido', 'sistema', 'gdms_fila', 'telefone', tel['id'], detalhes=det)
+        fechar('pendente', rc=0, msg=f"config {det['config_fabrica'].get('ok')} reset {det['reset_fabrica'].get('ok')}",
+               etapa='remover_gdms', tentativas=0, proxima_em=ref + timedelta(minutes=ESPERA_REMOVER_MIN))
+        return
+    tentativa = (item['tentativas'] or 0) + 1
+    try:
+        resp = cli.remover_aparelhos([tel['mac']], cfg.GDMS_ORG_ID)
+        ok, rc, msg = gdms_client.resultado_simples(resp)
+    except Exception as e:  # noqa: BLE001
+        ok, rc, msg = False, None, f'excecao: {type(e).__name__}: {e}'[:300]
+    if ok:
+        fechar('ok', rc=rc, msg=msg)
+        auditoria.registrar(conn, 'gdms_removido', 'sistema', 'gdms_fila', 'telefone', tel['id'], detalhes={'ret_code': rc})
+        return
+    if tentativa >= cfg.GDMS_MAX_TENTATIVAS:
+        fechar('erro', rc=rc, msg=msg, tentativas=tentativa)
+        tid = conn.execute(insert(db.tarefas).values(
+            tipo='remover_gdms', telefone_id=tel['id'], estado='aberta', criado_em=agora(),
+            descricao=f'Remover MAC {gdms_client.mac_para_gdms(tel["mac"])} da organização no GDMS: device/delete falhou '
+                      f'{tentativa} vezes (retCode={rc} {(msg or "")[:100]})')).inserted_primary_key[0]
+        auditoria.registrar(conn, 'tarefa_operador_criada', 'sistema', 'gdms_fila', 'telefone', tel['id'],
+                            detalhes={'tarefa_id': tid, 'tipo': 'remover_gdms'})
+        return
+    espera = BACKOFF_MIN[min(tentativa - 1, len(BACKOFF_MIN) - 1)]
+    fechar('pendente', rc=rc, msg=msg, tentativas=tentativa, proxima_em=ref + timedelta(minutes=espera))
 
 
 def _ok(conn, item, tel, cfg, ref, simulado=False, cliente=None):

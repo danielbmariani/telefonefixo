@@ -185,6 +185,23 @@ def pvalues_teclas(amigos, modelo='grp'):
     return pv
 
 
+def pvalues_fabrica(modelo='grp'):
+    """Configuracao "em branco" enviada ao aparelho quando a familia o remove da rede (28/10/2026):
+    desfaz o que o portal mudou, com os valores de fabrica da referencia (bancada/referencia-pvalues):
+    conta SIP desligada e vazia, servidor de configuracao de volta ao da Grandstream (P237, P212, P194),
+    senhas padrao, menu e reset de fabrica destravados, web em HTTP+HTTPS, teclas limpas. Depois disso
+    o aparelho fica como novo para outra familia cadastrar; o reset de fabrica pela API (task/add tipo 2)
+    e tentado em seguida e, se funcionar, apaga tambem o que nao listamos aqui."""
+    pv = {'P271': '0', 'P47': '', 'P35': '', 'P36': '', 'P34': '', 'P3': '',
+          'P237': 'fm.grandstream.com/gs', 'P194': '0', 'P2': 'admin', 'P1650': '3', 'P276': '0'}
+    if modelo == 'ht':
+        pv['P6767'] = '2'
+    else:
+        pv.update({'P212': '2', 'P238': '0', 'P145': '1', 'P196': '123', 'P1357': '0', 'P22373': '0', 'P8469': '0'})
+        pv.update(pvalues_teclas([], 'grp'))
+    return pv
+
+
 def gerar_xml(mac, pvalues, versao=1, incluir_mac=True):
     """Monta o XML. incluir_mac=False gera um arquivo generico (aceito no
     upload manual por qualquer aparelho)."""

@@ -213,6 +213,15 @@ def gerar_xml(conn, telefone, cfg):
     return grandstream_xml.gerar_xml(telefone['mac'], pv, versao=telefone['xml_versao'])
 
 
+def gerar_xml_zerado(conn, telefone):
+    """Configuracao de fabrica para o aparelho removido (gdms_fila etapa 'zerar'). Versao nova, para o
+    aparelho aplicar por cima da atual."""
+    modelo_xml = 'ht' if telefone['modelo'] == 'ht' else 'grp'
+    versao = (telefone['xml_versao'] or 1) + 1
+    conn.execute(update(db.telefones).where(db.telefones.c.id == telefone['id']).values(xml_versao=versao))
+    return grandstream_xml.gerar_xml(telefone['mac'], grandstream_xml.pvalues_fabrica(modelo_xml), versao=versao)
+
+
 def gerar_xml_gdms(conn, telefone, cfg):
     """E5: XML que o GDMS entrega ao aparelho (device/config/xml).
     GDMS_XML_CONTEUDO='ponteiro': so o caminho do nosso servidor (P237 e companhia) e as travas;
@@ -317,8 +326,8 @@ def desativar(conn, telefone_id, ator_tipo, ator_id, motivo, cfg, evento='desati
     gdms_fila.cancelar(conn, telefone_id)
     estados.transicionar(conn, telefone_id, evento, ator_tipo, ator_id, detalhes={'motivo': motivo})
     if t['gdms_cadastrado_em'] and cfg.GDMS_MODO != 'desligado':
-        conn.execute(insert(db.tarefas).values(tipo='remover_gdms', telefone_id=telefone_id, estado='aberta', criado_em=agora(),
-                                               descricao=f'Remover MAC {t["mac"]} da organização no GDMS ({motivo})'))
+        # zera o aparelho e tira do GDMS pela fila (automatico; tarefa de operador so se a API falhar)
+        gdms_fila.zerar(conn, telefone_id)
 
 
 def reativar(conn, telefone, ator_tipo, ator_id, cfg):

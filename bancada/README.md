@@ -21,7 +21,7 @@ evidência (trecho de log colado), decisão que isso fecha.
 | B09 | Aparelho aplicou: registrou no Asterisk; P237 gravado; menu travado | registrou; P237 provado (buscou no nosso servidor); travas P1357/P22373/P1650/P276/P8469 enviadas, menu a confirmar | B08-B09-B18-primeiro-boot.md |
 | B10 | Religar: rebusca? intervalo de recheck (P193) | feito (26/10): volta e registra sozinho | B10-B11-religar-e-reset.md |
 | B11 | Reset de fábrica mantendo no GDMS → volta sozinho? | **sim** (26/10): ~2 min, caso aberto para a ONG; reset por API (`task/add`) não funcionou | B10-B11-religar-e-reset.md |
-| B12 | Remover do GDMS + reset → nada chega (fluxo "reativar") | pendente | |
+| B12 | "Remover telefone" no site: config de fábrica pelo GDMS, reset pela API, MAC fora da org; depois outra família cadastra o mesmo aparelho (telefone de segunda mão, Rita) | em andamento (28/10, aparelho do Daniel) | |
 | B13 | `device/add` do mesmo MAC em outra conta → retCode do conflito | pendente | |
 | B14 | `device/add` com serial errado → retCode | código oficial 30010 (tabela da referência); confirmar com GRP2601 | B06-api-referencia.md |
 | B15 | GRP2601 nº 2: repetir B05/B08; ligação entre os dois | feito (26/10): 2 min até conectar; ligação de 15 s ok | B15-segundo-aparelho-e-primeira-ligacao.md |

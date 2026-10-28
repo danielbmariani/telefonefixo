@@ -77,9 +77,9 @@ def test_excluir_conta_cascata(client, app):
         assert c.execute(text('SELECT count(*) FROM prov_tokens WHERE ativo=1')).scalar() == 0
         fam = c.execute(text('SELECT email, suspensa FROM familias')).first()
         tel = c.execute(text('SELECT estado FROM telefones')).scalar()
-        tarefas = [r[0] for r in c.execute(text('SELECT tipo FROM tarefas')).all()]
+        fila = c.execute(text("SELECT etapa, estado FROM gdms_fila ORDER BY id DESC LIMIT 1")).first()
     assert fam[0].startswith('excluida-') and fam[1] == 1
-    assert tel == 'desativado' and 'remover_gdms' in tarefas
+    assert tel == 'desativado' and tuple(fila) == ('zerar', 'pendente')   # zera e tira do GDMS pela fila, nao por operador
     a = acoes(app)
     assert 'conta_excluida' in a and 'crianca_desativada' in a
     # login nao funciona mais

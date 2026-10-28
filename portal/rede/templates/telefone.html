@@ -101,7 +101,7 @@
 <div class="d-flex flex-wrap gap-2 mt-2">
   <form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="reconfigurar"><button class="btn btn-outline-secondary btn-sm" onclick="return confirm('Gerar nova configuração?')">Reconfigurar</button></form>
   <form method="post" action="{{ url_for('familia.telefone_senha_admin', crianca_id=crianca.id) }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-secondary btn-sm">Ver senha admin do aparelho</button></form>
-  <form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="remover"><button class="btn btn-outline-danger btn-sm" onclick="return confirm('Remover este telefone? Ele vai parar de funcionar.')">Remover telefone</button></form>
+  <form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="remover"><button class="btn btn-outline-danger btn-sm" onclick="return confirm('Remover este telefone? Ele para de funcionar, volta à configuração de fábrica e sai da rede. Outra família pode cadastrá-lo.')">Remover telefone</button></form>
 </div></details>
 {% endif %}
 </div></div>

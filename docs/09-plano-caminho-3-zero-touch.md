@@ -381,8 +381,11 @@ fim; é dado para o funil).
 - **Trocar o telefone** (mesmo ID, MAC novo): novo E3→E8 com o ID existente;
   o MAC antigo vai para `desativado` e sai do GDMS (`device/delete`, se
   existir; senão tarefa de operador). Registrado.
-- **Remover telefone / excluir conta**: revoga token, apaga `ps_*`, remove do
-  GDMS, mantém no `audit_log` apenas o necessário (ID, MAC em hash, datas),
+- **Remover telefone / excluir conta**: revoga token, apaga `ps_*`, e (desde 28/10/2026, automático
+  pela `gdms_fila`, etapas `zerar` e `remover_gdms`) manda ao aparelho a configuração de fábrica
+  (`grandstream_xml.pvalues_fabrica`), pede o reset pela API (`task/add` tipo 2, não comprovado na
+  B11) e três minutos depois tira o MAC do GDMS (`device/delete`). Tarefa de operador só se o
+  `device/delete` falhar `GDMS_MAX_TENTATIVAS` vezes. Mantém no `audit_log` apenas o necessário (ID, MAC em hash, datas),
   apaga o resto conforme a tabela de retenção do doc 05. `conta_excluida`
   registrado com o que foi apagado e o que foi retido e por quê.
 - **Reset de fábrica pela família** (telefone volta a perguntar ao RPS): se o
