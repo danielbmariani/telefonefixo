@@ -126,7 +126,7 @@ def telefone(crianca_id):
                 flash('Nova configuração gerada. O telefone vai aplicar na próxima checagem ou ao ser religado.', 'success')
             elif acao == 'remover' and tel:
                 svc_tel.desativar(conn(), tel['id'], 'familia', g.familia['id'], motivo='familia_removeu', cfg=_cfg())
-                flash('Telefone removido. Em alguns minutos ele volta à configuração de fábrica.', 'success')
+                flash('Telefone removido. Não desligue o telefone: acompanhe abaixo até aparecer "pronto".', 'warning')
             elif acao == 'reativar':
                 antigo = request.form.get('telefone_id', type=int)
                 t = svc_tel.por_id(conn(), antigo) if antigo else None
@@ -140,8 +140,11 @@ def telefone(crianca_id):
         return redirect(url_for('familia.telefone', crianca_id=c['id']))
     st = svc_tel.status(conn(), tel, _cfg()) if tel else None
     desativados = [t for t in svc_tel.listar_da_crianca(conn(), c['id'], incluir_desativados=True) if t['estado'] == 'desativado']
+    zer = svc_tel.zeramento(conn(), desativados[0]) if (not tel and desativados) else None
+    if zer and zer['fase'] != 'andamento' and zer['minutos'] > 30:
+        zer = None   # terminou ha tempo: volta a pagina normal
     return render_template('telefone.html', crianca=c, tel=tel, st=st, desativados=desativados[:3], active_tab='telefone',
-                           modelos=svc_tel.MODELOS_FAMILIA)
+                           modelos=svc_tel.MODELOS_FAMILIA, zeramento=zer, zeramento_tel=desativados[0] if zer else None)
 
 
 def _processar_fila_agora():
@@ -161,6 +164,15 @@ def telefone_status(crianca_id):
         return jsonify({'estado': None})
     st = svc_tel.status(conn(), tel, _cfg())
     return jsonify(st)
+
+
+@bp.route('/crianca/<int:crianca_id>/telefone/zeramento.json')
+@login_obrigatorio
+def telefone_zeramento(crianca_id):
+    c = crianca_da_familia(crianca_id)
+    desativados = [t for t in svc_tel.listar_da_crianca(conn(), c['id'], incluir_desativados=True) if t['estado'] == 'desativado']
+    z = svc_tel.zeramento(conn(), desativados[0]) if desativados else None
+    return jsonify(z or {'fase': None})
 
 
 @bp.route('/crianca/<int:crianca_id>/telefone/senha-admin', methods=['POST'])

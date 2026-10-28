@@ -49,6 +49,13 @@ def processar(conn, corpo, ip, cfg):
             ret_code=None, msg=f"type={m.get('type')} statusType={m.get('statusType')} alertType={m.get('alertType')}",
             corpo_resposta=m, latencia_ms=0, tentativa=1))
         if not tel:
+            # aparelho que a familia removeu e esta sendo zerado: o reboot/reset confirma que a configuracao chegou
+            antigo = svc_tel.por_mac_qualquer(conn, mac) if mac else None
+            if antigo and antigo['estado'] == 'desativado' and m.get('type') == 2 and m.get('alertType') in (2, 5):
+                auditoria.registrar(conn, 'telefone_zerado_reiniciou', 'gdms', 'callback', 'telefone', antigo['id'],
+                                    detalhes={'alertType': m.get('alertType')}, ip=ip)
+                res['alertas'] += 1
+                continue
             res['desconhecidas'] += 1
             if mac:
                 auditoria.registrar(conn, 'gdms_evento_mac_desconhecido', 'gdms', 'callback', detalhes={'mac': mac, 'type': m.get('type')}, ip=ip)

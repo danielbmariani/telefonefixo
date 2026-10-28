@@ -42,6 +42,49 @@ def por_mac_ativo(conn, mac):
                                                        db.telefones.c.estado != 'desativado'))).mappings().first()
 
 
+def por_mac_qualquer(conn, mac):
+    """Ultimo telefone com esse MAC, em qualquer estado (callback do GDMS para aparelho sendo zerado)."""
+    return conn.execute(select(db.telefones).where(db.telefones.c.mac == mac)
+                        .order_by(db.telefones.c.id.desc())).mappings().first()
+
+
+def zeramento(conn, telefone):
+    """Andamento do "Remover telefone" para a familia acompanhar (sem desligar o aparelho no meio).
+    Le a fila do GDMS (etapas zerar/remover_gdms) e os eventos de auditoria depois da desativacao.
+    Devolve None se nao ha zeramento recente (ultimas 24 h)."""
+    if not telefone or telefone['estado'] != 'desativado' or not telefone['desativado_em']:
+        return None
+    desde = utc(telefone['desativado_em'])
+    if desde < agora() - timedelta(hours=24):
+        return None
+    fila = conn.execute(select(db.gdms_fila).where(and_(db.gdms_fila.c.telefone_id == telefone['id'],
+                                                       db.gdms_fila.c.etapa.in_(('zerar', 'remover_gdms')),
+                                                       db.gdms_fila.c.criado_em >= desde))
+                        .order_by(db.gdms_fila.c.id.desc())).mappings().first()
+    if not fila:
+        return None
+    acoes = {r[0] for r in conn.execute(select(db.audit_log.c.acao).where(and_(
+        db.audit_log.c.objeto_tipo == 'telefone', db.audit_log.c.objeto_id == str(telefone['id']),
+        db.audit_log.c.ts >= desde))).all()}
+    enviada = 'telefone_zerado_pedido' in acoes or fila['etapa'] == 'remover_gdms' or fila['estado'] == 'ok'
+    reiniciou = 'telefone_zerado_reiniciou' in acoes
+    saiu = 'gdms_removido' in acoes or fila['estado'] == 'ok'
+    erro = fila['estado'] == 'erro'
+    passos = [
+        {'titulo': 'Configuração de fábrica enviada ao telefone', 'feito': enviada},
+        {'titulo': 'Telefone reiniciou sem conta', 'feito': reiniciou or saiu},
+        {'titulo': 'Telefone saiu da rede', 'feito': saiu},
+    ]
+    if erro:
+        fase = 'erro'
+    elif saiu:
+        fase = 'pronto'
+    else:
+        fase = 'andamento'
+    return {'fase': fase, 'passos': passos, 'assinatura': f"{fase}:{int(enviada)}{int(reiniciou)}{int(saiu)}",
+            'minutos': int((agora() - desde).total_seconds() // 60)}
+
+
 def normalizar_mac(mac):
     try:
         return grandstream_xml.normalizar_mac(mac)

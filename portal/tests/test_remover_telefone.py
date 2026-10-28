@@ -152,3 +152,33 @@ def test_reativado_nao_fica_ativo_por_ligacao_antiga(app):
                      {'c': cr['id_rede'], 't': (agora() + timedelta(minutes=1)).strftime('%Y-%m-%d %H:%M:%S')})
         sip.observar(conn, cfg)
         assert telefones.por_id(conn, t['id'])['estado'] == 'ativo'
+
+
+def test_familia_acompanha_o_zeramento(client, app):
+    """A aba Telefone mostra o andamento e manda nao desligar; no fim, "pode desligar"."""
+    from conftest import cadastrar_e_entrar, criar_crianca, crianca_row
+    from rede.servicos import gdms_eventos
+    cadastrar_e_entrar(client, app)
+    cid = criar_crianca(client, 'kid')
+    cr = crianca_row(app, cid)
+    cfg = _cfg(app, GDMS_MODO='simulado')
+    with app.engine.begin() as conn:
+        fid = cr['familia_id']
+        t = telefones.informar(conn, cr, 'C074AD000001', 'SN00000000', '1.1.1.1', cfg, familia_id=fid)
+        gdms_fila.processar(conn, cfg)
+        telefones.desativar(conn, t['id'], 'familia', fid, motivo='familia_removeu', cfg=cfg)
+        z = telefones.zeramento(conn, telefones.por_id(conn, t['id']))
+        assert z['fase'] == 'andamento' and not any(p['feito'] for p in z['passos'])
+    h = client.get(f'/crianca/{cid}/telefone').get_data(as_text=True)
+    assert 'Zerando o telefone' in h and 'Não desligue o telefone' in h and 'Reativar' not in h
+    with app.engine.begin() as conn:
+        # callback do GDMS (reboot) para o MAC removido conta como "reiniciou"
+        gdms_eventos.processar(conn, {'messages': [{'mac': 'C0:74:AD:00:00:01', 'type': 2, 'alertType': 5}]}, '1.2.3.4', cfg)
+        z = telefones.zeramento(conn, telefones.por_id(conn, t['id']))
+        assert z['passos'][1]['feito'] and z['fase'] == 'andamento'
+        gdms_fila.processar(conn, cfg)   # simulado: zera e remove de uma vez
+        z = telefones.zeramento(conn, telefones.por_id(conn, t['id']))
+        assert z['fase'] == 'pronto' and all(p['feito'] for p in z['passos'])
+    h = client.get(f'/crianca/{cid}/telefone').get_data(as_text=True)
+    assert 'Pode desligar o telefone' in h and 'Reativar' in h
+    assert client.get(f'/crianca/{cid}/telefone/zeramento.json').get_json()['fase'] == 'pronto'

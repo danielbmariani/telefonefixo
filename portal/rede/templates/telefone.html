@@ -10,6 +10,23 @@
 </div>
 
 {% if not tel %}
+{% if zeramento %}
+<div class="card mb-4 {% if zeramento.fase == 'pronto' %}border-success{% else %}border-warning{% endif %}" id="zerando" data-url="{{ url_for('familia.telefone_zeramento', crianca_id=crianca.id) }}" data-assinatura="{{ zeramento.assinatura }}"><div class="card-body">
+  <h2 class="h5 mb-2">{% if zeramento.fase == 'pronto' %}Telefone zerado{% else %}Zerando o telefone{% endif %} <span class="text-muted fw-normal small">MAC {{ zeramento_tel.mac|mac }}</span></h2>
+  {% if zeramento.fase == 'pronto' %}
+  <div class="alert alert-success mb-2">Pronto. Pode desligar o telefone. Ele está como saiu da caixa, sem conta e sem número.</div>
+  {% elif zeramento.fase == 'erro' %}
+  <div class="alert alert-warning mb-2">O telefone foi zerado, mas não conseguimos tirá-lo da rede automaticamente. Nós cuidamos disso. Pode desligar o telefone.</div>
+  {% else %}
+  <p class="mb-2"><strong>Não desligue o telefone</strong> da tomada nem do cabo de rede até aparecer "pronto" aqui. Leva uns 4 minutos. Esta página se atualiza sozinha.</p>
+  {% endif %}
+  <ul class="checklist mb-0">
+  {% for p in zeramento.passos %}
+    <li><i class="bi {% if p.feito %}bi-check-circle-fill{% else %}bi-circle{% endif %}"></i> <span>{{ p.titulo }}</span></li>
+  {% endfor %}
+  </ul>
+</div></div>
+{% endif %}
 <h1 class="h3 mb-2">Conectar o telefone</h1>
 <p>Vire o telefone Grandstream e olhe a etiqueta embaixo. Copie os dois códigos na ordem em que aparecem: primeiro o S/N, depois o MAC. <strong>Não ligue o telefone na tomada ainda.</strong></p>
 <div class="card mb-3"><div class="card-body">
@@ -23,7 +40,7 @@
   <button class="btn btn-primary btn-lg w-100">Registrar telefone</button>
 </form>
 </div></div>
-{% if desativados %}
+{% if desativados and not (zeramento and zeramento.fase == 'andamento') %}
 <hr><h6>Telefones anteriores</h6>
 {% for d in desativados %}
 <form method="post" class="d-flex justify-content-between align-items-center mb-2"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="reativar"><input type="hidden" name="telefone_id" value="{{ d.id }}">
@@ -107,6 +124,18 @@
 </div></div>
 {% endblock %}
 {% block scripts %}
+{% if zeramento and zeramento.fase == 'andamento' %}
+<script>
+(function(){
+  var el = document.getElementById('zerando'); if (!el) return;
+  setInterval(function(){
+    fetch(el.dataset.url, {credentials: 'same-origin'}).then(r => r.json()).then(function(z){
+      if (z.assinatura && z.assinatura !== el.dataset.assinatura) location.reload();
+    }).catch(function(){});
+  }, 10000);
+})();
+</script>
+{% endif %}
 {% if tel and st.estado not in ('ativo', 'desativado') %}
 <script>
 (function(){
