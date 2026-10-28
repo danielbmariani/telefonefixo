@@ -28,7 +28,8 @@
 </head>
 {% set logado = session.get('familia_id') %}
 <body class="{% if logado %}logado{% endif %}{% if logado and crianca %} com-abas{% endif %}">
-<header class="topo">
+<noscript><style>.topo.quieto .marca > span:last-child { opacity: 1; }</style></noscript>
+<header class="topo{% block topo_class %}{% endblock %}">
   <div class="container">
     <a class="marca" href="{{ url_for('familia.inicio') }}" aria-label="{{ nome_rede }}, página inicial">
       <span class="selo" aria-hidden="true"><img src="{{ url_for('static', filename='marca/simbolo-negativo.svg') }}" alt="" width="44" height="44"></span>
@@ -96,6 +97,16 @@
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Pagina inicial (.quieto): o nome grande esta no topo da pagina; a faixa mostra so o simbolo
+// enquanto o titulo (#titulo-principal) estiver na tela.
+(function () {
+  var topo = document.querySelector('.topo'); var titulo = document.getElementById('titulo-principal');
+  if (!topo || !topo.classList.contains('quieto')) return;
+  if (titulo && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) { topo.classList.toggle('quieto', es[0].isIntersecting); },
+      { rootMargin: '-72px 0px 0px 0px' }).observe(titulo);
+  } else { topo.classList.remove('quieto'); }
+})();
 // Resposta imediata ao enviar qualquer formulario: botao travado com "Enviando..." (ou o texto em
 // data-enviando) e sem envio duplo. O servidor pode levar alguns segundos (ex.: registro no GDMS).
 document.addEventListener('submit', function (ev) {

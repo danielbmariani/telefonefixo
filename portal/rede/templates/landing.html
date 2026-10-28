@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block title %}{{ nome_rede }}: adiar o celular sem isolar as crianças{% endblock %}
 {% block main_class %}{% endblock %}
+{% block topo_class %} quieto{% endblock %}
 {% block flash_class %}container mt-3{% endblock %}
 {% block content %}
 <section class="heroi">
   <div class="container">
     <div class="row">
-      <div class="col-lg-8">
-        <p class="rotulo-tf sub-nome">Projeto sem fins lucrativos · código aberto · sem mensalidade</p>
-        <h1 class="pergunta">Quer adiar o celular sem isolar suas crianças?</h1>
-        <p class="precisa">Você precisa… de um <mark class="marca-texto">telefone fixo</mark>.</p>
+      <div class="col-lg-9">
+        <h1 class="nome-projeto" id="titulo-principal">{{ nome_rede }}</h1>
+        <p class="sub-nome rotulo-tf">Projeto sem fins lucrativos, com código aberto, sem mensalidade.</p>
+        <p class="pergunta">Quer adiar o celular sem isolar suas crianças? Você precisa… de um <mark class="marca-texto">telefone fixo</mark>.</p>
         <p class="chamada">Sem tela, sem aplicativo, sem acesso externo. A criança disca o número do amigo e conversa.
           Quem pode ligar para quem, e em que horário, é decidido pelas famílias.</p>
         <div class="acoes">
-          <a class="btn btn-primary" href="{{ url_for('auth.cadastrar') }}">Começar</a>
           <a class="btn btn-outline-secondary" href="#como-funciona">Como funciona</a>
         </div>
       </div>
@@ -61,9 +61,9 @@
   <div class="container">
     <div class="row g-4 gx-lg-5 align-items-center">
       <div class="col-lg-7">
-        <p class="rotulo-tf mb-3">Sem fins lucrativos, com código aberto</p>
-        <h2>Não há plano pago, anúncio nem venda de dados.</h2>
-        <p class="mt-3 mb-0">Todo o código é aberto. Guardamos o mínimo: o apelido, o ID, quem é amigo de quem e o registro de quando as ligações aconteceram. O responsável pode apagar tudo a qualquer momento.</p>
+        <h2>Sem fins lucrativos, com código aberto</h2>
+        <p class="mt-3 mb-0">Todo o código é aberto. Não há plano pago, anúncio nem venda de dados.
+          Guardamos o mínimo: o apelido, o ID, quem é amigo de quem e o registro de quando as ligações aconteceram. O responsável pode apagar tudo a qualquer momento.</p>
       </div>
       <div class="col-lg-4 offset-lg-1">
         <a class="btn btn-claro btn-lg w-100" href="{{ url_for('auth.cadastrar') }}">Começar</a>

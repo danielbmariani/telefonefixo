@@ -99,6 +99,9 @@ hr { border-top: var(--fio) solid var(--linha); opacity: 1; }
 }
 /* Nas paginas da crianca as abas e que ficam fixas; o cabecalho rola normalmente. */
 body.com-abas .topo { position: static; }
+/* Pagina inicial: o nome grande esta no topo da pagina; a faixa mostra so o simbolo ate o titulo sair da tela. */
+.topo.quieto .marca > span:last-child { opacity: 0; }
+.topo .marca > span:last-child { transition: opacity .2s; }
 .topo .container { display: flex; align-items: center; justify-content: space-between; min-height: 72px; gap: .75rem 1.5rem; padding-top: .5rem; padding-bottom: .5rem; }
 .marca { display: inline-flex; align-items: center; gap: .75rem; text-decoration: none; color: #fff; min-width: 0; }
 .marca:hover { color: #fff; }
@@ -125,16 +128,17 @@ body.com-abas .topo { position: static; }
 .btn { --bs-btn-border-radius: var(--raio); --bs-btn-border-width: 2px; --bs-btn-font-weight: 700; --bs-btn-font-size: 17px; --bs-btn-line-height: 1.1; --bs-btn-padding-y: .6rem; --bs-btn-padding-x: 1.35rem; --bs-btn-focus-box-shadow: none; --bs-btn-active-shadow: none; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; transition: background-color .12s ease, color .12s ease, border-color .12s ease; }
 .btn-lg { --bs-btn-font-size: 18px; --bs-btn-padding-y: .75rem; --bs-btn-padding-x: 1.5rem; min-height: 52px; }
 .btn-sm { --bs-btn-font-size: 15px; --bs-btn-padding-y: .45rem; --bs-btn-padding-x: 1rem; min-height: 44px; }
-.btn-primary { --bs-btn-color: #fff; --bs-btn-bg: var(--acao); --bs-btn-border-color: var(--acao); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--acao-hover); --bs-btn-hover-border-color: var(--acao-hover); --bs-btn-active-color: #fff; --bs-btn-active-bg: var(--acao-hover); --bs-btn-active-border-color: var(--acao-hover); --bs-btn-disabled-color: var(--tinta-2); --bs-btn-disabled-bg: var(--superficie); --bs-btn-disabled-border-color: var(--linha); }
-.btn-outline-primary { --bs-btn-color: var(--azul-estatal); --bs-btn-bg: transparent; --bs-btn-border-color: var(--azul-estatal); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--azul-estatal); --bs-btn-hover-border-color: var(--azul-estatal); --bs-btn-active-color: #fff; --bs-btn-active-bg: var(--azul-estatal); --bs-btn-active-border-color: var(--azul-estatal); --bs-btn-disabled-color: var(--tinta-2); --bs-btn-disabled-border-color: var(--linha); }
+/* Botoes com contorno escuro de 2 px (decisao de 28/10): o principal e laranja-orelhao com texto escuro, como botao de formulario carimbado. */
+.btn-primary { --bs-btn-color: var(--tinta); --bs-btn-bg: var(--laranja-orelhao); --bs-btn-border-color: var(--tinta); --bs-btn-hover-color: var(--tinta); --bs-btn-hover-bg: #F08A3A; --bs-btn-hover-border-color: var(--tinta); --bs-btn-active-color: var(--tinta); --bs-btn-active-bg: #D96A14; --bs-btn-active-border-color: var(--tinta); --bs-btn-disabled-color: var(--tinta-2); --bs-btn-disabled-bg: var(--superficie); --bs-btn-disabled-border-color: var(--linha); }
+.btn-outline-primary { --bs-btn-color: var(--azul-estatal); --bs-btn-bg: transparent; --bs-btn-border-color: var(--tinta); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--azul-estatal); --bs-btn-hover-border-color: var(--tinta); --bs-btn-active-color: #fff; --bs-btn-active-bg: var(--azul-estatal); --bs-btn-active-border-color: var(--tinta); --bs-btn-disabled-color: var(--tinta-2); --bs-btn-disabled-border-color: var(--linha); }
 .btn-secondary { --bs-btn-color: var(--tinta); --bs-btn-bg: var(--superficie-2); --bs-btn-border-color: var(--superficie-2); --bs-btn-hover-color: var(--tinta); --bs-btn-hover-bg: var(--linha); --bs-btn-hover-border-color: var(--linha); --bs-btn-active-color: var(--tinta); --bs-btn-active-bg: var(--linha); --bs-btn-active-border-color: var(--linha); }
-.btn-outline-secondary { --bs-btn-color: var(--tinta); --bs-btn-bg: transparent; --bs-btn-border-color: var(--borda-controle); --bs-btn-hover-color: var(--tinta); --bs-btn-hover-bg: var(--superficie); --bs-btn-hover-border-color: var(--tinta); --bs-btn-active-color: var(--tinta); --bs-btn-active-bg: var(--superficie-2); --bs-btn-active-border-color: var(--tinta); --bs-btn-disabled-color: var(--tinta-2); --bs-btn-disabled-border-color: var(--linha); }
+.btn-outline-secondary { --bs-btn-color: var(--tinta); --bs-btn-bg: transparent; --bs-btn-border-color: var(--tinta); --bs-btn-hover-color: var(--tinta); --bs-btn-hover-bg: var(--superficie); --bs-btn-hover-border-color: var(--tinta); --bs-btn-active-color: var(--tinta); --bs-btn-active-bg: var(--superficie-2); --bs-btn-active-border-color: var(--tinta); --bs-btn-disabled-color: var(--tinta-2); --bs-btn-disabled-border-color: var(--linha); }
 .btn-outline-dark { --bs-btn-color: var(--tinta); --bs-btn-bg: transparent; --bs-btn-border-color: var(--tinta); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--tinta); --bs-btn-hover-border-color: var(--tinta); --bs-btn-active-color: #fff; --bs-btn-active-bg: var(--tinta); --bs-btn-active-border-color: var(--tinta); }
-.btn-success { --bs-btn-color: #fff; --bs-btn-bg: var(--sucesso); --bs-btn-border-color: var(--sucesso); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: #165c39; --bs-btn-hover-border-color: #165c39; --bs-btn-active-color: #fff; --bs-btn-active-bg: #165c39; --bs-btn-active-border-color: #165c39; }
+.btn-success { --bs-btn-color: #fff; --bs-btn-bg: var(--sucesso); --bs-btn-border-color: var(--tinta); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: #165c39; --bs-btn-hover-border-color: var(--tinta); --bs-btn-active-color: #fff; --bs-btn-active-bg: #165c39; --bs-btn-active-border-color: var(--tinta); }
 .btn-danger { --bs-btn-color: #fff; --bs-btn-bg: var(--erro); --bs-btn-border-color: var(--erro); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: #8f1e18; --bs-btn-hover-border-color: #8f1e18; --bs-btn-active-color: #fff; --bs-btn-active-bg: #8f1e18; --bs-btn-active-border-color: #8f1e18; }
 .btn-outline-danger { --bs-btn-color: var(--erro); --bs-btn-bg: transparent; --bs-btn-border-color: var(--erro); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--erro); --bs-btn-hover-border-color: var(--erro); --bs-btn-active-color: #fff; --bs-btn-active-bg: var(--erro); --bs-btn-active-border-color: var(--erro); }
 .btn-link { --bs-btn-color: var(--acao); --bs-btn-hover-color: var(--acao-hover); --bs-btn-font-weight: 700; min-height: 0; }
-.btn-claro { --bs-btn-color: var(--azul-estatal); --bs-btn-bg: #fff; --bs-btn-border-color: #fff; --bs-btn-hover-color: var(--azul-estatal); --bs-btn-hover-bg: var(--superficie-2); --bs-btn-hover-border-color: var(--superficie-2); --bs-btn-active-color: var(--azul-estatal); --bs-btn-active-bg: var(--superficie-2); --bs-btn-active-border-color: var(--superficie-2); }
+.btn-claro { --bs-btn-color: var(--azul-estatal); --bs-btn-bg: #fff; --bs-btn-border-color: var(--tinta); --bs-btn-hover-color: var(--azul-estatal); --bs-btn-hover-bg: var(--superficie-2); --bs-btn-hover-border-color: var(--tinta); --bs-btn-active-color: var(--azul-estatal); --bs-btn-active-bg: var(--superficie-2); --bs-btn-active-border-color: var(--tinta); }
 .btn:disabled, .btn.disabled { opacity: 1; }
 .btn-close:focus { box-shadow: none; outline: 3px solid var(--laranja-texto); outline-offset: 2px; }
 
@@ -248,9 +252,9 @@ details > summary { cursor: pointer; font-weight: 700; min-height: 44px; display
 /* ---------- Pagina inicial publica ---------- */
 .heroi { padding: 2.5rem 0 3rem; }
 @media (min-width: 992px) { .heroi { padding: 4.5rem 0 5rem; } }
-.heroi .sub-nome { margin: 0 0 1rem; }
-.heroi .pergunta { margin: 0; max-width: 12em; }
-.heroi .precisa { font-size: clamp(20px, 1.5vw + 12px, 24px); font-weight: 500; margin: 1.25rem 0 0; }
+.heroi .nome-projeto { font-weight: 800; font-stretch: 125%; text-transform: uppercase; letter-spacing: .03em; line-height: 1; font-size: clamp(40px, 9vw, 88px); color: var(--azul-estatal); margin: 0; overflow-wrap: anywhere; }
+.heroi .sub-nome { margin: 1rem 0 0; }
+.heroi .pergunta { font-weight: 700; font-size: clamp(22px, 2vw + 12px, 30px); line-height: 1.25; letter-spacing: -.01em; margin: 1.75rem 0 0; max-width: 24em; }
 .heroi .chamada { font-size: 18px; color: var(--tinta-2); max-width: 34rem; margin: 1rem 0 0; }
 .heroi .acoes { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
 .secao { padding: 4rem 0; }
