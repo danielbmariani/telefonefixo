@@ -59,5 +59,48 @@
 {% endfor %}
 </details>
 {% endif %}
+<h2 class="h5 mt-4" id="grupos">Grupos para ligar juntos</h2>
+<p class="text-muted small mb-2">Um grupo toca em todas as casas de uma vez. No telefone, {{ crianca.apelido }} disca o número do grupo e <span class="mono">#</span>, como faz com um amigo. Só entra na chamada quem já é amigo de todos os que estão nela; até {{ max_na_chamada }} na mesma chamada.</p>
+{% for gr in grupos %}
+<div class="card mb-2"><div class="card-body py-3">
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start gap-2">
+    <div>
+      <strong>{{ gr.nome }}</strong> <span class="text-muted small">· discar <span class="mono">{{ gr.discar }}#</span>{% if not gr.dona %} · criado pela família de {{ gr.dona_apelido }}{% endif %}</span><br>
+      <small class="text-muted">{% for m in gr.membros %}{{ m.apelido }}{% if not loop.last %}, {% endif %}{% endfor %}</small>
+      {% if gr.faltam %}<br><small class="text-warning-emphasis">Para {{ crianca.apelido }} falar com todos, falta aceitar amizade com {{ gr.faltam|join(' e ') }}. Até lá, a chamada não junta os dois.</small>{% endif %}
+    </div>
+    <div class="d-flex gap-1 flex-wrap">
+      {% if gr.dona %}
+      <form method="post" class="d-inline"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="grupo_remover"><input type="hidden" name="grupo_id" value="{{ gr.id }}">
+        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover o grupo para todos?')">Remover grupo</button></form>
+      {% else %}
+      <form method="post" class="d-inline"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="grupo_sair"><input type="hidden" name="grupo_id" value="{{ gr.id }}">
+        <button class="btn btn-sm btn-outline-secondary" onclick="return confirm('Tirar {{ crianca.apelido }} deste grupo?')">Sair do grupo</button></form>
+      {% endif %}
+    </div>
+  </div>
+</div></div>
+{% endfor %}
+{% if amigos_grupo %}
+<details class="mt-2" {% if abrir_grupo %}open{% endif %}><summary class="fw-bold">Criar um grupo</summary>
+<div class="card mt-2"><div class="card-body">
+  <form method="post" data-enviando="Criando…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="grupo_criar">
+    <div class="mb-3"><label class="form-label" for="grupo_nome">Nome do grupo</label>
+      <input class="form-control form-control-lg" id="grupo_nome" name="nome" maxlength="20" placeholder="ex.: Turma do futebol" required autocomplete="off">
+      <div class="form-text">Até 20 caracteres. Aparece no visor do telefone de quem recebe e é falado na chamada.</div></div>
+    <fieldset class="mb-3"><legend class="form-label fs-6 mb-2">Quem entra <span class="fw-normal text-muted">(amigos já aceitos, até {{ max_membros - 1 }})</span></legend>
+      {% for a in amigos_grupo %}
+      <div class="form-check"><input class="form-check-input" type="checkbox" name="membros" value="{{ a.crianca_id }}" id="membro-{{ a.crianca_id }}" {% if a.marcado %}checked{% endif %}>
+        <label class="form-check-label" for="membro-{{ a.crianca_id }}">{{ a.apelido }}</label></div>
+      {% endfor %}
+    </fieldset>
+    <button class="btn btn-primary">Criar grupo</button>
+  </form>
+  <p class="small text-muted mt-3 mb-0">As outras famílias veem o grupo na página do filho e podem tirá-lo quando quiserem. Cada criança tem no máximo {{ max_grupos }} grupos.</p>
+</div></div></details>
+{% elif not grupos %}
+<p class="text-muted small">Quando {{ crianca.apelido }} tiver amigos aceitos, dá para montar um grupo aqui.</p>
+{% endif %}
+
 <p class="mt-4"><a class="btn btn-outline-primary" target="_blank" href="{{ url_for('familia.cartao', crianca_id=crianca.id) }}"><i class="bi bi-printer me-1"></i> Imprimir cartão com os amigos</a></p>
 {% endblock %}

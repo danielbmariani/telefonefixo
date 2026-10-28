@@ -9,7 +9,8 @@ td{padding:10px 12px;border-bottom:1px solid #eee;font-size:16px}td.ext{font-siz
 <table><thead><tr><th>Amigo</th><th>Discar</th></tr></thead><tbody>
 {% for a in amigos %}<tr><td>{{ a.apelido }}</td><td class="ext">{{ a.id_rede }}#</td></tr>{% endfor %}
 {% for nome, disca in celulares %}<tr><td>{{ nome }} (celular)</td><td class="ext">{{ disca }}#</td></tr>{% endfor %}
+{% for nome, disca in grupos %}<tr><td>{{ nome }} (grupo)</td><td class="ext">{{ disca }}#</td></tr>{% endfor %}
 <tr><td>Hora certa</td><td class="ext">100#</td></tr></tbody></table>
-<div class="tip">Para ligar: tire do gancho, disque o número e aperte <strong>#</strong>. Para abrir uma chamada em grupo, disque <strong>0</strong> antes do número.</div>
+<div class="tip">Para ligar: tire do gancho, disque o número e aperte <strong>#</strong>.{% if grupos %} Um grupo toca para todos de uma vez.{% endif %}</div>
 <p class="no-print" style="margin-top:20px;text-align:center"><button onclick="window.print()" style="padding:10px 24px;font-size:16px">Imprimir</button></p>
 </body></html>

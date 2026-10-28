@@ -5,7 +5,7 @@ ids.py — Numeracao e apelidos da rede aberta.
 Plano de numeracao (doc 03):
     1XX            servicos (100 = hora certa)
     [2-7]XXXXX     ID de crianca (6 digitos, aleatorio)
-    0[2-7]XXXXX    chamada em grupo com a crianca
+    0[1-9]         grupo para ligar juntos (codigo do cartao da propria crianca, doc 16)
     9[2-7]XXXXX    celular 1 da familia da crianca
     8[2-7]XXXXX    celular 2 da familia da crianca
 """
@@ -57,16 +57,17 @@ def validar_nick(nick):
 
 def classificar_discado(digitos):
     """Interpreta o que a crianca discou. Retorna (tipo, id) ou (tipo, None):
-        ('servico', '100'), ('crianca', '345678'), ('grupo', '345678'),
+        ('servico', '100'), ('crianca', '345678'), ('grupo', '1'),
         ('familia1', '345678'), ('familia2', '345678'), ('invalido', None)."""
     d = (digitos or '').strip()
     if re.match(r'^1\d{2}$', d):
         return ('servico', d)
     if ID_RE.match(d):
         return ('crianca', d)
-    if len(d) == 7 and ID_RE.match(d[1:]):
-        return {'0': 'grupo', '9': 'familia1', '8': 'familia2'}.get(d[0], 'invalido'), \
-               (d[1:] if d[0] in '098' else None)
+    if re.match(r'^0[1-9]$', d):
+        return ('grupo', d[1])
+    if len(d) == 7 and ID_RE.match(d[1:]) and d[0] in '98':
+        return ('familia1' if d[0] == '9' else 'familia2', d[1:])
     return ('invalido', None)
 
 

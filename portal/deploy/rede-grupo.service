@@ -1,0 +1,22 @@
+[Unit]
+Description=Telefone Fixo - chamada em grupo (ARI)
+After=network.target asterisk.service postgresql.service
+Wants=asterisk.service
+
+[Service]
+Type=simple
+User=rede
+Group=rede
+WorkingDirectory=/opt/rede-aberta/portal
+EnvironmentFile=/etc/rede-aberta/portal.env
+ExecStart=/opt/rede-aberta/venv/bin/python -m rede.grupo.servico
+Restart=always
+RestartSec=3
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/rede-aberta/sons
+
+[Install]
+WantedBy=multi-user.target

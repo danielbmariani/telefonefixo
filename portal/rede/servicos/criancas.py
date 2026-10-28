@@ -2,7 +2,7 @@
 
 from sqlalchemy import select, insert, update, delete, and_
 
-from .. import db, auditoria, seguranca, ids
+from .. import db, auditoria, voz, seguranca, ids
 from ..tempo import agora
 from .contas import ErroUsuario
 
@@ -60,6 +60,10 @@ def criar(conn, familia_id, apelido, cfg, ator_id=None):
                         detalhes={'id_rede': id_rede, 'apelido': apelido})
     auditoria.registrar(conn, 'ramal_criado', 'sistema', None, 'crianca', cid,
                         detalhes={'id_rede': id_rede, 'senha_sip_sha256': seguranca.sha256(senha)})
+    try:  # apelido falado para a chamada em grupo (doc 16); nunca derruba o cadastro
+        voz.gerar_apelido(cfg, id_rede, apelido)
+    except Exception as e:
+        auditoria.registrar(conn, 'voz_falhou', 'sistema', None, 'crianca', cid, detalhes={'erro': str(e)[:200]})
     return por_id(conn, cid)
 
 

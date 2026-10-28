@@ -30,7 +30,7 @@ def decidir(conn, caller, destino, agora_sp):
         return 'ALLOW', None
     if tipo in ('familia1', 'familia2'):
         return decidir_familia(conn, caller, destino, alvo, agora_sp)
-    if tipo not in ('crianca', 'grupo'):
+    if tipo != 'crianca':
         registrar_bloqueio(conn, caller, destino, 'UNKNOWN_DEST')
         return 'BLOCK_UNKNOWN', 'UNKNOWN_DEST'
     dest_id = alvo
@@ -52,10 +52,6 @@ def decidir(conn, caller, destino, agora_sp):
         registrar_bloqueio(conn, caller, dest_id, 'PERMISSION')
         return 'BLOCK_PERMISSION', 'PERMISSION'
     return 'ALLOW', None
-
-
-def permitido_com_todos(conn, caller, membros):
-    return all(amizades.permitido(conn, caller, m) for m in membros if m != caller)
 
 
 def decidir_familia(conn, caller, destino, alvo, agora_sp):

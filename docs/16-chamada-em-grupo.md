@@ -231,16 +231,45 @@ tempo por participante; ambos têm referência na comunidade e o v1 já tinha a 
 
 ## 5. Decisões (28/10/2026)
 
-1. Conceito: grupo com nome montado pelos pais, toca em todos. **Em aberto**: numeração por criança
-   (`0` + dígito, `01#`, `02#`) ou número de 6 dígitos igual para todos os membros. Daniel pediu
-   explicação; aguarda escolha.
+1. Conceito: grupo com nome montado pelos pais, toca em todos, **numeração por criança** (`0` + dígito,
+   `01#`, `02#` no cartão de cada uma). Confirmado ("esse modelo parece ótimo").
 2. Limite na chamada: **4** (3 membros + quem ligou). Confirmado.
 3. A chamada **continua até todos desligarem**; quem ligou não manda nela. Confirmado.
 4. O `0` + ID continua **só no projeto antigo** (`telefone_fixo` v1, instância separada). Na rede nova
    sai, junto com a regra de "cair na sala" ao ligar para alguém que está numa sala. Confirmado.
-5. Nome da seção: "Grupos para ligar juntos" (recomendado), ainda sem resposta.
+5. Nome da seção: "Grupos para ligar juntos" (aplicado; fácil de trocar).
 
-## 6. Fontes
+## 6. Implementação (28/10/2026)
+
+Feita conforme a secao 3, com uma diferenca tecnica em relacao a tabela da secao 4: em vez de `Originate` +
+`ConfBridge` no dialplan, a chamada e controlada por um **servico Python ligado ao ARI** (a interface REST e
+de eventos do Asterisk 20): e o unico jeito limpo de tocar frases para todos ("Beto entrou", "Theo nao
+atendeu", "Voce e o unico"), de saber quem nao atendeu e de registrar o tempo de cada participante.
+
+- `rede/db.py`: tabelas `grupos` e `grupo_membros` (codigo 1..9 por crianca, unico entre os grupos ativos dela).
+- `rede/servicos/grupos.py`: criar (so amigos aceitos da dona, nome de 2 a 20), listar por crianca (o que
+  falta e dado so da propria crianca), sair, remover (so a dona), `decidir` (clique em ordem de entrada no
+  grupo + horario e silenciar por membro), `pode_entrar` (entrada tardia), `registrar_chamada` (uma linha
+  por participante em `call_logs`, callee `GRUPO`, tempo em comum com cada um dos outros).
+- `rede/voz.py`: frases fixas, tons (entrou, saiu, erro) e tom de chamando gerados por sox; apelidos e nomes
+  de grupo falados por piper (pt-BR, offline) ou espeak-ng; gravados em `/var/lib/rede-aberta/sons`
+  (link `rede/` nos sons do Asterisk). Gerados ao criar a crianca e o grupo; nunca derrubam a operacao.
+- `rede/grupo/`: `ari.py` (cliente REST minimo), `app.py` (a chamada dirigida por eventos; testavel com
+  um ARI falso), `servico.py` (processo `rede-grupo`, websocket de eventos, reconexao).
+- Dialplan: `_0[1-9]` -> `Stasis(grupo,chamador,<codigo>)`; se o servico estiver fora, "nao deu certo".
+  O `0` + ID e a regra de "cair na sala" sairam, junto com `check_group.py`, `conf_leave.py` e o confbridge.
+- Site: secao "Grupos para ligar juntos" na aba Amigos (criar, listar, sair, remover), atalho na turma
+  (pre-seleciona os amigos aceitos da turma), linha no cartao impresso, dica na tela de apelido.
+- Instalacao: `deploy/grupos.sh` (tabelas, websockets e piper no venv, sons, ARI/HTTP em localhost com
+  senha gerada no servidor, musica de espera, dialplan, servico systemd, reinicios).
+- Testes: `tests/test_grupos.py` (servico e site) e `tests/test_grupo_ari.py` (fluxo completo, ninguem
+  atendeu, quem ligou desistiu, entrada tardia e limite, bloqueios, sem audio de apelido).
+- Bancada: B25 (pendente, precisa de um softphone como terceiro participante).
+
+Amizade removida ou bloqueada depois de o grupo existir: ninguem e tirado do grupo automaticamente; a
+regra do clique ja impede os dois de caírem na mesma chamada, e a pagina de cada familia mostra o que falta.
+
+## 7. Fontes
 
 - Tin Can sem grupo (FAQ, "três vias no roteiro"; "Party Line" é plano): https://tincan.kids/products/tin-can ;
   https://screenwiseapp.com/guides/tin-can-for-kids ; https://phone.kitestudios.org/guides/tin-can-uk-alternative

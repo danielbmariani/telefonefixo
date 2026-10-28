@@ -22,6 +22,16 @@ class Config:
         self.TIMEZONE = g('REDE_TIMEZONE', 'America/Sao_Paulo')
         # Tronco da operadora (B23): numero fixo da rede que a familia liga para alcancar a crianca. So digitos.
         self.TRONCO_NUMERO = g('REDE_TRONCO_NUMERO', '')
+        # Voz sintetica (doc 16): frases fixas, apelidos e nomes de grupo em wav para o Asterisk.
+        # VOZ_BACKEND: auto (piper se houver, senao espeak-ng), piper, espeak, nenhum (testes).
+        self.VOZ_BACKEND = g('REDE_VOZ_BACKEND', 'nenhum')
+        self.VOZ_DIR = g('REDE_VOZ_DIR', '/var/lib/rede-aberta/sons')
+        self.VOZ_PIPER_MODELO = g('REDE_VOZ_PIPER_MODELO', '/opt/rede-aberta/piper/pt_BR-faber-medium.onnx')
+        # ARI (servico rede-grupo): controla a chamada em grupo
+        self.ARI_URL = g('REDE_ARI_URL', 'http://127.0.0.1:8088/ari')
+        self.ARI_USUARIO = g('REDE_ARI_USUARIO', 'rede')
+        self.ARI_SENHA = g('REDE_ARI_SENHA', '')
+        self.GRUPO_MAX_NA_CHAMADA = int(g('REDE_GRUPO_MAX_NA_CHAMADA', '4'))
 
         # E-mail
         self.SMTP_HOST = g('REDE_SMTP_HOST', 'smtp.gmail.com')

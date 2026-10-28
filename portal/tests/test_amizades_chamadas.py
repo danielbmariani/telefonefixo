@@ -42,7 +42,8 @@ def test_pedido_aceite_e_permissao(client, app):
     with app.engine.begin() as c:
         assert amizades.permitido(c, A['id_rede'], B['id_rede'])
         assert chamadas.decidir(c, A['id_rede'], B['id_rede'], datetime.now(TZ_SP)) == ('ALLOW', None)
-        assert chamadas.decidir(c, B['id_rede'], '0' + A['id_rede'], datetime.now(TZ_SP)) == ('ALLOW', None)
+        # 0 + ID (grupo do v1) nao existe mais: grupo e 0 + 1 digito, pelo servico rede-grupo (doc 16)
+        assert chamadas.decidir(c, B['id_rede'], '0' + A['id_rede'], datetime.now(TZ_SP))[0] == 'BLOCK_UNKNOWN'
     a = acoes(app)
     assert 'pedido_amizade_enviado' in a and 'amizade_aceita' in a
     # tela lista o amigo

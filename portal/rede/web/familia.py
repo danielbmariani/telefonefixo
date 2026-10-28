@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 
 from ..tempo import texto_sp
 from .. import ids, auditoria
-from ..servicos import retencao as svc_ret, familia_telefones as svc_fam, turmas as svc_tur, contas, criancas as svc_cri, telefones as svc_tel, amizades as svc_ami, horarios as svc_hor, \
+from ..servicos import retencao as svc_ret, familia_telefones as svc_fam, turmas as svc_tur, grupos as svc_gru, contas, criancas as svc_cri, telefones as svc_tel, amizades as svc_ami, horarios as svc_hor, \
     historico as svc_hist, textos, gdms_fila
 from ..servicos.contas import ErroUsuario
 from .comum import conn, login_obrigatorio, consentimento_obrigatorio, crianca_da_familia
@@ -199,11 +199,34 @@ def contatos(crianca_id):
             elif acao == 'desbloquear':
                 svc_ami.desbloquear(conn(), request.form.get('amizade_id', type=int), g.familia['id'])
                 flash('Desbloqueado.', 'success')
+            elif acao == 'grupo_criar':
+                gr = svc_gru.criar(conn(), g.familia['id'], c, request.form.get('nome'), request.form.getlist('membros'))
+                codigo = [x for x in svc_gru.listar_da_crianca(conn(), c) if x['id'] == gr['id']][0]['discar']
+                flash(f'Grupo "{gr["nome"]}" criado. No telefone de {c["apelido"]}, disca {codigo}#. Imprima o cartão de novo.', 'success')
+                return redirect(url_for('familia.contatos', crianca_id=c['id']) + '#grupos')
+            elif acao == 'grupo_sair':
+                svc_gru.sair(conn(), g.familia['id'], request.form.get('grupo_id', type=int), c)
+                flash(f'{c["apelido"]} saiu do grupo.', 'success')
+                return redirect(url_for('familia.contatos', crianca_id=c['id']) + '#grupos')
+            elif acao == 'grupo_remover':
+                svc_gru.remover(conn(), g.familia['id'], request.form.get('grupo_id', type=int), c)
+                flash('Grupo removido.', 'success')
+                return redirect(url_for('familia.contatos', crianca_id=c['id']) + '#grupos')
         except ErroUsuario as e:
             flash(str(e), 'danger')
         return redirect(url_for('familia.contatos', crianca_id=c['id']))
     lst = svc_ami.listar(conn(), c['id'])
-    return render_template('contatos.html', crianca=c, lst=lst, active_tab='contatos')
+    pre = []
+    turma_id = request.args.get('turma', type=int)
+    if turma_id:   # atalho "criar grupo com a turma": pre-seleciona os amigos aceitos que estao na turma
+        t = svc_tur.por_id(conn(), turma_id)
+        if t:
+            pre = [m['crianca_id'] for m in svc_tur.visao(conn(), t, c) if m['relacao'] == 'amigo']
+    grupos_ = svc_gru.listar_da_crianca(conn(), c)
+    return render_template('contatos.html', crianca=c, lst=lst, active_tab='contatos', grupos=grupos_,
+                           amigos_grupo=svc_gru.amigos_para_grupo(conn(), c, pre), abrir_grupo=bool(pre),
+                           max_grupos=svc_gru.MAX_GRUPOS_POR_CRIANCA, max_membros=svc_gru.MAX_MEMBROS,
+                           max_na_chamada=_cfg().GRUPO_MAX_NA_CHAMADA)
 
 
 @bp.route('/crianca/<int:crianca_id>/turmas', methods=['GET', 'POST'])
@@ -280,7 +303,8 @@ def cartao(crianca_id):
     lst = svc_ami.listar(conn(), c['id'])
     celulares = [(t['apelido'] or f'Celular {t["posicao"]}', svc_fam.PREFIXOS[t['posicao']] + c['id_rede'])
                  for t in svc_fam.listar(conn(), g.familia['id']) if t['posicao'] in svc_fam.PREFIXOS]
-    return render_template('cartao.html', crianca=c, amigos=lst['amigos'], celulares=celulares)
+    return render_template('cartao.html', crianca=c, amigos=lst['amigos'], celulares=celulares,
+                           grupos=svc_gru.para_cartao(conn(), c))
 
 
 # --- Horarios ---

@@ -220,6 +220,27 @@ turma_membros = Table('turma_membros', metadata,
     UniqueConstraint('turma_id', 'crianca_id', name='turma_membro_unico'),
 )
 
+# Grupo para ligar juntos (doc 16): montado pelos pais a partir dos amigos aceitos da crianca dona.
+# Cada membro (a dona inclusive) tem um codigo de 1 digito, proprio do cartao dele: disca 0 + codigo.
+grupos = Table('grupos', metadata,
+    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('nome', Text, nullable=False),                      # ate 20 caracteres: vai para o visor e para a voz
+    Column('crianca_dona_id', Integer, ForeignKey('criancas.id'), nullable=False),
+    Column('ativo', Boolean, nullable=False, default=True),
+    _ts('criado_em', nullable=False),
+)
+
+grupo_membros = Table('grupo_membros', metadata,
+    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('grupo_id', Integer, ForeignKey('grupos.id'), nullable=False),
+    Column('crianca_id', Integer, ForeignKey('criancas.id'), nullable=False),
+    Column('codigo', Integer, nullable=False),                 # 1..9, unico entre os grupos ativos da crianca
+    _ts('entrou_em', nullable=False),
+    _ts('saiu_em'),
+    UniqueConstraint('grupo_id', 'crianca_id', name='grupo_membro_unico'),
+)
+Index('grupo_membros_crianca', grupo_membros.c.crianca_id)
+
 horarios = Table('horarios', metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
     Column('crianca_id', Integer, ForeignKey('criancas.id', ondelete='CASCADE'), nullable=False),

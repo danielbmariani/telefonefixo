@@ -204,7 +204,7 @@ load = chan_pjsip.so
 load = app_confbridge.so
 load = res_agi.so
 M
-cp $PORTAL/deploy/asterisk/extensions.conf $PORTAL/deploy/asterisk/confbridge.conf \
+cp $PORTAL/deploy/asterisk/extensions.conf \
    $PORTAL/deploy/asterisk/extconfig.conf $PORTAL/deploy/asterisk/sorcery.conf /etc/asterisk/
 sed "s/TROCAR_SENHA/$PG_ASTERISK_SENHA/" $PORTAL/deploy/asterisk/res_odbc.conf > /etc/asterisk/res_odbc.conf
 sed "s/TROCAR_SENHA/$PG_ASTERISK_SENHA/" $PORTAL/deploy/asterisk/odbc.ini > /etc/odbc.ini

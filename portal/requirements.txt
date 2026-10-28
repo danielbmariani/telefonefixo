@@ -3,3 +3,4 @@ SQLAlchemy==2.0.*
 psycopg2-binary
 pytz
 qrcode[pil]
+websockets>=12,<15   # servico rede-grupo (ARI)

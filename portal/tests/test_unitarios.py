@@ -17,7 +17,9 @@ def test_ids():
     for ruim in ('ab', '7abc', 'ana silva', 'admin', 'ana2015', ''):
         with pytest.raises(ValueError):
             ids.validar_nick(ruim)
-    assert ids.classificar_discado('0345678') == ('grupo', '345678')
+    assert ids.classificar_discado('01') == ('grupo', '1')
+    assert ids.classificar_discado('0345678') == ('invalido', None)
+    assert ids.classificar_discado('00') == ('invalido', None)
     assert ids.classificar_discado('9345678') == ('familia1', '345678')
     assert ids.classificar_discado('100') == ('servico', '100')
     assert ids.classificar_discado('045678')[0] == 'invalido'

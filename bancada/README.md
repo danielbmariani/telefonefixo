@@ -34,6 +34,7 @@ evidência (trecho de log colado), decisão que isso fecha.
 | B22 | Resync por SIP NOTIFY check-sync (P4428) para rebuscar o cfg sem esperar o dia | pendente | |
 | B23 | Tronco de operadora: 9+ID toca no celular do responsável; celular cadastrado toca no telefone da criança | **feito** 27/10: Nvoip, nos dois sentidos, com áudio; R$ 39/mês o número | B23-tronco-celular-dos-pais.md |
 | B24 | GRP2602W (Wi-Fi): conferir no aparelho o caminho do menu (Menu > System > Wi-Fi Settings > Enabled > Scan > senha), o número de teclas ao lado do visor (desenho do site), o nome do modelo na etiqueta de baixo e se a senha do Wi-Fi pode ir na configuração (primeira ligação por cabo) | pendente: precisa de um GRP2602W | |
+| B25 | Chamada em grupo (doc 16): dois GRP2601 + softphone como terceiro; visor "Grupo: <nome> (<apelido>)", anúncios (chamando, entrou, saiu, não atendeu, ninguém atendeu, único), entrada tardia, tecla *, horário por membro, histórico com tempo por participante | pendente: depois do `deploy/grupos.sh` | |
 
 Saídas que entram no código: `ERROS_DEVICE_ADD` em `portal/rede/gdms_client.py` (B13, B14),
 P-values em `portal/rede/grandstream_xml.py` (B09, B10), `GDMS_XML_CONTEUDO` ponteiro/completo (B09),
