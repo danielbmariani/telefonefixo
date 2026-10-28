@@ -339,7 +339,10 @@ def reativar(conn, telefone, ator_tipo, ator_id, cfg):
     estados.transicionar(conn, telefone['id'], 'reativar', ator_tipo, ator_id)
     _novo_token(conn, telefone['id'])
     conn.execute(update(db.telefones).where(db.telefones.c.id == telefone['id'])
-                 .values(xml_versao=telefone['xml_versao'] + 1, informado_em=agora(), desativado_em=None))
+                 .values(xml_versao=telefone['xml_versao'] + 1, informado_em=agora(), desativado_em=None,
+                         # marcas da ativacao anterior: sem isso o observador conta o prazo de boot a partir
+                         # do "ja liguei" antigo e declara sem_boot 20 s depois (bancada B12, 28/10)
+                         familia_ligou_em=None, config_entregue_em=None, registrado_em=None))
     gdms_fila.enfileirar(conn, telefone['id'])
 
 

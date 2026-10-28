@@ -108,3 +108,24 @@ def test_delete_esgotado_vira_tarefa_de_operador(app):
         gdms_fila.processar(conn, cfg, http=http_falso, ref=agora() + timedelta(hours=2))
         assert conn.execute(text("SELECT estado FROM gdms_fila ORDER BY id DESC LIMIT 1")).scalar() == 'erro'
         assert conn.execute(text("SELECT count(*) FROM tarefas WHERE tipo='remover_gdms' AND estado='aberta'")).scalar() == 1
+
+
+def test_reativar_zera_as_marcas_da_ativacao_anterior(app):
+    """Bancada B12 (28/10): o observador contava o prazo de boot a partir do "ja liguei" antigo e
+    declarava sem_boot 20 s depois do Reativar."""
+    from rede.servicos import sip
+    cfg = _cfg(app, GDMS_MODO='simulado')
+    with app.engine.begin() as conn:
+        fid = contas.criar_operador(conn, 'f@x.com', 'senha12345', 'F', 'familia')
+        cr = criancas.criar(conn, fid, 'kid', cfg)
+        t = telefones.informar(conn, cr, 'C074AD000001', 'SN00000000', '1.1.1.1', cfg, familia_id=fid)
+        gdms_fila.processar(conn, cfg)
+        tel = telefones.por_id(conn, t['id'])
+        telefones.familia_informou_ligado(conn, tel, fid)
+        conn.execute(text("UPDATE telefones SET familia_ligou_em = :a WHERE id = :i"), {'a': agora() - timedelta(days=2), 'i': t['id']})
+        telefones.desativar(conn, t['id'], 'familia', fid, motivo='familia_removeu', cfg=cfg)
+        telefones.reativar(conn, telefones.por_id(conn, t['id']), 'familia', fid, cfg)
+        gdms_fila.processar(conn, cfg)
+        assert telefones.por_id(conn, t['id'])['estado'] == 'aguardando_boot'
+        sip.observar(conn, cfg)
+        assert telefones.por_id(conn, t['id'])['estado'] == 'aguardando_boot'   # e nao sem_boot
