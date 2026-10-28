@@ -182,3 +182,26 @@ def test_familia_acompanha_o_zeramento(client, app):
     h = client.get(f'/crianca/{cid}/telefone').get_data(as_text=True)
     assert 'Pode desligar o telefone' in h and 'Reativar' in h
     assert client.get(f'/crianca/{cid}/telefone/zeramento.json').get_json()['fase'] == 'pronto'
+
+
+def test_aparelho_entregue_a_outra_familia_some_da_lista_anterior(client, app):
+    from conftest import cadastrar_e_entrar, criar_crianca, crianca_row, post
+    cfg = _cfg(app, GDMS_MODO='simulado')
+    cadastrar_e_entrar(client, app, email='a@x.com')
+    ca = criar_crianca(client, 'kida'); ra = crianca_row(app, ca)
+    with app.engine.begin() as conn:
+        t = telefones.informar(conn, ra, 'C074AD000001', 'SN00000000', '1.1.1.1', cfg, familia_id=ra['familia_id'])
+        gdms_fila.processar(conn, cfg)
+        telefones.desativar(conn, t['id'], 'familia', ra['familia_id'], motivo='familia_removeu', cfg=cfg)
+        gdms_fila.processar(conn, cfg)
+    assert 'Reativar' in client.get(f'/crianca/{ca}/telefone').get_data(as_text=True)
+    client.get('/sair')
+    # outra familia cadastra o mesmo aparelho
+    cadastrar_e_entrar(client, app, email='b@x.com')
+    cb = criar_crianca(client, 'kidb'); rb = crianca_row(app, cb)
+    with app.engine.begin() as conn:
+        telefones.informar(conn, rb, 'C074AD000001', 'SN00000000', '1.1.1.1', cfg, familia_id=rb['familia_id'])
+    client.get('/sair')
+    post(client, '/entrar', email='a@x.com', senha='senha12345')
+    h = client.get(f'/crianca/{ca}/telefone').get_data(as_text=True)
+    assert 'Reativar' not in h and 'C0:74:AD' not in h

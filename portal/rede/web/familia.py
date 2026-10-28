@@ -140,7 +140,9 @@ def telefone(crianca_id):
             flash(str(e), 'danger')
         return redirect(url_for('familia.telefone', crianca_id=c['id']))
     st = svc_tel.status(conn(), tel, _cfg()) if tel else None
-    desativados = [t for t in svc_tel.listar_da_crianca(conn(), c['id'], incluir_desativados=True) if t['estado'] == 'desativado']
+    # anteriores: so os que ninguem mais usa (um aparelho entregue a outra familia some daqui)
+    desativados = [t for t in svc_tel.listar_da_crianca(conn(), c['id'], incluir_desativados=True)
+                   if t['estado'] == 'desativado' and not svc_tel.por_mac_ativo(conn(), t['mac'])]
     zer = svc_tel.zeramento(conn(), desativados[0]) if (not tel and desativados) else None
     if zer and zer['fase'] != 'andamento' and zer['minutos'] > 30:
         zer = None   # terminou ha tempo: volta a pagina normal
