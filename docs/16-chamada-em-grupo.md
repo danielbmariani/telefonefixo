@@ -266,7 +266,8 @@ atendeu", "Voce e o unico"), de saber quem nao atendeu e de registrar o tempo de
   senha gerada no servidor, musica de espera, dialplan, servico systemd, reinicios).
 - Testes: `tests/test_grupos.py` (servico e site) e `tests/test_grupo_ari.py` (fluxo completo, ninguem
   atendeu, quem ligou desistiu, entrada tardia e limite, bloqueios, sem audio de apelido).
-- Bancada: B25 (pendente, precisa de um softphone como terceiro participante).
+- Bancada: B25 feita com dois aparelhos em 28/10 (`bancada/B25-chamada-em-grupo.md`): chamada, anúncios, grupo
+  inexistente, ninguém atendeu e histórico confirmados. A parte de três participantes espera um softphone.
 - Instalado no servidor em 28/10/2026: serviços `asterisk`, `rede-grupo` e `rede-portal` ativos, app `grupo` registrada no ARI, piper
   com a voz `pt_BR-faber-medium`, 19 frases, 4 tons e os apelidos das crianças cadastradas. Teste de fumaça por ARI (chamada local
   para `01` com um número inexistente) percorreu Stasis, serviço, decisão, frase e registro em `call_logs` sem tocar aparelho.
