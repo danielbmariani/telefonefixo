@@ -146,6 +146,8 @@ class AppGrupo:
             d = grupos.decidir(conn, id_rede, codigo, em_sp(agora()))
             if d['resultado'] != 'ALLOW':
                 chamadas.registrar_bloqueio(conn, id_rede, f'0{codigo}', d.get('motivo', 'GRUPO'))
+        log.info('chamador %s codigo %s -> %s %s', id_rede, codigo, d['resultado'],
+                 ('chamar=' + ','.join(c['apelido'] for c in d['chamar']) + ' fora=' + ','.join(f"{f['apelido']}:{f['motivo']}" for f in d['fora'])) if d['resultado'] == 'ALLOW' else d.get('motivo'))
         if d['resultado'] == 'BLOCK_SCHEDULE_CALLER':
             self._despedir(canal, [som('frases/fora-do-horario')])
             return
@@ -208,6 +210,7 @@ class AppGrupo:
 
     # --- quem atende ---
     def _membro_atendeu(self, canal, gid, id_rede):
+        log.info('membro %s atendeu (grupo %s)', id_rede, gid)
         ch = self.chamadas.get(gid)
         if not ch or ch.encerrando:
             self.ari.hangup(canal)
@@ -228,6 +231,7 @@ class AppGrupo:
         self._tocar_canal(canal, medias, lambda: canal in self.canal_grupo and self._adicionar(ch, canal, quem['id_rede'], quem['apelido']))
 
     def _adicionar(self, ch, canal, id_rede, apelido, anunciar=True):
+        log.info('grupo %s: %s entrou na ponte (%d na chamada)', ch.grupo_id, id_rede, len(ch.participantes) + 1)
         self.ari.add_channel(ch.ponte, canal)
         if ch.moh:
             self.ari.stop_moh_bridge(ch.ponte)
@@ -305,6 +309,7 @@ class AppGrupo:
         self._tocar_ponte(ch, [som('frases/chamada-terminou')], depois=lambda: [self.ari.hangup(c) for c in canais])
 
     def _finalizar(self, ch):
+        log.info('grupo %s: chamada terminou; participantes=%s', ch.grupo_id, list(ch.tempos))
         self.chamadas.pop(ch.grupo_id, None)
         if ch.timer_sozinho:
             ch.timer_sozinho.cancel()
