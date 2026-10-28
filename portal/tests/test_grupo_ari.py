@@ -174,7 +174,7 @@ def test_fluxo_completo(mundo, app):
     m.t += 1; m.desliga(cb)
     assert m.ari.so('destroy_bridge') and not m.app.chamadas and not m.app.canal_grupo
     with app.engine.begin() as conn:
-        rows = {r_[0]: r_ for r_ in conn.execute(text("SELECT caller_ext, status, duration_seconds, block_reason FROM call_logs WHERE callee_ext='GRUPO'")).all()}
+        rows = {r_[0]: r_ for r_ in conn.execute(text("SELECT caller_ext, status, duration_seconds, block_reason FROM call_logs WHERE callee_ext LIKE 'GRUPO%'")).all()}
     assert set(rows) == {j['id_rede'], b['id_rede']}
     assert rows[j['id_rede']][1] == 'ALLOWED' and rows[j['id_rede']][2] == 140 and rows[j["id_rede"]][3] == f"{b['id_rede']}:140"
     assert rows[b["id_rede"]][3] == f"{j['id_rede']}:140"
@@ -193,7 +193,7 @@ def test_ninguem_atendeu(mundo, app):
     assert m.ari.ultimo('hangup')[1] == 'cj'
     m.desliga('cj')
     with app.engine.begin() as conn:
-        rows = conn.execute(text("SELECT caller_ext, status FROM call_logs WHERE callee_ext='GRUPO'")).all()
+        rows = conn.execute(text("SELECT caller_ext, status FROM call_logs WHERE callee_ext LIKE 'GRUPO%'")).all()
     assert rows == [(j['id_rede'], 'NOANSWER')]
     assert not m.app.chamadas
 

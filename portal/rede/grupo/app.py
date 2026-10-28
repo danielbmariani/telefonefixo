@@ -330,7 +330,7 @@ class AppGrupo:
         if tempos:
             try:
                 with self.engine.begin() as conn:
-                    grupos.registrar_chamada(conn, tempos, ch.quando_texto, atendida=ch.alguem_entrou)
+                    grupos.registrar_chamada(conn, tempos, ch.quando_texto, atendida=ch.alguem_entrou, grupo_id=ch.grupo_id)
             except Exception as e:  # noqa: BLE001
                 log.exception('registro da chamada falhou: %s', e)
 

@@ -27,6 +27,18 @@ def nomes(conn, ids_rede):
     ids = list(ids_rede)
     rows = conn.execute(select(db.criancas.c.id_rede, db.criancas.c.apelido).where(db.criancas.c.id_rede.in_(ids))).all()
     res = {i: a for i, a in rows}
+    # chamada em grupo: 'GRUPO:<id>' vira o nome do grupo (mesmo se o grupo ja acabou); 'GRUPO' sem id e de antes de 28/10
+    gids = {}
+    for i in ids:
+        if i and i.startswith('GRUPO:') and i[6:].isdigit():
+            gids[int(i[6:])] = i
+        elif i == 'GRUPO':
+            res[i] = 'Chamada em grupo'
+    if gids:
+        for gid, nome in conn.execute(select(db.grupos.c.id, db.grupos.c.nome).where(db.grupos.c.id.in_(list(gids)))).all():
+            res[gids[gid]] = f'{nome} (grupo)'
+        for gid, chave in gids.items():
+            res.setdefault(chave, 'Chamada em grupo')
     for i in ids:
         if i in res or not i:
             continue
@@ -43,12 +55,12 @@ def tempo_por_contato(conn, id_rede):
     rows = conn.execute(text(
         "SELECT CASE WHEN caller_ext = :e THEN callee_ext ELSE caller_ext END AS contato, "
         "substr(timestamp, 1, 10) AS dt, SUM(duration_seconds) AS secs FROM call_logs "
-        "WHERE (caller_ext = :e OR callee_ext = :e) AND callee_ext != 'GRUPO' AND status = 'ALLOWED' "
+        "WHERE (caller_ext = :e OR callee_ext = :e) AND callee_ext NOT LIKE 'GRUPO%' AND status = 'ALLOWED' "
         "AND duration_seconds > 0 GROUP BY contato, dt"), {'e': id_rede}).all()
     for contato, dt, secs in rows:
         res.append({'contact_ext': contato, 'date': dt, 'seconds': int(secs or 0)})
     grupo = conn.execute(select(db.call_logs.c.timestamp, db.call_logs.c.block_reason).where(and_(
-        db.call_logs.c.caller_ext == id_rede, db.call_logs.c.callee_ext == 'GRUPO',
+        db.call_logs.c.caller_ext == id_rede, db.call_logs.c.callee_ext.like('GRUPO%'),
         db.call_logs.c.status == 'ALLOWED', db.call_logs.c.block_reason.isnot(None)))).all()
     for ts, det in grupo:
         try:
@@ -81,7 +93,7 @@ def para_retornar(conn, id_rede, dias=7):
     desde = (datetime.now(TZ_SP) - timedelta(days=dias)).strftime('%Y-%m-%d %H:%M:%S')
     rows = conn.execute(select(db.call_logs).where(and_(
         or_(db.call_logs.c.caller_ext == id_rede, db.call_logs.c.callee_ext == id_rede),
-        db.call_logs.c.timestamp >= desde, db.call_logs.c.callee_ext != 'GRUPO'))
+        db.call_logs.c.timestamp >= desde, db.call_logs.c.callee_ext.not_like('GRUPO%')))
         .order_by(db.call_logs.c.timestamp)).mappings().all()
     pend = {}
     for r in rows:

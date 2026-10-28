@@ -129,15 +129,24 @@ def test_decidir_clique_horario_e_bloqueios(app, rede4):
         assert g['ativo']
 
 
-def test_registrar_chamada_no_historico(app, rede4):
+def test_registrar_chamada_no_historico(client, app, rede4):
     j, b = rede4['jose'], rede4['beto']
     with app.engine.begin() as conn:
         grupos.registrar_chamada(conn, {j['id_rede']: [(1000, 1100)], b['id_rede']: [(1020, 1080)]}, '2026-10-28 15:00:00')
         rows = conn.execute(text("SELECT caller_ext, callee_ext, status, duration_seconds, block_reason FROM call_logs ORDER BY caller_ext")).all()
-    assert len(rows) == 2 and all(r[1] == 'GRUPO' and r[2] == 'ALLOWED' for r in rows)
+    assert len(rows) == 2 and all(r[1].startswith('GRUPO') and r[2] == 'ALLOWED' for r in rows)
     por = {r[0]: r for r in rows}
     assert por[j['id_rede']][3] == 100 and por[j['id_rede']][4] == f'{b["id_rede"]}:60'
     assert por[b['id_rede']][3] == 60 and por[b['id_rede']][4] == f'{j["id_rede"]}:60'
+    # com o id do grupo, a aba Ligacoes mostra o nome do grupo (mesmo depois de o grupo acabar)
+    with app.engine.begin() as conn:
+        g = grupos.criar(conn, _fam_id(app, j), j, 'Turma do futebol', [b['id']])
+        grupos.registrar_chamada(conn, {j['id_rede']: [(2000, 2100)], b['id_rede']: [(2000, 2100)]}, '2026-10-28 16:00:00', grupo_id=g['id'])
+        grupos.remover(conn, _fam_id(app, j), g['id'], j)
+    from conftest import post as _post
+    _post(client, '/entrar', email='j@x.com', senha='senha12345')
+    h = client.get(f'/crianca/{j["id"]}/historico').get_data(as_text=True)
+    assert 'Turma do futebol (grupo)' in h and 'Chamada em grupo' in h
 
 
 def test_apelido_falado():

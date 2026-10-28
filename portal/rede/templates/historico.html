@@ -74,11 +74,7 @@
       <div class="d-flex align-items-center gap-2">
         <span><strong>{{ ext_names.get(l.caller_ext, l.caller_ext) }}</strong></span>
         <i class="bi bi-arrow-right text-muted"></i>
-        {% if l.callee_ext == 'GRUPO' %}
-          <span><strong>Chamada em grupo</strong></span>
-        {% else %}
-          <span><strong>{{ ext_names.get(l.callee_ext, l.callee_ext) }}</strong></span>
-        {% endif %}
+        <span><strong>{{ ext_names.get(l.callee_ext, l.callee_ext) }}</strong></span>
         {% if l.duration_seconds and l.status == 'ALLOWED' %}
           <span class="text-muted ms-auto">
             <i class="bi bi-stopwatch"></i>
@@ -90,7 +86,7 @@
           </span>
         {% endif %}
       </div>
-      {% if l.callee_ext == 'GRUPO' and l.block_reason %}
+      {% if l.callee_ext.startswith('GRUPO') and l.block_reason %}
         <div class="mt-1">
           {% for part in l.block_reason.split(',') %}
             {% set ext = part.split(':')[0] %}

@@ -230,9 +230,9 @@ def pode_entrar(conn, id_rede, participantes_ids):
     return all(svc_ami.permitido(conn, id_rede, p) for p in participantes_ids if p != id_rede)
 
 
-def registrar_chamada(conn, tempos, quando_texto, atendida=True):
+def registrar_chamada(conn, tempos, quando_texto, atendida=True, grupo_id=None):
     """`tempos`: {id_rede: [(inicio_epoch, fim_epoch)]} por participante. Uma linha de call_logs por
-    participante (callee 'GRUPO'), com o tempo em comum com cada um dos outros em block_reason
+    participante (callee 'GRUPO:<id do grupo>', para o historico mostrar o nome), com o tempo em comum com cada um dos outros em block_reason
     ('id:segundos,...'), como o historico ja mostra. `atendida=False` (ninguem entrou): status NOANSWER."""
     def total(iv):
         return sum(max(0, int(f - i)) for i, f in iv)
@@ -246,6 +246,6 @@ def registrar_chamada(conn, tempos, quando_texto, atendida=True):
     for pid, iv in tempos.items():
         outros = ','.join(f'{o}:{comum(iv, ov)}' for o, ov in tempos.items() if o != pid)
         dur = total(iv)
-        conn.execute(insert(db.call_logs).values(caller_ext=pid, callee_ext='GRUPO', timestamp=quando_texto,
+        conn.execute(insert(db.call_logs).values(caller_ext=pid, callee_ext=f'GRUPO:{grupo_id}' if grupo_id else 'GRUPO', timestamp=quando_texto,
                                                  status='ALLOWED' if (dur > 0 and atendida) else 'NOANSWER', duration_seconds=dur,
                                                  block_reason=outros or None))
