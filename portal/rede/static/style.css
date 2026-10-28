@@ -159,12 +159,40 @@ body.com-abas .topo { position: static; box-shadow: none; }
 .checklist .bi-check-circle-fill { color: var(--verde); }
 .checklist .bi-circle { color: #c9c2b3; }
 
-/* Contatos e histórico */
-.contact-card { border-left: 5px solid transparent; }
-.contact-card.status-can_call { border-left-color: var(--verde); }
-.contact-card.status-waiting_other { border-left-color: var(--mar); }
-.contact-card.status-waiting_you { border-left-color: var(--sol); }
-.contact-card.status-blocked { border-left-color: var(--cinza); }
+/* Aba Amigos (revisao de 28/10: tres blocos com hierarquia clara; listas em vez de cartoes;
+   formularios em pagina propria; o que pede resposta vem primeiro) */
+.bloco { margin-top: 2rem; }
+.bloco-cabeca { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; padding-bottom: .5rem; border-bottom: 2px solid var(--tinta); margin-bottom: .75rem; }
+.bloco-cabeca h2 { font-size: 1.45rem; margin: 0; line-height: 1.2; }
+.bloco-cabeca .conta { font-weight: 400; color: var(--cinza); font-size: 1.05rem; margin-left: .15rem; }
+.bloco-sub { color: var(--tinta-suave); font-size: .95rem; margin: 0 0 .75rem; }
+.bloco h3 { color: var(--tinta-suave); }
+.lista { list-style: none; margin: 0; padding: 0; border: 1px solid var(--linha); border-radius: var(--raio); background: var(--creme); }
+.lista li { display: flex; align-items: center; justify-content: space-between; gap: .5rem 1rem; padding: .7rem 1rem; border-top: 1px solid var(--linha); }
+.lista li:first-child { border-top: 0; }
+.lista li.quebra { flex-wrap: wrap; }
+.lista li > div:first-child { min-width: 0; }
+.lista .discar { color: var(--tinta-suave); margin-left: .35rem; font-size: .95rem; }
+.lista .acoes { display: flex; flex-wrap: wrap; gap: .25rem; flex: 0 0 auto; align-items: center; }
+.lista .acoes .btn-link { color: var(--cinza); text-decoration: none; padding: .25rem .5rem; font-size: .85rem; font-weight: 700; }
+.lista .acoes .btn-link:hover, .lista .acoes .btn-link:focus-visible { color: var(--tinta); text-decoration: underline; }
+.lista .acoes .btn-link.perigo { color: #a93226; }
+.lista .acoes .btn-link.perigo:hover { color: var(--vermelho); }
+.lista.suave li { color: var(--tinta-suave); padding-top: .5rem; padding-bottom: .5rem; }
+.lista.suave li strong { font-weight: 700; color: var(--tinta-suave); }
+.bloco-atencao { margin-top: 1.25rem; background: var(--sol-claro); border: 1px solid #f0dc95; border-radius: var(--raio); padding: 1rem 1.1rem 1.1rem; }
+.bloco-atencao h2 { font-size: 1.1rem; margin: 0 0 .7rem; color: #5c4400; }
+.bloco-atencao .lista { border-color: #f0dc95; }
+.form-check-lg .form-check-input { width: 1.35em; height: 1.35em; margin-top: .15em; }
+.form-check-lg .form-check-label { padding-left: .25rem; font-size: 1.05rem; }
+@media (max-width: 575.98px) {
+  .bloco { margin-top: 1.5rem; }
+  .bloco-cabeca h2 { font-size: 1.3rem; }
+  .lista li { padding: .6rem .75rem; }
+  .lista .discar { display: block; margin-left: 0; }
+}
+
+/* Histórico */
 .log-item { border-left: 5px solid transparent; }
 .log-item.log-allowed { border-left-color: var(--verde); }
 .log-item.log-blocked { border-left-color: var(--vermelho); }

@@ -1,0 +1,10 @@
+{# Formulario de pedido de amizade. Usado na pagina "Adicionar amigo" e na aba Amigos quando ainda nao ha amigos. #}
+<form method="post" action="{{ url_for('familia.contatos', crianca_id=crianca.id) }}" data-enviando="Pedindo…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="pedir">
+  <div class="mb-3"><label class="form-label" for="id_rede">ID do amigo</label>
+    <input class="form-control form-control-lg mono" id="id_rede" name="id_rede" inputmode="numeric" pattern="[0-9 ]{6,8}" maxlength="8" required autocomplete="off" value="{{ valores.id_rede if valores else '' }}">
+    <div class="form-text">6 números. Está no cartão da outra criança e no visor do telefone dela.</div></div>
+  <div class="mb-3"><label class="form-label" for="mensagem">Quem é {{ crianca.apelido }} para essa família? <span class="text-muted fw-normal">(opcional)</span></label>
+    <input class="form-control" id="mensagem" name="mensagem" maxlength="80" placeholder="ex.: da 4ª série da Escola X, ou da aula de circo" autocomplete="off" value="{{ valores.mensagem if valores else '' }}">
+    <div class="form-text">Aparece para a outra família junto com o pedido, para ela reconhecer quem está pedindo.</div></div>
+  <button class="btn btn-primary btn-lg">Pedir amizade</button>
+</form>

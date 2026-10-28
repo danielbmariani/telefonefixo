@@ -142,7 +142,9 @@ def test_site_cria_lista_sai_e_cartao(client, app, rede4):
     # entra como a familia do jose
     _post(client, '/entrar', email='j@x.com', senha='senha12345')
     r = client.get(f'/crianca/{j["id"]}/contatos').get_data(as_text=True)
-    assert 'Grupos para ligar juntos' in r and 'Criar um grupo' in r and f'value="{b["id"]}"' in r
+    assert 'Grupos para ligar juntos' in r and 'Criar grupo' in r and f'/crianca/{j["id"]}/grupos/novo' in r
+    r = client.get(f'/crianca/{j["id"]}/grupos/novo').get_data(as_text=True)
+    assert 'Nome do grupo' in r and f'value="{b["id"]}"' in r
     r = _post(client, f'/crianca/{j["id"]}/contatos', acao='grupo_criar', nome='Turma do futebol', membros=[str(b['id']), str(a['id'])], follow_redirects=True)
     h = r.get_data(as_text=True)
     assert 'criado. No telefone de jose, disca 01#' in h and 'Remover grupo' in h

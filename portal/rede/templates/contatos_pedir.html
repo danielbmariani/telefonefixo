@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Adicionar amigo para {{ crianca.apelido }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mt-3 mb-2">
+  <h1 class="h3 mb-0">Adicionar amigo</h1>
+  <a class="small" href="{{ url_for('familia.contatos', crianca_id=crianca.id) }}">Voltar aos amigos</a>
+</div>
+<p class="text-muted mb-3">Peça o ID de 6 números para a outra família. A ligação só funciona depois que ela aceitar, e ela vê quem pediu.</p>
+<div class="card mb-3"><div class="card-body">{% include "_form_pedir.html" %}</div></div>
+<p class="text-muted small">Várias crianças da mesma escola, prédio ou time? Use uma <a href="{{ url_for('familia.turmas', crianca_id=crianca.id) }}">turma</a>: um código só, e cada família aceita um a um.</p>
+{% endblock %}

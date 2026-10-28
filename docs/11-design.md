@@ -129,3 +129,17 @@ exatamente como estava depois das correções de texto da Carol. O pacote de ide
 `~/Desktop/telefone-fixo-identidade.zip` e a seção acima registra o que foi tentado. Lição registrada:
 aplicar identidade não pode mexer em texto nem na ordem dos blocos, e mudança de visual inteira merece uma
 prova numa página só antes de ir para o site todo.
+
+## Aba Amigos (28/10/2026, noite): hierarquia em três blocos
+
+Problema relatado pelo Daniel: "Grupos para ligar juntos" não era encontrado sem Ctrl+F; a aba parecia três coisas (pedir amizade, amigos, grupos) sem separação nem hierarquia. Na captura de antes, o formulário de pedir amizade ocupava a primeira tela inteira no celular, cinco títulos iguais (h5) se seguiam, cada contato era um cartão com dois botões, e tanto "Criar um grupo" quanto "Bloqueados" estavam em `<details>` fechados.
+
+O que a pesquisa diz, e o que foi aplicado:
+
+- Conteúdo escondido em acordeão/`details` é perdido; só esconder o que é secundário e dar sinal claro de abrir (NN/g, "Accordions on Desktop"; GOV.UK Design System, "Accordion": "não use para conteúdo que todos precisam ver; teste primeiro sem"). Aplicado: "Criar grupo" e "Adicionar amigo" viraram botões no cabeçalho de cada bloco, com página própria para o formulário. Só "Bloqueados" ficou em `details`, porque é raro.
+- Hierarquia visual: no máximo três tamanhos, dois elementos grandes, contêineres com parcimônia; o mais importante vem primeiro e os títulos começam pela palavra que informa (NN/g, "Visual Hierarchy" e "F-Shaped Pattern"). Aplicado: dois títulos grandes com linha grossa embaixo (Amigos, Grupos para ligar juntos), subtítulos pequenos (Aguardando, Bloqueados), listas com linhas em vez de um cartão por contato, ações de remover/bloquear como links discretos à direita.
+- O que exige resposta vem antes do resto: pedidos recebidos num bloco amarelo no topo, com o número no título ("1 pedido de amizade para você responder").
+- Formulário em página própria (padrão "uma coisa por página" do GOV.UK): a página da lista é só leitura e decisão; `contatos/pedir` e `grupos/novo` são os formulários, e o erro de validação volta para o formulário com o que foi digitado. Sem amigos ainda, o formulário de pedir aparece aberto na própria aba, porque é a única coisa a fazer.
+- Prova em tela antes de subir: capturas em 390 e 1280 (`~/Desktop/aba-amigos-antes-depois/`). Deploy de rotina com o novo `deploy/codigo.sh` (só código, reinicia o portal).
+
+Fontes: nngroup.com/articles/accordions-on-desktop, nngroup.com/articles/visual-hierarchy-ux-definition, nngroup.com/articles/f-shaped-pattern-reading-web-content, nngroup.com/articles/tabs-used-right, design-system.service.gov.uk/components/accordion, design-system.service.gov.uk/components/summary-list.

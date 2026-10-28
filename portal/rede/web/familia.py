@@ -214,19 +214,51 @@ def contatos(crianca_id):
                 return redirect(url_for('familia.contatos', crianca_id=c['id']) + '#grupos')
         except ErroUsuario as e:
             flash(str(e), 'danger')
+            # os formularios tem pagina propria: o erro volta para ela, com o que foi digitado
+            if acao == 'pedir':
+                return _pagina_pedir(c, {'id_rede': request.form.get('id_rede', ''), 'mensagem': request.form.get('mensagem', '')})
+            if acao == 'grupo_criar':
+                return _pagina_grupo_novo(c, request.form.get('nome', ''), request.form.getlist('membros'))
         return redirect(url_for('familia.contatos', crianca_id=c['id']))
     lst = svc_ami.listar(conn(), c['id'])
+    return render_template('contatos.html', crianca=c, lst=lst, active_tab='contatos',
+                           grupos=svc_gru.listar_da_crianca(conn(), c), amigos_grupo=svc_gru.amigos_para_grupo(conn(), c),
+                           max_na_chamada=_cfg().GRUPO_MAX_NA_CHAMADA)
+
+
+def _pagina_pedir(c, valores=None):
+    return render_template('contatos_pedir.html', crianca=c, active_tab='contatos', valores=valores)
+
+
+def _pagina_grupo_novo(c, nome='', pre=()):
+    pre = [int(x) for x in pre if str(x).isdigit()]
+    return render_template('grupo_novo.html', crianca=c, active_tab='contatos', nome=nome,
+                           amigos_grupo=svc_gru.amigos_para_grupo(conn(), c, pre),
+                           max_grupos=svc_gru.MAX_GRUPOS_POR_CRIANCA, max_membros=svc_gru.MAX_MEMBROS,
+                           max_na_chamada=_cfg().GRUPO_MAX_NA_CHAMADA)
+
+
+@bp.route('/crianca/<int:crianca_id>/contatos/pedir')
+@login_obrigatorio
+@consentimento_obrigatorio
+def contatos_pedir(crianca_id):
+    """Pagina "Adicionar amigo". O envio vai para a rota contatos (acao=pedir)."""
+    return _pagina_pedir(crianca_da_familia(crianca_id))
+
+
+@bp.route('/crianca/<int:crianca_id>/grupos/novo')
+@login_obrigatorio
+@consentimento_obrigatorio
+def grupo_novo(crianca_id):
+    """Pagina "Criar grupo". ?turma=<id> pre-seleciona os amigos aceitos daquela turma. Envio: contatos (acao=grupo_criar)."""
+    c = crianca_da_familia(crianca_id)
     pre = []
     turma_id = request.args.get('turma', type=int)
-    if turma_id:   # atalho "criar grupo com a turma": pre-seleciona os amigos aceitos que estao na turma
+    if turma_id:
         t = svc_tur.por_id(conn(), turma_id)
         if t:
             pre = [m['crianca_id'] for m in svc_tur.visao(conn(), t, c) if m['relacao'] == 'amigo']
-    grupos_ = svc_gru.listar_da_crianca(conn(), c)
-    return render_template('contatos.html', crianca=c, lst=lst, active_tab='contatos', grupos=grupos_,
-                           amigos_grupo=svc_gru.amigos_para_grupo(conn(), c, pre), abrir_grupo=bool(pre),
-                           max_grupos=svc_gru.MAX_GRUPOS_POR_CRIANCA, max_membros=svc_gru.MAX_MEMBROS,
-                           max_na_chamada=_cfg().GRUPO_MAX_NA_CHAMADA)
+    return _pagina_grupo_novo(c, '', pre)
 
 
 @bp.route('/crianca/<int:crianca_id>/turmas', methods=['GET', 'POST'])

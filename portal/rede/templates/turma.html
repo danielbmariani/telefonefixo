@@ -46,7 +46,7 @@
 {% endfor %}
 
 {% if aceitos|selectattr('relacao', 'equalto', 'amigo')|list %}
-<p class="mt-3"><a class="btn btn-outline-primary btn-sm" href="{{ url_for('familia.contatos', crianca_id=crianca.id, turma=turma.id) }}#grupos"><i class="bi bi-people me-1"></i> Criar grupo para ligar juntos com os amigos da turma</a></p>
+<p class="mt-3"><a class="btn btn-outline-primary btn-sm" href="{{ url_for('familia.grupo_novo', crianca_id=crianca.id, turma=turma.id) }}"><i class="bi bi-people me-1"></i> Criar grupo para ligar juntos com os amigos da turma</a></p>
 {% endif %}
 <details class="mt-3"><summary class="text-muted">Sair da turma</summary>
 <form method="post" action="{{ url_for('familia.turmas', crianca_id=crianca.id) }}" class="mt-2"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="sair"><input type="hidden" name="turma_id" value="{{ turma.id }}">

@@ -1,106 +1,102 @@
 {% extends "base.html" %}
-{% block title %}Contatos de {{ crianca.apelido }}{% endblock %}
+{% block title %}Amigos de {{ crianca.apelido }}{% endblock %}
 {% block content %}
-<div class="card mb-3 border-primary mt-2"><div class="card-body">
-  <h2 class="h5 mb-1"><i class="bi bi-person-plus me-1"></i> Adicionar amigo pelo ID</h2>
-  <p class="text-muted small mb-2">Peça o ID de 6 números para a outra família. Ele está no cartão da criança e no visor do telefone dela. A ligação só funciona depois que ela aceitar.</p>
-  <form method="post" data-enviando="Pedindo…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="pedir">
-    <div class="mb-2"><label class="form-label" for="id_rede">ID do amigo</label>
-      <input class="form-control form-control-lg mono" id="id_rede" name="id_rede" inputmode="numeric" pattern="[0-9 ]{6,8}" maxlength="8" required autocomplete="off"></div>
-    <div class="mb-2"><label class="form-label" for="mensagem">Quem é {{ crianca.apelido }} para essa família? <span class="text-muted">(opcional)</span></label>
-      <input class="form-control" id="mensagem" name="mensagem" maxlength="80" placeholder="ex.: da 4ª série da Escola X, ou da aula de circo" autocomplete="off">
-      <div class="form-text">Aparece para a outra família junto com o pedido, para ela reconhecer quem está pedindo.</div></div>
-    <button class="btn btn-primary btn-lg">Pedir amizade</button></form>
-</div></div>
-
 {% macro botao(aid, acao, rotulo, cls, confirmar=None) %}
 <form method="post" class="d-inline"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="{{ acao }}"><input type="hidden" name="amizade_id" value="{{ aid }}">
 <button class="btn btn-sm {{ cls }}" {% if confirmar %}onclick="return confirm('{{ confirmar }}')"{% endif %}>{{ rotulo }}</button></form>
 {% endmacro %}
 
+{# 1. O que pede uma resposta da familia vem primeiro #}
 {% if lst.recebidos %}
-<h2 class="h5 mt-4">Pedidos recebidos</h2>
-{% for c in lst.recebidos %}
-<div class="card mb-2 contact-card status-waiting_you"><div class="card-body py-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
-  <div><strong>{{ c.apelido }}</strong> <small class="text-muted font-monospace text-nowrap">{{ c.id_fmt }}</small>
-    {% if c.mensagem %}<br><span class="mensagem-pedido">"{{ c.mensagem }}"</span>{% else %}<br><small class="text-muted">Sem apresentação. Se não reconhecer, recuse.</small>{% endif %}</div>
-  <div class="d-flex gap-1 flex-wrap">{{ botao(c.amizade_id, 'aceitar', 'Aceitar', 'btn-success') }}{{ botao(c.amizade_id, 'recusar', 'Recusar', 'btn-outline-secondary') }}{{ botao(c.amizade_id, 'bloquear', 'Bloquear', 'btn-outline-danger', 'Bloquear este contato?') }}</div>
-</div></div>
-{% endfor %}
+<section class="bloco bloco-atencao" aria-labelledby="h-pedidos">
+  <h2 class="h5" id="h-pedidos"><i class="bi bi-envelope-paper me-1"></i> {{ lst.recebidos|length }} pedido{{ 's' if lst.recebidos|length != 1 }} de amizade para você responder</h2>
+  <ul class="lista">
+  {% for c in lst.recebidos %}
+    <li class="quebra">
+      <div><strong>{{ c.apelido }}</strong> <span class="mono text-muted small">{{ c.id_fmt }}</span>
+        {% if c.mensagem %}<br><span class="mensagem-pedido">"{{ c.mensagem }}"</span>{% else %}<br><small class="text-muted">Sem apresentação. Se não reconhecer, recuse.</small>{% endif %}</div>
+      <div class="acoes">{{ botao(c.amizade_id, 'aceitar', 'Aceitar', 'btn-success') }}{{ botao(c.amizade_id, 'recusar', 'Recusar', 'btn-outline-secondary') }}{{ botao(c.amizade_id, 'bloquear', 'Bloquear', 'btn-outline-danger', 'Bloquear este contato?') }}</div>
+    </li>
+  {% endfor %}
+  </ul>
+</section>
 {% endif %}
 
-<h2 class="h5 mt-4">Amigos <small class="text-muted fw-normal">({{ lst.amigos|length }})</small></h2>
-{% for c in lst.amigos %}
-<div class="card mb-2 contact-card status-can_call"><div class="card-body py-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
-  <div><strong>{{ c.apelido }}</strong><br><small class="text-muted">discar <span class="font-monospace">{{ c.id_rede }}#</span></small></div>
-  <div class="d-flex gap-1">{{ botao(c.amizade_id, 'remover', 'Remover', 'btn-outline-secondary', 'Remover amizade?') }}{{ botao(c.amizade_id, 'bloquear', 'Bloquear', 'btn-outline-danger', 'Bloquear este contato?') }}</div>
-</div></div>
-{% else %}
-<div class="card"><div class="card-body text-center text-muted py-4">Nenhum amigo ainda. Adicione pelo ID acima.</div></div>
-{% endfor %}
-
-{% if lst.enviados %}
-<h2 class="h5 mt-4">Aguardando a outra família</h2>
-{% for c in lst.enviados %}
-<div class="card mb-2 contact-card status-waiting_other"><div class="card-body py-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
-  <div><strong>{{ c.apelido }}</strong><br><small class="text-muted font-monospace">{{ c.id_fmt }}</small></div>
-  {{ botao(c.amizade_id, 'remover', 'Cancelar', 'btn-outline-secondary') }}
-</div></div>
-{% endfor %}
-{% endif %}
-
-{% if lst.bloqueados %}
-<details class="mt-3"><summary class="text-muted">Bloqueados ({{ lst.bloqueados|length }})</summary>
-{% for c in lst.bloqueados %}
-<div class="card mb-2 contact-card status-blocked mt-2"><div class="card-body py-2 d-flex justify-content-between align-items-center">
-  <div><strong>{{ c.apelido }}</strong> <small class="text-muted font-monospace">{{ c.id_fmt }}</small></div>
-  {{ botao(c.amizade_id, 'desbloquear', 'Desbloquear', 'btn-outline-secondary') }}
-</div></div>
-{% endfor %}
-</details>
-{% endif %}
-<h2 class="h5 mt-4" id="grupos">Grupos para ligar juntos</h2>
-<p class="text-muted small mb-2">Um grupo toca em todas as casas de uma vez. No telefone, {{ crianca.apelido }} disca o número do grupo e <span class="mono">#</span>, como faz com um amigo. Só entra na chamada quem já é amigo de todos os que estão nela; até {{ max_na_chamada }} na mesma chamada.</p>
-{% for gr in grupos %}
-<div class="card mb-2"><div class="card-body py-3">
-  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start gap-2">
-    <div>
-      <strong>{{ gr.nome }}</strong> <span class="text-muted small">· discar <span class="mono">{{ gr.discar }}#</span>{% if not gr.dona %} · criado pela família de {{ gr.dona_apelido }}{% endif %}</span><br>
-      <small class="text-muted">{% for m in gr.membros %}{{ m.apelido }}{% if not loop.last %}, {% endif %}{% endfor %}</small>
-      {% if gr.faltam %}<br><small class="text-warning-emphasis">Para {{ crianca.apelido }} falar com todos, falta aceitar amizade com {{ gr.faltam|join(' e ') }}. Até lá, a chamada não junta os dois.</small>{% endif %}
-    </div>
-    <div class="d-flex gap-1 flex-wrap">
-      {% if gr.dona %}
-      <form method="post" class="d-inline"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="grupo_remover"><input type="hidden" name="grupo_id" value="{{ gr.id }}">
-        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover o grupo para todos?')">Remover grupo</button></form>
-      {% else %}
-      <form method="post" class="d-inline"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="grupo_sair"><input type="hidden" name="grupo_id" value="{{ gr.id }}">
-        <button class="btn btn-sm btn-outline-secondary" onclick="return confirm('Tirar {{ crianca.apelido }} deste grupo?')">Sair do grupo</button></form>
-      {% endif %}
-    </div>
+{# 2. Amigos: a lista e o conteudo principal; adicionar e uma acao no cabecalho #}
+<section class="bloco" aria-labelledby="h-amigos">
+  <div class="bloco-cabeca">
+    <h2 id="h-amigos">Amigos <span class="conta">{{ lst.amigos|length }}</span></h2>
+    {% if lst.amigos or lst.enviados %}<a class="btn btn-primary btn-sm" href="{{ url_for('familia.contatos_pedir', crianca_id=crianca.id) }}"><i class="bi bi-person-plus me-1"></i> Adicionar amigo</a>{% endif %}
   </div>
-</div></div>
-{% endfor %}
-{% if amigos_grupo %}
-<details class="mt-2" {% if abrir_grupo %}open{% endif %}><summary class="fw-bold">Criar um grupo</summary>
-<div class="card mt-2"><div class="card-body">
-  <form method="post" data-enviando="Criando…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="grupo_criar">
-    <div class="mb-3"><label class="form-label" for="grupo_nome">Nome do grupo</label>
-      <input class="form-control form-control-lg" id="grupo_nome" name="nome" maxlength="20" placeholder="ex.: Turma do futebol" required autocomplete="off">
-      <div class="form-text">Até 20 caracteres. Aparece no visor do telefone de quem recebe e é falado na chamada.</div></div>
-    <fieldset class="mb-3"><legend class="form-label fs-6 mb-2">Quem entra <span class="fw-normal text-muted">(amigos já aceitos, até {{ max_membros - 1 }})</span></legend>
-      {% for a in amigos_grupo %}
-      <div class="form-check"><input class="form-check-input" type="checkbox" name="membros" value="{{ a.crianca_id }}" id="membro-{{ a.crianca_id }}" {% if a.marcado %}checked{% endif %}>
-        <label class="form-check-label" for="membro-{{ a.crianca_id }}">{{ a.apelido }}</label></div>
-      {% endfor %}
-    </fieldset>
-    <button class="btn btn-primary">Criar grupo</button>
-  </form>
-  <p class="small text-muted mt-3 mb-0">As outras famílias veem o grupo na página do filho e podem tirá-lo quando quiserem. Cada criança tem no máximo {{ max_grupos }} grupos.</p>
-</div></div></details>
-{% elif not grupos %}
-<p class="text-muted small">Quando {{ crianca.apelido }} tiver amigos aceitos, dá para montar um grupo aqui.</p>
-{% endif %}
+  {% if lst.amigos %}
+  <p class="bloco-sub">Quem {{ crianca.apelido }} pode ligar e de quem recebe ligação. No telefone, disca o número e <span class="mono">#</span>.</p>
+  <ul class="lista">
+  {% for c in lst.amigos %}
+    <li><div><strong>{{ c.apelido }}</strong> <span class="discar">discar <span class="mono">{{ c.id_rede }}#</span></span></div>
+      <div class="acoes">{{ botao(c.amizade_id, 'remover', 'Remover', 'btn-link', 'Remover amizade?') }}{{ botao(c.amizade_id, 'bloquear', 'Bloquear', 'btn-link perigo', 'Bloquear este contato?') }}</div></li>
+  {% endfor %}
+  </ul>
+  {% elif not lst.enviados %}
+  <p class="bloco-sub">{{ crianca.apelido }} ainda não tem amigos. Peça o ID de 6 números para a outra família: ele está no cartão da criança e no visor do telefone dela. A ligação só funciona depois que ela aceitar.</p>
+  <div class="card"><div class="card-body">{% include "_form_pedir.html" %}</div></div>
+  <p class="bloco-sub mt-3">Várias crianças da mesma escola, prédio ou time? Use uma <a href="{{ url_for('familia.turmas', crianca_id=crianca.id) }}">turma</a>: um código só, e cada família aceita um a um.</p>
+  {% endif %}
 
-<p class="mt-4"><a class="btn btn-outline-primary" target="_blank" href="{{ url_for('familia.cartao', crianca_id=crianca.id) }}"><i class="bi bi-printer me-1"></i> Imprimir cartão com os amigos</a></p>
+  {% if lst.enviados %}
+  <h3 class="h6 mt-3 mb-2">Aguardando a outra família aceitar</h3>
+  <ul class="lista suave">
+  {% for c in lst.enviados %}
+    <li><div><strong>{{ c.apelido }}</strong> <span class="mono text-muted small">{{ c.id_fmt }}</span></div>
+      <div class="acoes">{{ botao(c.amizade_id, 'remover', 'Cancelar pedido', 'btn-link') }}</div></li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if lst.bloqueados %}
+  <details class="mt-3"><summary class="text-muted small">Bloqueados ({{ lst.bloqueados|length }})</summary>
+  <ul class="lista suave mt-2">
+  {% for c in lst.bloqueados %}
+    <li><div><strong>{{ c.apelido }}</strong> <span class="mono text-muted small">{{ c.id_fmt }}</span></div>
+      <div class="acoes">{{ botao(c.amizade_id, 'desbloquear', 'Desbloquear', 'btn-link') }}</div></li>
+  {% endfor %}
+  </ul>
+  </details>
+  {% endif %}
+</section>
+
+{# 3. Grupos: mesma hierarquia da secao de amigos #}
+<section class="bloco" aria-labelledby="h-grupos" id="grupos">
+  <div class="bloco-cabeca">
+    <h2 id="h-grupos">Grupos para ligar juntos <span class="conta">{{ grupos|length }}</span></h2>
+    {% if amigos_grupo %}<a class="btn btn-outline-primary btn-sm" href="{{ url_for('familia.grupo_novo', crianca_id=crianca.id) }}"><i class="bi bi-plus-lg me-1"></i> Criar grupo</a>{% endif %}
+  </div>
+  <p class="bloco-sub">Um grupo toca em todas as casas de uma vez. No telefone, {{ crianca.apelido }} disca o número do grupo e <span class="mono">#</span>, como faz com um amigo. Só entra quem já é amigo de todos os que estão na chamada; até {{ max_na_chamada }} de uma vez.</p>
+  {% if grupos %}
+  <ul class="lista">
+  {% for gr in grupos %}
+    <li class="quebra">
+      <div><strong>{{ gr.nome }}</strong> <span class="discar">discar <span class="mono">{{ gr.discar }}#</span></span>
+        <br><small class="text-muted">{% for m in gr.membros %}{{ m.apelido }}{% if not loop.last %}, {% endif %}{% endfor %}{% if not gr.dona %} · criado pela família de {{ gr.dona_apelido }}{% endif %}</small>
+        {% if gr.faltam %}<br><small class="text-warning-emphasis">Para {{ crianca.apelido }} falar com todos, falta aceitar amizade com {{ gr.faltam|join(' e ') }}. Até lá, a chamada não junta os dois.</small>{% endif %}
+      </div>
+      <div class="acoes">
+        {% if gr.dona %}
+        <form method="post" class="d-inline"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="grupo_remover"><input type="hidden" name="grupo_id" value="{{ gr.id }}">
+          <button class="btn btn-sm btn-link perigo" onclick="return confirm('Remover o grupo para todos?')">Remover grupo</button></form>
+        {% else %}
+        <form method="post" class="d-inline"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="grupo_sair"><input type="hidden" name="grupo_id" value="{{ gr.id }}">
+          <button class="btn btn-sm btn-link" onclick="return confirm('Tirar {{ crianca.apelido }} deste grupo?')">Sair do grupo</button></form>
+        {% endif %}
+      </div>
+    </li>
+  {% endfor %}
+  </ul>
+  {% elif amigos_grupo %}
+  <p class="text-muted mb-0">Nenhum grupo ainda. Escolha um nome e marque os amigos em <a href="{{ url_for('familia.grupo_novo', crianca_id=crianca.id) }}">Criar grupo</a>.</p>
+  {% else %}
+  <p class="text-muted mb-0">Quando {{ crianca.apelido }} tiver amigos aceitos, dá para montar um grupo aqui.</p>
+  {% endif %}
+</section>
+
+<p class="mt-4"><a class="btn btn-outline-primary" target="_blank" href="{{ url_for('familia.cartao', crianca_id=crianca.id) }}"><i class="bi bi-printer me-1"></i> Imprimir o cartão</a></p>
 {% endblock %}
