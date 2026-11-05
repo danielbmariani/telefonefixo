@@ -37,7 +37,7 @@
   {% endfor %}
   </ul>
   {% elif not lst.enviados %}
-  <p class="bloco-sub">{{ crianca.apelido }} ainda não tem amigos. Peça o ID de 6 números para a outra família: ele está no cartão da criança e no visor do telefone dela. A ligação só funciona depois que ela aceitar.</p>
+  <p class="bloco-sub">{{ crianca.apelido }} ainda não tem amigos. Peça o ID de 6 números para a outra família: ele está no alto do site quando ela entra na conta, no cartão da criança e no visor do telefone dela. A ligação só funciona depois que ela aceitar.</p>
   <div class="card"><div class="card-body">{% include "_form_pedir.html" %}</div></div>
   <p class="bloco-sub mt-3">Várias crianças da mesma escola, prédio ou time? Use uma <a href="{{ url_for('familia.turmas', crianca_id=crianca.id) }}">turma</a>: um código só, e cada família aceita um a um.</p>
   {% endif %}
