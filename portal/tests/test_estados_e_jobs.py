@@ -216,3 +216,24 @@ def test_fila_gdms_real_com_http_falso(app):
         assert telefones.por_id(conn, tels[0])['estado'] == 'aguardando_boot'
     a = acoes(app, 'telefone', tels[0])
     assert 'tarefa_operador_criada' in a and 'tarefa_operador_concluida' in a and 'telefone_config_enviada' in a
+
+
+def test_aviso_de_copia_externa_atrasada(app, tmp_path):
+    import os
+    from datetime import timedelta
+    from rede.config import Config
+    from rede.servicos import reconciliacao
+    from rede.tempo import agora
+    with app.engine.begin() as conn:
+        assert reconciliacao.verificar_copia_externa(conn, app.cfg, app.mailer) is None     # sem configurar, nao confere
+        marca = tmp_path / 'copia-externa.ok'
+        cfg = Config(env={}, COPIA_EXTERNA_STATUS=str(marca), ALERTA_EMAIL='alerta@exemplo.org')
+        antes = len(app.mailer.enviados)
+        assert reconciliacao.verificar_copia_externa(conn, cfg, app.mailer) == 'atrasada'     # nunca deu certo
+        marca.write_text('x')
+        assert reconciliacao.verificar_copia_externa(conn, cfg, app.mailer) == 'ok'           # acabou de dar certo
+        velho = (agora() - timedelta(hours=40)).timestamp()
+        os.utime(marca, (velho, velho))
+        assert reconciliacao.verificar_copia_externa(conn, cfg, app.mailer) == 'atrasada'     # parou ha 40 horas
+        novos = app.mailer.enviados[antes:]
+        assert len(novos) == 2 and all('alerta@exemplo.org' in str(m) and 'atrasada' in str(m) for m in novos)

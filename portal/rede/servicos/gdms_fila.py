@@ -59,6 +59,19 @@ def atualizar_teclas(conn, crianca_id):
     return True
 
 
+def atualizar_linha(conn, crianca_id):
+    """Cifragem mudou: manda ao aparelho, pelo GDMS, so os parametros da linha que nao tem segredo (endereco
+    da central, transporte, SRTP). Aplica na hora, como as teclas. Sem telefone no GDMS: nada."""
+    tel = svc_tel.atual_da_crianca(conn, crianca_id)
+    if not tel or tel['estado'] not in ESTADOS_REENVIO:
+        return False
+    conn.execute(update(db.gdms_fila).where(and_(db.gdms_fila.c.telefone_id == tel['id'], db.gdms_fila.c.estado == 'pendente',
+                                                 db.gdms_fila.c.etapa == 'linha')).values(estado='cancelada', atualizado_em=agora()))
+    conn.execute(insert(db.gdms_fila).values(telefone_id=tel['id'], estado='pendente', etapa='linha', tentativas=0,
+                                             proxima_em=agora(), criado_em=agora()))
+    return True
+
+
 def reenviar_config(conn, telefone_id):
     """Enfileira so o envio da configuracao (device/config/xml) para um telefone que ja esta no GDMS.
     Uso: mudou o conteudo do XML ponteiro (ex.: travas) e nao da para esperar o recheck do P193."""
@@ -131,7 +144,8 @@ def processar(conn, cfg, http=None, ref=None, cliente=None):
     for item in pendentes(conn, ref):
         n += 1
         tel = svc_tel.por_id(conn, item['telefone_id'])
-        if item['etapa'] == 'teclas':
+        if item['etapa'] in ('teclas', 'linha'):
+            linha = item['etapa'] == 'linha'
             if not tel or tel['estado'] not in ESTADOS_REENVIO or cfg.GDMS_MODO != 'real' or tel['modelo'] == 'ht':
                 conn.execute(update(db.gdms_fila).where(db.gdms_fila.c.id == item['id'])
                              .values(estado='cancelada', atualizado_em=ref, ultima_msg='sem telefone no GDMS'))
@@ -142,7 +156,10 @@ def processar(conn, cfg, http=None, ref=None, cliente=None):
                     cli.obter_token(cfg.GDMS_USERNAME, cfg.GDMS_PASSWORD)
                 cr = svc_cri.por_id(conn, tel['crianca_id'])
                 from .. import grandstream_xml
-                pv = grandstream_xml.pvalues_teclas(svc_tel.amigos_para_teclas(conn, cr), 'grp')
+                if linha:
+                    pv = grandstream_xml.pvalues_linha(cfg.SIP_HOST, svc_cri.cifragem(conn, cr['id_rede']), cfg.SIP_TLS_PORTA)
+                else:
+                    pv = grandstream_xml.pvalues_teclas(svc_tel.amigos_para_teclas(conn, cr), 'grp')
                 xml = grandstream_xml.gerar_xml(tel['mac'], pv, tel['xml_versao'])
                 resp = cli.configurar_xml(tel['mac'], xml, cfg.GDMS_ORG_ID, aplicar=True)
                 ok, rc, msg = gdms_client.resultado_simples(resp)
@@ -150,7 +167,8 @@ def processar(conn, cfg, http=None, ref=None, cliente=None):
                 ok, rc, msg = False, None, f'excecao: {type(e).__name__}: {e}'[:300]
             conn.execute(update(db.gdms_fila).where(db.gdms_fila.c.id == item['id'])
                          .values(estado='ok' if ok else 'erro', ultimo_ret_code=rc, ultima_msg=(msg or '')[:300], atualizado_em=ref))
-            auditoria.registrar(conn, 'gdms_teclas_enviadas' if ok else 'gdms_teclas_falhou', 'sistema', 'gdms_fila',
+            nome = 'gdms_linha' if linha else 'gdms_teclas'
+            auditoria.registrar(conn, f'{nome}_enviadas' if ok else f'{nome}_falhou', 'sistema', 'gdms_fila',
                                 'telefone', tel['id'], detalhes={'ret_code': rc, 'msg': (msg or '')[:120]})
             continue
         if item['etapa'] in ('zerar', 'remover_gdms'):

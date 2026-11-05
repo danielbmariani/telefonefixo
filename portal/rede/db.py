@@ -343,6 +343,7 @@ ps_endpoints = Table('ps_endpoints', metadata,
     Column('context', Text), Column('disallow', Text), Column('allow', Text),
     Column('direct_media', Text), Column('rtp_symmetric', Text), Column('force_rport', Text),
     Column('rewrite_contact', Text), Column('callerid', Text), Column('dtmf_mode', Text),
+    Column('media_encryption', Text), Column('media_encryption_optimistic', Text),   # SRTP (criancas.CIFRAGENS)
 )
 ps_auths = Table('ps_auths', metadata,
     Column('id', Text, primary_key=True),

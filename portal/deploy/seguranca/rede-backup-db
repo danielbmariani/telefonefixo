@@ -1,9 +1,27 @@
 #!/bin/sh
-# /usr/local/sbin/rede-backup-db — pg_dump do banco telefone, gzip, 600 root, mantem 14 dias
+# /usr/local/sbin/rede-backup-db — pg_dump do banco telefone, gzip, 600 root, mantem 14 dias.
+# Se /etc/rede-aberta/copia.env existir (deploy/copia-externa.sh), manda tambem uma copia cifrada para
+# fora do servidor. O servidor so consegue gravar la: nao le, nao lista e nao apaga o que ja enviou.
 set -eu
 DEST=/var/backups/rede-aberta/db
+LOG=/var/log/rede-aberta/backup.log
 mkdir -p "$DEST"; chmod 700 "$DEST"
 F="$DEST/telefone-$(date +%Y%m%d-%H%M).sql.gz"
 sudo -u postgres pg_dump -d telefone | gzip -9 > "$F.tmp" && mv "$F.tmp" "$F" && chmod 600 "$F"
 find "$DEST" -name 'telefone-*.sql.gz' -mtime +14 -delete
-echo "$(date -Is) ok $(du -h "$F" | cut -f1)" >> /var/log/rede-aberta/backup.log
+echo "$(date -Is) ok $(du -h "$F" | cut -f1)" >> "$LOG"
+
+if [ -r /etc/rede-aberta/copia.env ]; then
+  . /etc/rede-aberta/copia.env    # COPIA_URL (segredo: endereco que so aceita gravacao)
+  TMPD=$(mktemp -d /var/backups/rede-aberta/.envio.XXXXXX); trap 'rm -rf "$TMPD"' EXIT
+  # nome com sufixo aleatorio, que nao fica anotado aqui: quem invadir o servidor nao sabe o que sobrescrever
+  NOME="$(basename "$F" .sql.gz)-$(head -c 8 /dev/urandom | od -An -tx1 | tr -d ' \n').sql.gz.gpg"
+  if gpg --batch --yes --quiet --homedir "$TMPD" --trust-model always -f /etc/rede-aberta/copia-pub.asc -o "$TMPD/c.gpg" -e "$F" 2>> "$LOG" \
+     && curl -sS -f --retry 3 --max-time 300 -o /dev/null -T "$TMPD/c.gpg" "${COPIA_URL}${NOME}" 2>> "$LOG"; then
+    date -Is > /var/backups/rede-aberta/copia-externa.ok; chmod 644 /var/backups/rede-aberta/copia-externa.ok
+    echo "$(date -Is) copia externa ok" >> "$LOG"
+  else
+    echo "$(date -Is) ERRO na copia externa" >> "$LOG"
+    exit 1
+  fi
+fi

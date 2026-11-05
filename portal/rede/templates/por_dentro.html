@@ -42,7 +42,7 @@
         <li><strong>O servidor</strong>, uma máquina na Oracle Cloud, em São Paulo. Nela rodam o site, a central telefônica (Asterisk) e o banco de dados (PostgreSQL). É onde ficam guardados os dados das famílias.</li>
         <li><strong>Três serviços de fora</strong>, cada um com uma tarefa só. A Grandstream, fabricante do telefone, entrega a configuração inicial do aparelho. Uma operadora de telefonia (Nvoip) completa as ligações com celular. O Gmail envia os e-mails do site.</li>
       </ul>
-      <p class="mb-0">O endereço telefonefixo.org é registrado na Cloudflare, que só informa onde o servidor está. O conteúdo do site não passa por ela. As letras e os estilos das páginas são baixados do Google Fonts e do jsDelivr, que por isso veem o endereço IP de quem visita o site.</p>
+      <p class="mb-0">O endereço telefonefixo.org é registrado na Cloudflare, que só informa onde o servidor está. O conteúdo do site não passa por ela.</p>
     </div>
     <div class="col-lg-6">
       <figure class="figura">
@@ -250,7 +250,7 @@
       <tr><td>Registro do que foi feito no site (auditoria)</td><td data-rotulo="Onde fica">Banco de dados, em tabela que só aceita acréscimos</td><td data-rotulo="Por quanto tempo">Permanece, sem nome e sem e-mail. O IP é apagado depois de 1 ano</td></tr>
       <tr><td>Aceite dos termos: versão, data e IP</td><td data-rotulo="Onde fica">Banco de dados</td><td data-rotulo="Por quanto tempo">5 anos depois da exclusão da conta</td></tr>
       <tr><td>Acessos ao site: IP e página</td><td data-rotulo="Onde fica">Arquivos de registro do servidor</td><td data-rotulo="Por quanto tempo">6 meses</td></tr>
-      <tr><td>Cópia de segurança do banco de dados</td><td data-rotulo="Onde fica">No próprio servidor</td><td data-rotulo="Por quanto tempo">Feita todo dia, guardada por 14 dias</td></tr>
+      <tr><td>Cópia de segurança do banco de dados</td><td data-rotulo="Onde fica">No próprio servidor e, cifrada, num armazenamento separado da Oracle Cloud, também em São Paulo</td><td data-rotulo="Por quanto tempo">Feita todo dia, guardada por 14 dias</td></tr>
     </tbody>
   </table>
   <div class="row g-4 mt-1">
@@ -264,7 +264,7 @@
     </div>
     <div class="col-lg-6">
       <h3>Ao excluir a conta</h3>
-      <p class="mb-0">O telefone sai da rede na hora e os dados das crianças são apagados. O que fica, e por quanto tempo, está na <a href="{{ url_for('familia.privacidade') }}">política de privacidade</a>, que é o texto que vale. Um dado apagado ainda pode estar numa cópia de segurança por até 14 dias.</p>
+      <p class="mb-0">O telefone sai da rede na hora e os dados das crianças são apagados. O que fica, e por quanto tempo, está na <a href="{{ url_for('familia.privacidade') }}">política de privacidade</a>, que é o texto que vale.</p>
     </div>
   </div>
 </section>
@@ -281,14 +281,13 @@
         <li>A central só completa ligação entre telefones cadastrados e com amizade aceita. Quem está de fora não tem como ligar para dentro, a não ser de um celular que a própria família cadastrou.</li>
         <li>O acesso ao servidor é só por chave, sem senha, com bloqueio automático de quem insiste em tentar entrar.</li>
         <li>O registro de auditoria só aceita acréscimos. Nem o próprio site consegue alterar ou apagar o que já foi anotado.</li>
+        <li>O banco de dados é copiado todo dia para fora do servidor, cifrado com uma chave que não fica no servidor.</li>
       </ul>
     </div>
     <div class="col-lg-6">
       <h3>O que falta</h3>
       <ul class="pontos">
         <li>O trecho entre o telefone e o servidor (SIP e voz) ainda não é cifrado, como acontece numa linha fixa comum. Os aparelhos aceitam criptografia (TLS e SRTP). É uma melhoria possível, ainda não feita.</li>
-        <li>A cópia de segurança fica no mesmo servidor. Falta uma cópia em outro lugar.</li>
-        <li>Ainda não houve auditoria de segurança feita por terceiros.</li>
       </ul>
       <p class="mb-0">Encontrou uma falha? Escreva para <a href="mailto:{{ contato }}">{{ contato }}</a>.</p>
     </div>

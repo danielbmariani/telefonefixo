@@ -20,6 +20,18 @@ Servidor Ubuntu 22.04/24.04 (Oracle Ampere A1). Portas: TCP 22, 80, 443, 5060; U
 4. **AGIs**: `ln -s /opt/rede-aberta/portal/agi/*.py /usr/share/asterisk/agi-bin/`; usuário `asterisk` precisa ler
    `/etc/rede-aberta/portal.env` (grupo `rede`) e o venv.
 5. **nginx + certbot**: `nginx-rede.conf`, `certbot --nginx`.
-6. **Backup**: dump diário do Postgres + `/var/backups/rede-aberta/auditoria` para object storage.
+6. **Backup**: `deploy/seguranca/rede-backup-db` (cron 3h30) faz o dump diário do Postgres e guarda 14 dias no
+   servidor. `deploy/copia-externa.sh` liga a cópia fora do servidor: bucket privado `telefone-fixo-copias` na
+   Oracle em São Paulo, cada cópia cifrada com gpg (a chave privada fica só em `~/.config/rede-aberta/copia-gpg`
+   na máquina do operador), apagada pelo próprio bucket depois de 14 dias. O servidor só consegue gravar no
+   bucket. Se a cópia externa parar, o job diário manda e-mail para `REDE_ALERTA_EMAIL`.
+   Restaurar (da máquina do operador, com a OCI CLI): `oci os object list --bucket-name telefone-fixo-copias`,
+   depois `oci os object get --bucket-name telefone-fixo-copias --name <nome> --file - | gpg --homedir
+   ~/.config/rede-aberta/copia-gpg --decrypt | gunzip | ssh <servidor> 'sudo -u postgres psql -d telefone'`
+   (num banco vazio). Sem a chave privada a cópia externa não abre: guardar uma cópia dela fora da máquina.
+7. **SIP por TLS e SRTP**: `deploy/tls.sh` copia o certificado do site para o Asterisk (com gancho de renovação),
+   cria o `transport-tls` na 5061 sem reiniciar e abre a porta (iptables e NSG da Oracle só desta máquina).
+   Cada linha muda de modo com `flask sip-cifragem <ID|todas> <nenhuma|transicao|exigida>`; linhas novas seguem
+   `REDE_SIP_CIFRAGEM`. Registro do teste com aparelho real: `bancada/B26-tls-e-srtp.md`.
 
 Verificação de auditoria pós-deploy: como `portal`, `UPDATE audit_log SET acao='x' WHERE id=1` deve falhar.

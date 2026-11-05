@@ -19,6 +19,12 @@ class Config:
         # Base publica do servidor de provisionamento (o telefone acessa). Pode ser o proprio site.
         self.PROV_URL = g('REDE_PROV_URL', self.SITE_URL).rstrip('/')
         self.SIP_HOST = g('REDE_SIP_HOST', '127.0.0.1')                # IP/host que vai no P47
+        # Cifragem entre o telefone e a central para criancas NOVAS (as que ja existem mudam com flask sip-cifragem):
+        #   nenhuma    SIP por TCP na 5060, voz sem cifra (como era ate 05/11/2026)
+        #   transicao  SIP por TLS na SIP_TLS_PORTA, SRTP oferecido mas nao obrigatorio (so para migrar aparelho antigo)
+        #   exigida    SIP por TLS, SRTP obrigatorio: sem cifra a ligacao nao completa
+        self.SIP_CIFRAGEM = g('REDE_SIP_CIFRAGEM', 'nenhuma')
+        self.SIP_TLS_PORTA = int(g('REDE_SIP_TLS_PORTA', '5061'))
         self.TIMEZONE = g('REDE_TIMEZONE', 'America/Sao_Paulo')
         # Repositorio publico do codigo (AGPL-3.0): link na pagina inicial, no rodape e em /por-dentro
         self.CODIGO_URL = g('REDE_CODIGO_URL', 'https://github.com/danielbmariani/telefonefixo').rstrip('/')
@@ -80,7 +86,7 @@ class Config:
 
         # Versoes dos textos legais (o hash do texto vai no consentimento)
         self.VERSAO_TERMOS = g('REDE_VERSAO_TERMOS', '2026-11-a')
-        self.VERSAO_PRIVACIDADE = g('REDE_VERSAO_PRIVACIDADE', '2026-10-b')
+        self.VERSAO_PRIVACIDADE = g('REDE_VERSAO_PRIVACIDADE', '2026-11-a')
         self.VERSAO_CONSENTIMENTO = g('REDE_VERSAO_CONSENTIMENTO', '2026-10-b')
         # LGPD / ECA Digital (doc 13): quem responde e por onde; retencao dos registros
         self.CONTROLADOR_NOME = g('REDE_CONTROLADOR_NOME', 'Daniel Mariani')
@@ -98,3 +104,7 @@ class Config:
         self.TARIFA_ENTRADA_MIN = float(g('REDE_TARIFA_ENTRADA_MIN', '0.05'))   # estimativa R$/min celular -> crianca
         self.ALERTA_EMAIL = g('REDE_ALERTA_EMAIL', '') or self.CONTATO_EMAIL     # quem recebe os avisos de teto
         self.ALERTA_FRACAO = float(g('REDE_ALERTA_FRACAO', '0.8'))              # avisa ao passar de 80% do teto
+        # Copia do banco fora do servidor (deploy/copia-externa.sh): arquivo que o rede-backup-db atualiza a cada
+        # envio que deu certo. Vazio = sem conferencia. O job diario avisa se ficar mais de COPIA_EXTERNA_MAX_H horas parado.
+        self.COPIA_EXTERNA_STATUS = g('REDE_COPIA_EXTERNA_STATUS', '')
+        self.COPIA_EXTERNA_MAX_H = int(g('REDE_COPIA_EXTERNA_MAX_H', '36'))

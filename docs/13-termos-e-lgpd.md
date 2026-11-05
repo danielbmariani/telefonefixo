@@ -74,3 +74,16 @@ Operadores: Oracle Cloud (São Paulo, hospedagem), Grandstream GDMS (EUA: MAC, S
 ## Fontes consultadas em 27/10/2026
 
 Texto da Lei 15.211/2025 no Planalto; LGPD art. 14 e Enunciado CD/ANPD 1/2023 (via Lefosse, Machado Meyer, Conjur); Resolução CD/ANPD 2/2022 (gov.br/anpd); Resolução CD/ANPD 15/2024 (via Migalhas, Confidata, Cescon Barrieu); Resolução CD/ANPD 19/2024 (via Mattos Filho, Lefosse); Marco Civil art. 15 (Planalto) e análises (Conjur 2025); jurisprudência CDC x associações (TJBA citando STJ REsp 2.173.952); Grandstream "How GDMS Processes User Data" (ago/2024) e GDMS Security Whitepaper; localização do servidor (ipinfo: Oracle, São Paulo).
+
+## Política de privacidade 2026-11-a (05/11/2026)
+
+Duas inclusões, pedidas pelo Daniel depois da página técnica `/por-dentro` mostrar o que a política não citava:
+
+- Seção 4 (com quem os dados passam): **Google Fonts e jsDelivr**. O navegador de quem visita o site baixa deles as
+  letras e os estilos, então eles recebem o IP e os dados técnicos do navegador. Não recebem nada da conta.
+- Seção 6 (exclusão da conta): **cópias de segurança**. O banco é copiado todo dia, cada cópia fica 14 dias na Oracle
+  Cloud em São Paulo, e o que foi apagado some das cópias nesse prazo.
+
+A versão subiu de 2026-10-b para 2026-11-a: todas as contas aceitam de novo no próximo acesso. Para revisão jurídica:
+a base legal da passagem do IP para o Google Fonts e o jsDelivr (servidores fora do Brasil) não foi escrita na
+política; a alternativa que dispensa a menção é servir esses arquivos do próprio servidor.

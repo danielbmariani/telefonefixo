@@ -1,4 +1,4 @@
-POLÍTICA DE PRIVACIDADE (versão 2026-10-b)
+POLÍTICA DE PRIVACIDADE (versão 2026-11-a)
 
 1. Quem responde pelos dados
 Controlador: Daniel Mariani, pessoa física, até que uma associação sem fins lucrativos assuma o serviço. Canal para assuntos de dados pessoais, que cumpre o papel de encarregado: privacidade@telefonefixo.org. Servidor no Brasil (São Paulo).
@@ -26,6 +26,7 @@ Grandstream (fabricante do telefone, servidores nos Estados Unidos): recebe o MA
 Nvoip (operadora de telefonia, Juiz de Fora): só quando a família usa os celulares cadastrados. Recebe o número do celular e os registros dessas ligações, como qualquer operadora.
 Google (envio de e-mails): recebe o seu e-mail e o texto dos avisos que mandamos.
 Cloudflare: registro do domínio e DNS. Não vê o conteúdo do site.
+Google Fonts e jsDelivr (servidores fora do Brasil): o seu navegador baixa deles as letras e os estilos das páginas do site. Por isso eles recebem o endereço IP e os dados técnicos do navegador de quem visita o site. Não recebem nome, e-mail nem dados da conta.
 Outras famílias: o apelido e o ID da criança aparecem para as famílias com quem você pediu ou aceitou amizade, e na turma em que você a colocou.
 Autoridades: registros de ligações só com ordem judicial, por serem protegidos pelo sigilo das comunicações. Dados cadastrais conforme a lei exigir. Cada pedido é registrado.
 
@@ -34,6 +35,7 @@ Confirmar o que temos, acessar, corrigir, baixar uma cópia (link "Meus dados" n
 
 6. O que acontece quando você exclui a conta
 Na hora: telefones desligados da rede, apelidos, amizades, horários, celulares cadastrados e registros de ligações das suas crianças apagados, e-mail e nome removidos da conta. Ficam, pelos prazos acima: a prova do aceite dos termos, os registros técnicos do telefone por 180 dias, a auditoria do que foi feito (sem nome e sem e-mail) e os totais diários sem identificação.
+Cópias de segurança: o banco de dados é copiado todo dia e cada cópia é guardada por 14 dias na Oracle Cloud, em São Paulo. O que foi apagado some das cópias nesse prazo.
 
 7. Segurança
 Site só por HTTPS, senhas embaralhadas, acesso ao servidor por chave, registro de auditoria que só aceita acréscimos, telefone com menu travado e senha única por aparelho, servidor no Brasil. Mesmo assim nenhum sistema é infalível.

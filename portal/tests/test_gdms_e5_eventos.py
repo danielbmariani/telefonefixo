@@ -250,3 +250,46 @@ def test_amizade_aceita_reenvia_teclas_pelo_gdms(app):
     assert b'<P1468>' + cb['id_rede'].encode() + b'</P1468>' in corpo and b'<P1467>beto</P1467>' in corpo and b'<P34>' not in corpo
     assert 'gdms_teclas_enviadas' in acoes(app, 'telefone', t['id'])
 
+
+
+def test_cifragem_da_linha_muda_central_e_aparelho(app):
+    """TLS e SRTP por linha (05/11/2026): o ramal muda na central, a configuracao do aparelho acompanha e
+    os parametros sem segredo saem na hora pelo GDMS."""
+    from rede.config import Config
+    cfg = _cfg(app)
+    chamadas = []
+    with app.engine.begin() as conn, app.app_context():
+        fa = contas.criar_operador(conn, 'fc@x.com', 'senha12345', 'C', 'familia')
+        ca = criancas.criar(conn, fa, 'caio', cfg)
+        t = telefones.informar(conn, ca, 'C074AD000031', 'SN00000031', '1.1.1.1', cfg, familia_id=fa)
+        gdms_fila.processar(conn, cfg, http=_http(chamadas))
+        conn.execute(text("UPDATE telefones SET estado='registrado' WHERE id=:i"), {'i': t['id']})
+        # como era: TCP, sem SRTP
+        assert criancas.cifragem(conn, ca['id_rede']) == 'nenhuma'
+        xml = telefones.gerar_xml(conn, telefones.por_id(conn, t['id']), cfg)
+        assert '<P130>1</P130>' in xml and '<P47>sip.teste</P47>' in xml and '<P183>0</P183>' in xml
+        # passa a exigir cifra
+        n = len(chamadas)
+        assert telefones.aplicar_cifragem(conn, ca, 'exigida', 'operador', 'teste') is True
+        assert criancas.cifragem(conn, ca['id_rede']) == 'exigida'
+        ramal = conn.execute(text("SELECT transport, media_encryption, media_encryption_optimistic FROM ps_endpoints WHERE id=:i"),
+                             {'i': ca['id_rede']}).one()
+        assert tuple(ramal) == (None, 'sdes', 'no')
+        depois = telefones.por_id(conn, t['id'])
+        assert depois['xml_versao'] == t['xml_versao'] + 1
+        xml = telefones.gerar_xml(conn, depois, cfg)
+        assert '<P130>2</P130>' in xml and '<P47>sip.teste:5061</P47>' in xml and '<P183>2</P183>' in xml and '<P2329>0</P2329>' in xml
+        gdms_fila.processar(conn, cfg, http=_http(chamadas))
+        fila = conn.execute(text("SELECT etapa, estado FROM gdms_fila WHERE telefone_id=:i ORDER BY id"), {'i': t['id']}).all()
+        assert ('linha', 'ok') in fila
+        corpo = [c[2] for c in chamadas[n:] if 'config/xml' in c[0]][0]
+        assert b'<P130>2</P130>' in corpo and b'<P183>2</P183>' in corpo and b'<P34>' not in corpo and b'<P2>' not in corpo
+        # transicao: SRTP oferecido sem obrigar
+        telefones.aplicar_cifragem(conn, ca, 'transicao')
+        assert criancas.cifragem(conn, ca['id_rede']) == 'transicao'
+        assert '<P183>1</P183>' in telefones.gerar_xml(conn, telefones.por_id(conn, t['id']), cfg)
+        # crianca nova ja nasce no modo configurado
+        cfg2 = Config(env={}, AMBIENTE='teste', DATABASE_URL=cfg.DATABASE_URL, SIP_HOST='sip.teste', SIP_CIFRAGEM='exigida', SECRET_KEY='x' * 64)
+        cb = criancas.criar(conn, fa, 'bia', cfg2)
+        assert criancas.cifragem(conn, cb['id_rede']) == 'exigida'
+    assert 'cifragem_alterada' in acoes(app, 'crianca', ca['id']) and 'gdms_linha_enviadas' in acoes(app, 'telefone', t['id'])

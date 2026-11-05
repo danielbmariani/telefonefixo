@@ -165,6 +165,24 @@ def _registrar_comandos(app):
             ok = gdms_fila.atualizar_teclas(conn, crianca_id)
         click.echo('enfileirado; a fila do minuto envia' if ok else 'crianca sem telefone no GDMS')
 
+    @app.cli.command('sip-cifragem')
+    @click.argument('alvo')
+    @click.argument('modo', type=click.Choice(['nenhuma', 'transicao', 'exigida']))
+    def sip_cifragem_cmd(alvo, modo):
+        """Muda a cifragem (TLS e SRTP) da linha de uma crianca (ALVO = ID de 6 digitos) ou de todas (ALVO = todas).
+        A central muda na hora; o aparelho recebe os parametros novos pelo GDMS em cerca de um minuto."""
+        from .servicos import criancas, telefones
+        with app.engine.begin() as conn:
+            if alvo == 'todas':
+                lista = [c for c in conn.execute(_db.criancas.select().where(_db.criancas.c.ativa.is_(True))).mappings()]
+            else:
+                c = criancas.por_id_rede(conn, alvo)
+                if not c or not c['ativa']:
+                    raise click.ClickException('crianca inexistente ou inativa')
+                lista = [c]
+            avisados = sum(1 for c in lista if telefones.aplicar_cifragem(conn, c, modo, 'operador', 'cli'))
+        click.echo(f'{len(lista)} linha(s) em modo {modo}; {avisados} aparelho(s) na fila do GDMS')
+
     @app.cli.command('jobs-rapidos')
     def jobs_rapidos_cmd():
         """Observa registros SIP e aplica timeouts (rodar a cada minuto)."""
@@ -190,6 +208,7 @@ def _registrar_comandos(app):
             r = reconciliacao.executar(conn, app.cfg, gdms_macs=gdms_macs)
             from .servicos import retencao
             r['retencao'] = retencao.aplicar(conn, app.cfg)
+            r['copia_externa'] = reconciliacao.verificar_copia_externa(conn, app.cfg, app.mailer)
         click.echo(str(r))
 
     @app.cli.command('exportar-auditoria')

@@ -248,12 +248,26 @@ def gerar_xml(conn, telefone, cfg):
     crianca = svc_cri.por_id(conn, telefone['crianca_id'])
     tok = token_ativo(conn, telefone['id'])
     modelo_xml = 'ht' if telefone['modelo'] == 'ht' else 'grp'   # conta SIP: GRP usa os mesmos P-values base do GXP (confirmar em B09)
-    pv = grandstream_xml.pvalues_sip(cfg.SIP_HOST, crianca['id_rede'], crianca['senha_sip'], crianca['apelido'], modelo_xml)
+    pv = grandstream_xml.pvalues_sip(cfg.SIP_HOST, crianca['id_rede'], crianca['senha_sip'], crianca['apelido'], modelo_xml,
+                                     cifragem=svc_cri.cifragem(conn, crianca['id_rede']), porta_tls=cfg.SIP_TLS_PORTA)
     if tok:
         pv.update(grandstream_xml.pvalues_provisionamento(url_provisionamento(cfg, tok['token']), cfg.PROV_INTERVALO_MIN, modelo_xml))
     pv.update(grandstream_xml.pvalues_travas(telefone['admin_senha'], modelo_xml))
     pv.update(grandstream_xml.pvalues_teclas(amigos_para_teclas(conn, crianca), modelo_xml))
     return grandstream_xml.gerar_xml(telefone['mac'], pv, versao=telefone['xml_versao'])
+
+
+def aplicar_cifragem(conn, crianca, modo, ator_tipo='sistema', ator_id=None):
+    """Muda a cifragem da linha de uma crianca nos dois lados: o ramal na central (na hora) e o aparelho
+    (versao nova da configuracao + envio imediato dos parametros da linha pelo GDMS; sem GDMS, o aparelho
+    pega na conferencia diaria ou ao ser religado). Retorna True se havia telefone para avisar."""
+    from . import gdms_fila
+    svc_cri.definir_cifragem(conn, crianca, modo, ator_tipo, ator_id)
+    tel = atual_da_crianca(conn, crianca['id'])
+    if not tel:
+        return False
+    conn.execute(update(db.telefones).where(db.telefones.c.id == tel['id']).values(xml_versao=(tel['xml_versao'] or 1) + 1))
+    return gdms_fila.atualizar_linha(conn, crianca['id'])
 
 
 def gerar_xml_zerado(conn, telefone):

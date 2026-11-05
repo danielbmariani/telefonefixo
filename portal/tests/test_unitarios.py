@@ -85,3 +85,16 @@ def test_pvalues_teclas():
     tres = gx.pvalues_teclas([('a', '234567'), ('b', '345678'), ('c', '456789'), ('d', '567890')])
     assert tres['P23807'] == '456789' and '567890' not in tres.values()
 
+
+
+def test_pvalues_linha_e_cifragem():
+    assert gx.pvalues_linha('h') == {'P47': 'h', 'P130': '1', 'P2329': '0', 'P183': '0'}
+    assert gx.pvalues_linha('h', 'transicao') == {'P47': 'h:5061', 'P130': '2', 'P2329': '0', 'P183': '1'}
+    assert gx.pvalues_linha('h', 'exigida', 5071) == {'P47': 'h:5071', 'P130': '2', 'P2329': '0', 'P183': '2'}
+    pv = gx.pvalues_sip('h', '345678', 'senha-longa-123', 'ana', 'grp', cifragem='exigida')
+    assert pv['P130'] == '2' and pv['P183'] == '2' and pv['P47'] == 'h:5061'
+    import pytest
+    with pytest.raises(ValueError):
+        gx.pvalues_linha('h', 'talvez')
+    fab = gx.pvalues_fabrica('grp')
+    assert fab['P130'] == '0' and fab['P183'] == '0'

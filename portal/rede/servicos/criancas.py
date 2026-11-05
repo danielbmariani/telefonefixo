@@ -55,7 +55,7 @@ def criar(conn, familia_id, apelido, cfg, ator_id=None):
     r = conn.execute(insert(db.criancas).values(familia_id=familia_id, apelido=apelido, id_rede=id_rede,
                                                 senha_sip=senha, criado_em=agora(), ativa=True))
     cid = r.inserted_primary_key[0]
-    _criar_ramal(conn, id_rede, senha, apelido)
+    _criar_ramal(conn, id_rede, senha, apelido, cfg.SIP_CIFRAGEM)
     auditoria.registrar(conn, 'crianca_criada', 'familia', ator_id or familia_id, 'crianca', cid,
                         detalhes={'id_rede': id_rede, 'apelido': apelido})
     auditoria.registrar(conn, 'ramal_criado', 'sistema', None, 'crianca', cid,
@@ -67,9 +67,40 @@ def criar(conn, familia_id, apelido, cfg, ator_id=None):
     return por_id(conn, cid)
 
 
-def _criar_ramal(conn, id_rede, senha, apelido):
+# Cifragem entre o telefone e a central, do lado do Asterisk (o lado do aparelho e grandstream_xml.pvalues_linha).
+# Com TLS o ramal fica sem transporte fixo: o Asterisk responde pela conexao em que o telefone se registrou.
+# transicao aceita ligacao sem SRTP (aparelho que ainda nao pegou a configuracao nova); exigida recusa.
+CIFRAGENS = {
+    'nenhuma': {'transport': 'transport-tcp', 'media_encryption': 'no', 'media_encryption_optimistic': 'no'},
+    'transicao': {'transport': None, 'media_encryption': 'sdes', 'media_encryption_optimistic': 'yes'},
+    'exigida': {'transport': None, 'media_encryption': 'sdes', 'media_encryption_optimistic': 'no'},
+}
+
+
+def cifragem(conn, id_rede):
+    """Modo atual do ramal, lido do que o Asterisk usa: 'nenhuma', 'transicao' ou 'exigida'."""
+    e = conn.execute(select(db.ps_endpoints.c.media_encryption, db.ps_endpoints.c.media_encryption_optimistic)
+                     .where(db.ps_endpoints.c.id == id_rede)).first()
+    if not e or e[0] != 'sdes':
+        return 'nenhuma'
+    return 'transicao' if e[1] == 'yes' else 'exigida'
+
+
+def definir_cifragem(conn, crianca, modo, ator_tipo='sistema', ator_id=None):
+    """Muda a cifragem do ramal de uma crianca. O aparelho so acompanha quando recebe a configuracao nova
+    (telefones.aplicar_cifragem cuida disso). Retorna o modo anterior."""
+    if modo not in CIFRAGENS:
+        raise ValueError(f'cifragem deve ser uma de {tuple(CIFRAGENS)}')
+    antes = cifragem(conn, crianca['id_rede'])
+    conn.execute(update(db.ps_endpoints).where(db.ps_endpoints.c.id == crianca['id_rede']).values(**CIFRAGENS[modo]))
+    auditoria.registrar(conn, 'cifragem_alterada', ator_tipo, ator_id, 'crianca', crianca['id'],
+                        detalhes={'de': antes, 'para': modo})
+    return antes
+
+
+def _criar_ramal(conn, id_rede, senha, apelido, modo='nenhuma'):
     conn.execute(insert(db.ps_endpoints).values(
-        id=id_rede, transport='transport-tcp', aors=id_rede, auth=id_rede, context=CONTEXTO_DIALPLAN,
+        id=id_rede, aors=id_rede, auth=id_rede, context=CONTEXTO_DIALPLAN, **CIFRAGENS[modo],
         disallow='all', allow='g722,ulaw,alaw', direct_media='no', rtp_symmetric='yes', force_rport='yes',
         rewrite_contact='yes', callerid=f'{apelido} <{id_rede}>', dtmf_mode='rfc4733'))
     conn.execute(insert(db.ps_auths).values(id=id_rede, auth_type='userpass', username=id_rede, password=senha))

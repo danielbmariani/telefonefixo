@@ -81,6 +81,28 @@ def executar(conn, cfg, gdms_macs=None, ref=None):
     return r
 
 
+def verificar_copia_externa(conn, cfg, mailer, ref=None):
+    """A copia do banco fora do servidor (deploy/copia-externa.sh) falha calada se o endereco de gravacao
+    vencer ou o bucket sumir. O rede-backup-db anota a hora de cada envio que deu certo; se a anotacao
+    faltar ou ficar velha, sai um e-mail por execucao (o job e diario). Retorna 'ok', 'atrasada' ou None."""
+    if not cfg.COPIA_EXTERNA_STATUS:
+        return None
+    ref = ref or agora()
+    try:
+        ultima = datetime.fromtimestamp(os.path.getmtime(cfg.COPIA_EXTERNA_STATUS), timezone.utc)
+    except OSError:
+        ultima = None
+    if ultima and utc(ref) - ultima <= timedelta(hours=cfg.COPIA_EXTERNA_MAX_H):
+        return 'ok'
+    quando = f'a última que deu certo foi em {ultima:%d/%m/%Y %H:%M} UTC' if ultima else 'nenhuma cópia externa deu certo até agora'
+    mailer.enviar(cfg.ALERTA_EMAIL, 'A cópia de segurança fora do servidor está atrasada',
+                  f'A cópia diária do banco de dados para fora do servidor não está chegando: {quando}.\n\n'
+                  'A cópia local continua sendo feita. Veja /var/log/rede-aberta/backup.log no servidor e, se o '
+                  'endereço de gravação venceu, rode deploy/copia-externa.sh com NOVO_ENDERECO=1.')
+    auditoria.registrar(conn, 'copia_externa_atrasada', 'sistema', detalhes={'ultima': ultima.isoformat() if ultima else None})
+    return 'atrasada'
+
+
 def exportar_auditoria(conn, dia=None, destino='.'):
     """CSV do audit_log de um dia (UTC) + sha256. O hash deve ser guardado fora do servidor."""
     if dia:

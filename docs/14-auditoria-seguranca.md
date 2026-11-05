@@ -84,5 +84,12 @@ duplicar os do Flask; `www` redireciona; após o reinício, tronco registrado e 
 - [x] Rotação dos logs do Asterisk (28/10, item 8 da seção 4).
 - [ ] Aviso de disco acima de 80% no `rede-diario`.
 - [ ] Criar `contato@` e `privacidade@` no Email Routing da Cloudflare e testar.
-- [ ] Cópia externa do backup.
+- [x] Cópia externa do backup (05/11/2026): `deploy/copia-externa.sh`. Bucket privado `telefone-fixo-copias` na Oracle
+  em São Paulo (os dados não saem do país nem ganham operador novo), cópia cifrada com gpg, chave privada só na máquina
+  do operador, 14 dias de guarda feitos pelo próprio bucket, servidor só com permissão de gravar, aviso por e-mail se
+  atrasar mais de 36 horas. Primeira cópia enviada e aberta com a chave local no mesmo dia. Risco que fica: o bucket
+  está na mesma conta Oracle do servidor; um problema na conta inteira atinge os dois.
+- [ ] SIP por TLS e SRTP (05/11/2026): central pronta (`deploy/tls.sh`: `transport-tls` na 5061, certificado do site,
+  NSG só desta máquina) e portal com modo por linha (`flask sip-cifragem`). Falta o teste com aparelho real
+  (`bancada/B26-tls-e-srtp.md`), migrar as linhas existentes, pôr `REDE_SIP_CIFRAGEM=exigida` e fechar a TCP 5060.
 - [ ] Repetir esta auditoria depois de qualquer mudança no dialplan ou nas rotas do portal (os testes em `tests/test_seguranca.py`, `test_lgpd.py` e o roteiro `scratchpad/audit_dyn.py` cobrem o essencial).

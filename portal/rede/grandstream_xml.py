@@ -64,9 +64,27 @@ def nome_arquivo(mac):
     return f'cfg{normalizar_mac(mac).lower()}.xml'
 
 
-def pvalues_sip(servidor, ramal, senha_sip, nome_exibicao, modelo='gxp'):
+CIFRAGENS = ('nenhuma', 'transicao', 'exigida')
+
+
+def pvalues_linha(servidor, cifragem='nenhuma', porta_tls=5061):
+    """Endereco da central, transporte do SIP e cifragem da voz. Nao tem segredo: pode ir pelo GDMS.
+    Referencia: bancada/referencia-pvalues/grp260x_config_1.0.7.74.txt.
+      P130   SIP Transport: 1 = TCP, 2 = TLS
+      P2329  SIP URI Scheme when using TLS: 0 = sip (o Asterisk nao lida bem com sips)
+      P183   SRTP Mode: 0 = desligado, 1 = ligado sem obrigar, 2 = ligado e obrigatorio
+    nenhuma: TCP na porta padrao, voz sem cifra. transicao: TLS + SRTP sem obrigar (migracao de aparelho
+    que ja esta em uso). exigida: TLS + SRTP obrigatorio. Casa com criancas.CIFRAGENS (lado da central)."""
+    if cifragem not in CIFRAGENS:
+        raise ValueError(f'cifragem deve ser uma de {CIFRAGENS}')
+    if cifragem == 'nenhuma':
+        return {'P47': servidor, 'P130': '1', 'P2329': '0', 'P183': '0'}
+    return {'P47': f'{servidor}:{int(porta_tls)}', 'P130': '2', 'P2329': '0', 'P183': '1' if cifragem == 'transicao' else '2'}
+
+
+def pvalues_sip(servidor, ramal, senha_sip, nome_exibicao, modelo='gxp', cifragem='nenhuma', porta_tls=5061):
     """P-values de conta SIP, NAT, transporte e audio.
-    Copiados do configurar-telefone.sh (passo [3/7])."""
+    Copiados do configurar-telefone.sh (passo [3/7]). Transporte e cifragem: pvalues_linha."""
     if modelo not in MODELOS:
         raise ValueError(f'modelo deve ser um de {MODELOS}')
     if not re.match(r'^\d{3,7}$', ramal):
@@ -78,13 +96,11 @@ def pvalues_sip(servidor, ramal, senha_sip, nome_exibicao, modelo='gxp'):
 
     pv = {
         'P271': '1',          # Account Active
-        'P47': servidor,      # Primary SIP Server
         'P35': ramal,         # SIP User ID
         'P36': ramal,         # SIP Authenticate ID
         'P34': senha_sip,     # SIP Authentication Password
         'P3': nome_exibicao,  # Display Name (apelido; aparece no visor de quem recebe)
         'P52': '2',           # NAT Traversal = Keep-Alive
-        'P130': '1',          # SIP Transport = TCP (SIP ALG dos roteadores corrompe UDP)
         'P31': '1',           # SIP Registration = Yes
         'P32': '2',           # Register Expiration = 2 min
         'P81': '1',           # Unregister on Reboot = Yes
@@ -92,6 +108,8 @@ def pvalues_sip(servidor, ramal, senha_sip, nome_exibicao, modelo='gxp'):
         'P58': '0',           # Vocoder 2 = PCMU
         'P59': '8',           # Vocoder 3 = PCMA
     }
+    # Primary SIP Server, transporte (TCP ou TLS; nunca UDP, que o SIP ALG dos roteadores corrompe) e SRTP
+    pv.update(pvalues_linha(servidor, cifragem, porta_tls))
     if modelo in ('gxp', 'grp', 'grpw'):
         pv['P72'] = '1'       # Use # as Dial Key (ramal + # envia)
     else:
@@ -192,7 +210,7 @@ def pvalues_fabrica(modelo='grp'):
     senhas padrao, menu e reset de fabrica destravados, web em HTTP+HTTPS, teclas limpas. Depois disso
     o aparelho fica como novo para outra familia cadastrar; o reset de fabrica pela API (task/add tipo 2)
     e tentado em seguida e, se funcionar, apaga tambem o que nao listamos aqui."""
-    pv = {'P271': '0', 'P47': '', 'P35': '', 'P36': '', 'P34': '', 'P3': '',
+    pv = {'P271': '0', 'P47': '', 'P35': '', 'P36': '', 'P34': '', 'P3': '', 'P130': '0', 'P183': '0', 'P2329': '1',
           'P237': 'fm.grandstream.com/gs', 'P194': '0', 'P2': 'admin', 'P1650': '3', 'P276': '0'}
     if modelo == 'ht':
         pv['P6767'] = '2'

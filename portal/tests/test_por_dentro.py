@@ -19,6 +19,12 @@ def test_por_dentro_e_publica_com_os_desenhos_e_as_secoes(client, app):
     assert f'{app.cfg.RETENCAO_CHAMADAS_DIAS} dias' in html
     # mesmas regras de texto do resto do site: sem travessao; nada de dinheiro para as familias
     assert '—' not in html and '–' not in html and 'R$' not in html
+    # decisoes de 05/11: saem da pagina as frases sobre auditoria externa, copia so no servidor e fontes de terceiros
+    for frase in ('auditoria de segurança feita por terceiros', 'Falta uma cópia em outro lugar', 'Google Fonts'):
+        assert frase not in html, frase
+    # as fontes de terceiros e a copia de seguranca passam a constar da politica de privacidade
+    pol = client.get('/privacidade').get_data(as_text=True)
+    assert 'Google Fonts e jsDelivr' in pol and 'Cópias de segurança' in pol and 'versão 2026-11-a' in pol
 
 
 def test_arquivos_citados_na_pagina_existem_no_repositorio():
@@ -35,6 +41,7 @@ def test_pagina_inicial_e_rodape_levam_ao_codigo_e_a_pagina_tecnica(client, app)
     assert f'href="{GH}"' in aberto                       # link do codigo onde a pagina fala de codigo aberto
     final = html[html.index('Perguntas comuns'):html.index('<footer')]
     assert 'href="/por-dentro"' in final and f'href="{GH}"' in final   # secao no fim, para quem quer entender
+    assert 'a não ser os celulares da própria família' in html
     # a pergunta sobre celular nao pode contradizer a aba Celulares (fase de teste)
     assert 'Só para os celulares que a própria família cadastrar' in final
     rodape = client.get('/entrar').get_data(as_text=True)
