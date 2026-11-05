@@ -470,6 +470,7 @@ def celulares(crianca_id):
     from ..servicos import custos
     usos = [(c, custos.uso_crianca_mes(conn(), c['id_rede'], _cfg())) for c in cs]
     return render_template('celulares.html', crianca=c, active_tab='celulares', numeros=svc_fam.listar(conn(), fid), criancas=cs, usos=usos,
+                           franquia=custos.franquia_minutos(conn(), _cfg()),
                            maximo=svc_fam.MAX_POR_FAMILIA, formatar=svc_fam.formatar, prefixos=svc_fam.PREFIXOS,
                            numero_rede=svc_fam.formatar(_cfg().TRONCO_NUMERO) or 'o número da rede')
 

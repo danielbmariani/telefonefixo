@@ -65,6 +65,18 @@ def uso_crianca_mes(conn, id_rede, cfg, ref=None):
     return {'usados': usados, 'restam': segundos_permitidos(conn, cfg, id_rede, 'saida', ref) // 60}
 
 
+def franquia_minutos(conn, cfg):
+    """Estimativa folgada do limite mensal por crianca, em minutos, para mostrar aos pais: quanto da para a
+    crianca ligar para o celular e quanto da para o celular ligar para ela (arredondado para baixo, de 5 em 5
+    e de 10 em 10). None se nao ha limite."""
+    teto = teto_crianca(conn, cfg)
+    if teto <= 0 or cfg.TARIFA_SAIDA_MIN <= 0 or cfg.TARIFA_ENTRADA_MIN <= 0:
+        return None
+    saida, entrada = teto / cfg.TARIFA_SAIDA_MIN, teto / cfg.TARIFA_ENTRADA_MIN
+    return {'saida': int(saida // 5 * 5) if saida >= 10 else int(saida),
+            'entrada': int(entrada // 10 * 10) if entrada >= 20 else int(entrada)}
+
+
 def gasto_rede_dia(conn, cfg, ref=None):
     dia = em_sp(ref or agora()).strftime('%Y-%m-%d')
     rows = _rows(conn, "timestamp LIKE :d", {'d': dia + '%'})
