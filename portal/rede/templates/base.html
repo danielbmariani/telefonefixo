@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% from "_etiqueta.html" import etiqueta %}<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -35,7 +35,7 @@
       <span class="selo" aria-hidden="true"><svg viewBox="0 0 200 200"><g transform="translate(100 100)"><circle r="96" fill="#d9480f"/><g fill="#fff"><circle cx="16" cy="59.9" r="9"/><circle cx="-16" cy="59.9" r="9"/><circle cx="-43.8" cy="43.8" r="9"/><circle cx="-59.9" cy="16" r="9"/><circle cx="-59.9" cy="-16" r="9"/><circle cx="-43.8" cy="-43.8" r="9"/><circle cx="-16" cy="-59.9" r="9"/><circle cx="16" cy="-59.9" r="9"/><circle cx="43.8" cy="-43.8" r="9"/><circle cx="59.9" cy="-16" r="9"/><circle r="24"/></g><path d="M60 42 L76 53" stroke="#fff" stroke-width="9" stroke-linecap="round" fill="none"/></g></svg></span>
       <span>
         <span class="nome">{{ nome_rede }}</span>
-        {% if crianca %}<span class="sub">{{ crianca.apelido }} · ID {{ crianca.id_rede|idfmt }}</span>{% else %}<span class="sub">sem tela, sem aplicativo, sem acesso externo</span>{% endif %}
+        <span class="sub">sem tela, sem aplicativo, sem acesso externo</span>
       </span>
     </a>
     <nav class="topo-acoes" aria-label="Conta">
@@ -54,6 +54,10 @@
   </div>
 </header>
 {% if logado and crianca %}
+{# O ID e o que a familia mais procura (para passar a outra familia): fica no alto de todas as paginas da crianca. #}
+<div class="crianca-id"><div class="container">
+  {{ etiqueta('ID de ' ~ crianca.apelido, crianca.id_rede|idfmt, crianca.id_rede, 'o ID de ' ~ crianca.apelido) }}
+</div></div>
 <nav class="abas sticky-top" aria-label="Seções de {{ crianca.apelido }}">
   <div class="container">
     <ul class="nav nav-fill w-100">
@@ -81,6 +85,7 @@
   {% block content %}{% endblock %}
 </main>
 
+<span class="visually-hidden" id="copiado-aviso" role="status" aria-live="polite"></span>
 <footer class="rodape">
   <div class="container d-flex flex-wrap justify-content-between gap-2">
     <span>{{ nome_rede }} · projeto sem fins lucrativos, de código aberto · indicado {{ cfg.FAIXA_ETARIA }}.</span>
@@ -137,6 +142,41 @@ document.addEventListener('submit', function (ev) {
     });
     f.querySelectorAll('.enviando-aviso').forEach(function (e) { e.remove(); });
   }, { once: true });
+});
+// Botoes "Copiar" (ID da crianca, codigo da turma): copiam data-copiar e confirmam no proprio botao.
+document.addEventListener('click', function (ev) {
+  var b = ev.target.closest && ev.target.closest('[data-copiar]'); if (!b) return;
+  var valor = b.dataset.copiar, texto = b.querySelector('.copiar-texto'), icone = b.querySelector('i');
+  var aviso = document.getElementById('copiado-aviso');
+  var feito = function () {
+    b.classList.add('copiado'); texto.textContent = 'Copiado'; icone.className = 'bi bi-check-lg';
+    if (aviso) aviso.textContent = b.dataset.copiado || 'Copiado';
+    clearTimeout(b._volta);
+    b._volta = setTimeout(function () {
+      b.classList.remove('copiado'); texto.textContent = 'Copiar'; icone.className = 'bi bi-copy';
+      if (aviso) aviso.textContent = '';
+    }, 2500);
+  };
+  // Navegador antigo ou sem permissao: copia por um campo temporario; se nem isso der, deixa o numero selecionado.
+  var reserva = function () {
+    var t = document.createElement('textarea'); t.value = valor; t.setAttribute('readonly', '');
+    t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    t.remove();
+    if (ok) { feito(); return; }
+    var n = b.parentNode.querySelector('.numero');
+    if (n && window.getSelection) window.getSelection().selectAllChildren(n);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(valor).then(feito, reserva);
+  else reserva();
+});
+// Campo do ID de um amigo: quem cola a mensagem inteira ("o ID e 12 34 56") fica so com o numero.
+document.addEventListener('paste', function (ev) {
+  var c = ev.target; if (!c.matches || !c.matches('input[data-colar-id]')) return;
+  var t = ((ev.clipboardData || window.clipboardData).getData('text') || '');
+  var m = /(?:^|\D)((?:\d[ .\-]?){5}\d)(?!\d)/.exec(t);
+  if (!m) return;
+  ev.preventDefault(); c.value = m[1].replace(/\D/g, '');
 });
 </script>
 {% block scripts %}{% endblock %}

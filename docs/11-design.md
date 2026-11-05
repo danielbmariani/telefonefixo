@@ -143,3 +143,18 @@ O que a pesquisa diz, e o que foi aplicado:
 - Prova em tela antes de subir: capturas em 390 e 1280 (`~/Desktop/aba-amigos-antes-depois/`). Deploy de rotina com o novo `deploy/codigo.sh` (só código, reinicia o portal).
 
 Fontes: nngroup.com/articles/accordions-on-desktop, nngroup.com/articles/visual-hierarchy-ux-definition, nngroup.com/articles/f-shaped-pattern-reading-web-content, nngroup.com/articles/tabs-used-right, design-system.service.gov.uk/components/accordion, design-system.service.gov.uk/components/summary-list.
+
+## ID da criança no alto de todas as páginas, com botão Copiar (05/11/2026)
+
+Problema relatado pelo Daniel depois de testar com outra família: ao abrir a conta para passar o ID, levou alguns segundos para achá-lo, e não havia como copiar. Na captura de antes, a aba Amigos (onde a conta abre) só mostrava o ID em letra miúda embaixo do logo, e no celular nem isso, porque essa linha some abaixo de 480 px. A etiqueta amarela só existia na aba Telefone e na lista de crianças.
+
+O que mudou:
+
+- Faixa com a etiqueta amarela "ID de <apelido>" acima das abas, em todas as páginas da criança (`base.html`, mesma condição das abas). Um lugar só, sempre o mesmo: quem aprende onde está não procura de novo. Fica acima das abas porque as abas são seções da criança; as abas continuam fixas ao rolar e a faixa rola com a página.
+- Botão "Copiar" dentro da etiqueta, com texto e ícone (ícone sozinho não se explica). Copia os 6 números sem espaço. Confirma no próprio botão ("Copiado", verde, 2,5 s) e anuncia para leitor de tela (`#copiado-aviso`, `aria-live`). Sem a API de área de transferência, tenta o método antigo; se nem esse der, deixa o número selecionado.
+- A mesma etiqueta com Copiar (`_etiqueta.html`) vale para a lista de crianças e para o código da turma, que também é um número para passar adiante.
+- O que saiu, por estar duplicado: a etiqueta dentro da aba Telefone e a linha "APELIDO · ID" embaixo do logo (o cabeçalho volta a mostrar a frase do projeto em todas as páginas).
+- Colar: o campo "ID do amigo" aceita a mensagem inteira colada ("o ID é 12 34 56") e fica só com o número. No celular o WhatsApp copia a mensagem toda, não um trecho.
+- De passagem: o número da etiqueta não quebra mais em duas linhas com apelido comprido (lista de crianças no celular).
+
+Prova em tela: capturas em 390 e 1280 (`~/Desktop/id-copiar-antes-depois/`), com o clique no botão conferido contra a área de transferência do navegador. Testes em `tests/test_id_visivel.py`.

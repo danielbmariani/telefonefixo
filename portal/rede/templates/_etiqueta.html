@@ -1,0 +1,11 @@
+{# Etiqueta amarela de um numero que a familia passa adiante (ID da crianca, codigo da turma), com botao Copiar.
+   rotulo: texto pequeno de cima. mostra: numero como aparece. copia: o que vai para a area de transferencia.
+   nome: como o leitor de tela chama o botao ("Copiar " + nome). aviso: o que ele anuncia depois de copiar.
+   O clique e tratado em base.html (data-copiar). #}
+{% macro etiqueta(rotulo, mostra, copia, nome, aviso='ID copiado', classe='') %}
+<span class="etiqueta-id copiavel {{ classe }}">
+  <small>{{ rotulo }}</small>
+  <span class="numero">{{ mostra }}</span>
+  <button type="button" class="btn-copiar" data-copiar="{{ copia }}" data-copiado="{{ aviso }}" aria-label="Copiar {{ nome }}"><i class="bi bi-copy" aria-hidden="true"></i><span class="copiar-texto">Copiar</span></button>
+</span>
+{% endmacro %}

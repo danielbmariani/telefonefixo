@@ -6,8 +6,13 @@ from sqlalchemy import insert, text
 
 from rede import db
 from rede.servicos import custos, chamadas, familia_telefones as fam
-from rede.tempo import agora, em_sp, TZ_SP
+from rede.tempo import agora, em_sp
 from conftest import cadastrar_e_entrar, criar_crianca, crianca_row, post, acoes
+
+
+def _hoje_15h():
+    # as ligacoes de _lig entram com a hora de agora; a decisao precisa cair no mesmo mes (o teto e mensal)
+    return em_sp(agora()).replace(hour=15, minute=0, second=0, microsecond=0)
 
 
 def _lig(app, de, para, dur, quando=None, status='ALLOWED'):
@@ -38,7 +43,7 @@ def test_custo_e_teto_por_crianca(client, app):
     with app.engine.begin() as c:
         assert custos.gasto_crianca_mes(c, cr['id_rede'], cfg) == 0.70
         assert custos.segundos_permitidos(c, cfg, cr['id_rede'], 'saida') == 860
-        res, motivo = chamadas.decidir(c, cr['id_rede'], '9' + cr['id_rede'], TZ_SP.localize(__import__('datetime').datetime(2026, 10, 27, 15, 0)))
+        res, motivo = chamadas.decidir(c, cr['id_rede'], '9' + cr['id_rede'], _hoje_15h())
         assert res == 'ALLOW' and motivo == 'PJSIP/11987654321@nvoip;limite=860'
     # esgota: 14 ligacoes de 1 min = R$ 4,20 (total 4,90) -> sobra R$ 0,10 = 20 s < 60 s -> bloqueia
     for _ in range(14):
@@ -46,7 +51,7 @@ def test_custo_e_teto_por_crianca(client, app):
     with app.engine.begin() as c:
         assert custos.gasto_crianca_mes(c, cr['id_rede'], cfg) == 4.90
         assert custos.segundos_permitidos(c, cfg, cr['id_rede'], 'saida') == 0
-        t = TZ_SP.localize(__import__('datetime').datetime(2026, 10, 27, 15, 0))
+        t = _hoje_15h()
         assert chamadas.decidir(c, cr['id_rede'], '9' + cr['id_rede'], t) == ('BLOCK_TETO', 'TETO')
     # entrada: tarifa menor, ainda cabem 120 s
     _ativar_telefone(app, cid)
