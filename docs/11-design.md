@@ -168,3 +168,30 @@ Pedido do Daniel: Celulares deve ser uma aba como Amigos, Turmas e Horários, e 
 - Cabeçalho da família: selo, nome e "Sair" (o operador tem também "Painel"). Com menos botões, nada passa da largura em 320, 360 e 390 px.
 - Trocar de criança: em família com mais de uma, a faixa do ID mostra "Trocar de criança", que leva à lista. A lista também fica no rodapé ("Crianças"), em `/criancas`, e é onde se adiciona outra criança. O selo continua levando à página inicial.
 - Seis abas cabem no celular (ícone em cima, nome embaixo), conferido em 360 px.
+
+## Página técnica "Como funciona por dentro" e link do código (05/11/2026)
+
+Pedido do Daniel: o site dizia "código aberto" sem link para o código, e faltava um lugar para quem quer
+entender onde fica cada dado e como o telefone se registra.
+
+- **Link do código** (`cfg.CODIGO_URL`, variável `REDE_CODIGO_URL`): na página inicial, dentro do bloco
+  "Sem fins lucrativos, com código aberto"; no rodapé de todas as páginas ("Código"); e na página técnica.
+  O link no rodapé também atende à AGPL (oferecer o código a quem usa o serviço pela rede).
+- **Seção no fim da página inicial**, depois das perguntas comuns: "Quer entender por dentro?", com botão
+  para a página técnica e para o código. Nenhum texto existente da página inicial foi alterado.
+- **Página `/por-dentro`** (`por_dentro.html`), pública, sete blocos numerados: as peças, como o telefone
+  entra na rede, o que acontece numa ligação, celular da família, onde fica cada dado, segurança (o que tem
+  e o que falta) e o código (arquivos por onde começar a ler, com link direto).
+- **Quatro desenhos em SVG** no próprio HTML, com as cores da identidade: laranja para telefonia, azul para
+  site e configuração, tracejado para serviços de fora. O `viewBox` tem 360 de largura para a letra não ficar
+  pequena no celular (cerca de 12 px em tela de 360); no computador o desenho fica ao lado do texto, com no
+  máximo 460 px. A tabela de dados vira lista no celular.
+- **Regra de manutenção**: tudo o que a página afirma foi conferido no código e no servidor em 05/11/2026
+  (região, transportes SIP, modo "ponteiro" do GDMS, cópia diária, prazos de retenção). Mudou a central, o
+  provisionamento ou a política de privacidade, a página tem de ser revista. Os prazos repetem a política de
+  privacidade, que continua sendo o texto que vale; o do histórico vem de `RETENCAO_CHAMADAS_DIAS`.
+- **O que a página admite que falta**: SIP e voz sem criptografia entre o telefone e o servidor, cópia de
+  segurança só no próprio servidor, nenhuma auditoria externa. Ela também diz que as fontes e os estilos vêm
+  do Google Fonts e do jsDelivr (o IP do visitante passa por eles), o que a política de privacidade ainda não
+  cita; servir esses arquivos do próprio servidor resolveria.
+- Testes em `tests/test_por_dentro.py` (inclui conferir que os arquivos citados existem no repositório).

@@ -92,7 +92,9 @@
     <span>
       <a href="{{ url_for('familia.termos') }}">Termos</a> ·
       <a href="{{ url_for('familia.privacidade') }}">Privacidade</a> ·
-      <a href="{{ url_for('familia.contato') }}">Contato e denúncias</a>
+      <a href="{{ url_for('familia.contato') }}">Contato e denúncias</a> ·
+      <a href="{{ url_for('familia.por_dentro') }}">Como funciona por dentro</a> ·
+      <a href="{{ cfg.CODIGO_URL }}" rel="noopener">Código</a>
       {% if logado %} · <a href="{{ url_for('familia.criancas') }}">Crianças</a> · <a href="{{ url_for('familia.meus_dados') }}">Meus dados</a> · <a href="{{ url_for('familia.excluir_conta') }}">Excluir conta</a>{% endif %}
     </span>
   </div>

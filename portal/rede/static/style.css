@@ -271,6 +271,84 @@ body.com-abas .topo { position: static; box-shadow: none; }
 .btn-claro { background: #fff; color: var(--tinta); border-color: #fff; }
 .btn-claro:hover { background: var(--sol); border-color: var(--sol); color: var(--tinta); }
 
+.secao-tinta a:not(.btn) { color: #fff; font-weight: 700; }
+.secao-tinta a:not(.btn):hover { color: var(--sol); }
+
+/* ---------- Página "Como funciona por dentro" (por_dentro.html) ---------- */
+.por-dentro .abre { max-width: 46rem; }
+.por-dentro .lead-pd { font-size: 1.15rem; color: var(--tinta-suave); }
+.por-dentro .bloco { margin-top: 3rem; scroll-margin-top: 80px; }
+.por-dentro .bloco-cabeca { margin-bottom: 1.25rem; }
+.por-dentro h3 { font-size: 1.1rem; font-weight: 700; color: var(--tinta); margin-bottom: .6rem; }
+.indice ol { margin: 1.25rem 0 0; padding-left: 1.4rem; columns: 2; column-gap: 2rem; }
+.indice li { padding: .15rem 0; break-inside: avoid; }
+.pontos { padding-left: 1.15rem; }
+.pontos li { margin-bottom: .55rem; }
+.pontos li:last-child { margin-bottom: 0; }
+.pontos li::marker { color: var(--fio); }
+.passos-pd { list-style: none; counter-reset: pd; padding: 0; margin: 0 0 1.25rem; }
+.passos-pd li { counter-increment: pd; position: relative; padding: .1rem 0 .7rem 2.5rem; }
+.passos-pd li::before { content: counter(pd); position: absolute; left: 0; top: 0; width: 1.75rem; height: 1.75rem; border-radius: 50%;
+  background: var(--tinta); color: #fff; font-weight: 700; font-size: .9rem; display: flex; align-items: center; justify-content: center; }
+/* Desenhos: SVG com 360 de largura no viewBox, para a letra continuar legivel em tela de 360px */
+.figura { margin: 0; background: var(--areia); border-radius: var(--raio); padding: 1rem; }
+.figura svg { display: block; width: 100%; height: auto; max-width: 460px; margin: 0 auto; }
+.figura figcaption { font-size: .85rem; color: var(--tinta-suave); margin-top: .75rem; text-align: center; }
+.figura text { text-anchor: middle; fill: var(--tinta); }
+.figura .t { font-size: 15px; font-weight: 700; }
+.figura .s { font-size: 13.5px; fill: var(--tinta-suave); }
+.figura .esq { text-anchor: start; }
+.figura .dir { text-anchor: end; }
+.figura .r { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-anchor: start; fill: var(--cinza); }
+.figura .nt { font-size: 12.5px; font-weight: 700; fill: #fff; }
+.figura .halo { paint-order: stroke; stroke: var(--areia); stroke-width: 6px; stroke-linejoin: round; }
+.figura .no { fill: #fff; stroke: var(--tinta); stroke-width: 1.5; }
+.figura .dentro { fill: var(--areia); stroke: #b9c0c9; stroke-width: 1.5; }
+.figura .fora { fill: #fff; stroke: var(--cinza); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.figura .grupo { fill: #fff; stroke: var(--tinta); stroke-width: 2; }
+.figura .no-sim { fill: var(--verde-claro); stroke: var(--verde); stroke-width: 1.5; }
+.figura .no-nao { fill: #fde4e4; stroke: var(--vermelho); stroke-width: 1.5; }
+.figura .sim-t { fill: #1e5f3b; font-weight: 700; }
+.figura .nao-t { fill: #8f1d1d; font-weight: 700; }
+.figura .seta { fill: none; stroke-width: 2; }
+.figura .vida { fill: none; stroke: #b9c0c9; stroke-width: 1.5; stroke-dasharray: 3 5; }
+.figura .voz { stroke: var(--fio); }
+.figura .site { stroke: var(--mar); }
+.figura .neutra { stroke: var(--tinta-suave); }
+.figura .sim { stroke: var(--verde); }
+.figura .nao { stroke: var(--vermelho); }
+.figura .tracejada { stroke-dasharray: 5 4; }
+.figura circle.n { stroke: none; }
+.figura circle.voz { fill: var(--fio); }
+.figura circle.site { fill: var(--mar); }
+.figura circle.neutra { fill: var(--tinta-suave); }
+/* Tabelas da pagina tecnica: a de dados vira lista no celular */
+.discados { width: 100%; border-collapse: collapse; }
+.discados th, .discados td { padding: .5rem .75rem .5rem 0; border-top: 1px solid var(--linha); vertical-align: top; }
+.discados th { font-weight: 700; width: 42%; }
+.discados td { color: var(--tinta-suave); }
+.dados { width: 100%; border-collapse: collapse; }
+.dados thead th { text-align: left; font-size: .78rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--tinta-suave); padding: 0 1rem .5rem 0; border-bottom: 1px solid var(--linha); }
+.dados td { vertical-align: top; padding: .7rem 1rem .7rem 0; border-bottom: 1px solid var(--linha); color: var(--tinta-suave); }
+.dados td:first-child { font-weight: 700; color: var(--tinta); width: 36%; }
+.dados td:last-child { width: 30%; padding-right: 0; }
+.lista.arquivos li > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .1rem 1rem; width: 100%; }
+.lista.arquivos .caminho { overflow-wrap: anywhere; }
+@media (max-width: 767.98px) {
+  .dados thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .dados, .dados tbody, .dados tr, .dados td { display: block; }
+  .dados tr { padding: .8rem 0; border-bottom: 1px solid var(--linha); }
+  .dados td, .dados td:first-child, .dados td:last-child { width: auto; border: 0; padding: 0; }
+  .dados td[data-rotulo] { margin-top: .2rem; }
+  .dados td[data-rotulo]::before { content: attr(data-rotulo) ": "; font-weight: 700; color: var(--tinta); }
+}
+@media (max-width: 575.98px) {
+  .por-dentro .bloco { margin-top: 2.25rem; }
+  .indice ol { columns: 1; }
+  .figura { padding: .75rem .25rem; margin-left: -.25rem; margin-right: -.25rem; }
+  .figura figcaption { padding: 0 .5rem; }
+}
+
 /* Impressão do cartão fica no próprio template */
 
 /* esquema dos cabos (telefone.html / _cabos.html) */

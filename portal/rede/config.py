@@ -20,6 +20,8 @@ class Config:
         self.PROV_URL = g('REDE_PROV_URL', self.SITE_URL).rstrip('/')
         self.SIP_HOST = g('REDE_SIP_HOST', '127.0.0.1')                # IP/host que vai no P47
         self.TIMEZONE = g('REDE_TIMEZONE', 'America/Sao_Paulo')
+        # Repositorio publico do codigo (AGPL-3.0): link na pagina inicial, no rodape e em /por-dentro
+        self.CODIGO_URL = g('REDE_CODIGO_URL', 'https://github.com/danielbmariani/telefonefixo').rstrip('/')
         # Tronco da operadora (B23): numero fixo da rede que a familia liga para alcancar a crianca. So digitos.
         self.TRONCO_NUMERO = g('REDE_TRONCO_NUMERO', '')
         # Voz sintetica (doc 16): frases fixas, apelidos e nomes de grupo em wav para o Asterisk.

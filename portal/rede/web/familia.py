@@ -38,6 +38,13 @@ def contato():
     return render_template('contato.html', contato=_cfg().CONTATO_EMAIL, privacidade=_cfg().PRIVACIDADE_EMAIL)
 
 
+@bp.route('/por-dentro')
+def por_dentro():
+    """Pagina tecnica publica: as pecas, como o telefone se registra, o que acontece numa ligacao e onde
+    fica cada dado. O que ela afirma tem de bater com a politica de privacidade e com o deploy real."""
+    return render_template('por_dentro.html', contato=_cfg().CONTATO_EMAIL)
+
+
 # --- Consentimento ---
 
 @bp.route('/consentimento', methods=['GET', 'POST'])

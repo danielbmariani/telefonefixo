@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% block title %}Como funciona por dentro | {{ nome_rede }}{% endblock %}
+{% block descricao %}Onde fica cada dado, como o telefone se conecta à rede e o que acontece quando a criança disca. Página técnica do {{ nome_rede }}, com o código aberto para conferir.{% endblock %}
+{% block content %}
+{# Pagina tecnica publica (05/11/2026). Cada afirmacao daqui foi conferida no codigo e no servidor; ao mudar
+   a central, o provisionamento ou os prazos da politica de privacidade, rever este texto e os desenhos.
+   Desenhos: viewBox de 360 de largura para as letras continuarem legiveis no celular; estilos em style.css (.figura). #}
+{% set gh = cfg.CODIGO_URL %}
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <marker id="pd-voz" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d9480f"/></marker>
+  <marker id="pd-site" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1d5f8a"/></marker>
+  <marker id="pd-neutra" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4b535d"/></marker>
+  <marker id="pd-sim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2f8f5b"/></marker>
+  <marker id="pd-nao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#c62828"/></marker>
+</defs></svg>
+
+<div class="por-dentro">
+<div class="abre">
+  <h1 class="h2 mt-2">Como funciona por dentro</h1>
+  <p class="lead-pd">Onde fica cada dado, como o telefone se conecta à rede e o que acontece quando a criança disca. Tudo o que está aqui pode ser conferido no código, que é aberto.</p>
+  <p><a class="btn btn-outline-secondary" href="{{ gh }}" rel="noopener"><i class="bi bi-github" aria-hidden="true"></i> Ver o código no GitHub</a></p>
+  <nav class="indice" aria-label="Nesta página">
+    <ol>
+      <li><a href="#pecas">As peças</a></li>
+      <li><a href="#registro">Como o telefone entra na rede</a></li>
+      <li><a href="#ligacao">O que acontece numa ligação</a></li>
+      <li><a href="#celular">Ligações com o celular da família</a></li>
+      <li><a href="#dados">Onde fica cada dado</a></li>
+      <li><a href="#seguranca">Segurança: o que tem e o que falta</a></li>
+      <li><a href="#codigo">O código</a></li>
+    </ol>
+  </nav>
+</div>
+
+<section class="bloco" id="pecas">
+  <div class="bloco-cabeca"><h2>1. As peças</h2></div>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <p>São três partes.</p>
+      <ul class="pontos">
+        <li><strong>O telefone</strong>, na casa da criança. É um aparelho comum de telefonia pela internet (Grandstream GRP2601 ou GRP2602W). Não tem programa nosso dentro dele, só uma configuração.</li>
+        <li><strong>O servidor</strong>, uma máquina na Oracle Cloud, em São Paulo. Nela rodam o site, a central telefônica (Asterisk) e o banco de dados (PostgreSQL). É onde ficam guardados os dados das famílias.</li>
+        <li><strong>Três serviços de fora</strong>, cada um com uma tarefa só. A Grandstream, fabricante do telefone, entrega a configuração inicial do aparelho. Uma operadora de telefonia (Nvoip) completa as ligações com celular. O Gmail envia os e-mails do site.</li>
+      </ul>
+      <p class="mb-0">O endereço telefonefixo.org é registrado na Cloudflare, que só informa onde o servidor está. O conteúdo do site não passa por ela. As letras e os estilos das páginas são baixados do Google Fonts e do jsDelivr, que por isso veem o endereço IP de quem visita o site.</p>
+    </div>
+    <div class="col-lg-6">
+      <figure class="figura">
+        <svg viewBox="0 0 360 454" role="img" aria-labelledby="fig-pecas-t">
+          <title id="fig-pecas-t">O telefone da criança fala com a central telefônica. O responsável usa o site pelo celular ou computador. Central, site e banco de dados ficam no mesmo servidor, em São Paulo. Grandstream, operadora e Gmail são serviços de fora.</title>
+          <text class="r" x="10" y="14">FAMÍLIA</text>
+          <rect class="no" x="10" y="24" width="160" height="56" rx="8"/>
+          <text class="t" x="90" y="48">Telefone</text><text class="s" x="90" y="66">da criança</text>
+          <rect class="no" x="190" y="24" width="160" height="56" rx="8"/>
+          <text class="t" x="270" y="48">Responsável</text><text class="s" x="270" y="66">celular ou computador</text>
+
+          <rect class="grupo" x="8" y="140" width="344" height="194" rx="10"/>
+          <path class="seta voz" d="M90 82V156" marker-start="url(#pd-voz)" marker-end="url(#pd-voz)"/>
+          <text class="s esq" x="100" y="106">registro, chamadas</text><text class="s esq" x="100" y="123">e voz</text>
+          <path class="seta site" d="M270 82V156" marker-start="url(#pd-site)" marker-end="url(#pd-site)"/>
+          <text class="s esq" x="280" y="106">site</text><text class="s esq" x="280" y="123">(HTTPS)</text>
+
+          <rect class="dentro" x="20" y="158" width="150" height="48" rx="8"/>
+          <text class="t" x="95" y="178" style="font-size:14px">Central telefônica</text><text class="s" x="95" y="196">Asterisk</text>
+          <rect class="dentro" x="190" y="158" width="150" height="48" rx="8"/>
+          <text class="t" x="265" y="178">Site</text><text class="s" x="265" y="196">Python e nginx</text>
+          <path class="seta neutra" d="M95 206V226M265 206V226"/>
+          <rect class="dentro" x="20" y="226" width="320" height="48" rx="8"/>
+          <text class="t" x="180" y="246">Banco de dados</text><text class="s" x="180" y="264">PostgreSQL</text>
+          <text class="t" x="180" y="299">Servidor do Telefone Fixo</text>
+          <text class="s" x="180" y="317">uma máquina na Oracle Cloud, em São Paulo</text>
+
+          <path class="seta neutra tracejada" d="M62 334V366M180 334V366M298 334V366"/>
+          <rect class="fora" x="8" y="366" width="108" height="80" rx="8"/>
+          <text class="t" x="62" y="390" style="font-size:14px">Grandstream</text><text class="s" x="62" y="410">configuração</text><text class="s" x="62" y="427">inicial</text>
+          <rect class="fora" x="126" y="366" width="108" height="80" rx="8"/>
+          <text class="t" x="180" y="390" style="font-size:14px">Operadora</text><text class="s" x="180" y="410">ligações</text><text class="s" x="180" y="427">com celular</text>
+          <rect class="fora" x="244" y="366" width="108" height="80" rx="8"/>
+          <text class="t" x="298" y="390" style="font-size:14px">Gmail</text><text class="s" x="298" y="410">envio de</text><text class="s" x="298" y="427">e-mails</text>
+        </svg>
+        <figcaption>Laranja: telefonia. Azul: site. Tracejado: serviços de fora.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" id="registro">
+  <div class="bloco-cabeca"><h2>2. Como o telefone entra na rede</h2></div>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <p>O telefone sai da caixa sem saber nada sobre o {{ nome_rede }}. Ele se configura sozinho, em seis passos.</p>
+      <ol class="passos-pd">
+        <li>Você digita no site o número de série e o MAC da etiqueta. O site cadastra esse aparelho na nossa conta na Grandstream.</li>
+        <li>Ligado pela primeira vez, todo aparelho Grandstream pergunta à fabricante se existe uma configuração para ele.</li>
+        <li>A Grandstream responde com duas coisas: um endereço único no nosso servidor e as travas do aparelho (menu fechado e senha de administração própria). O apelido, o ID e a senha da linha não passam por ela.</li>
+        <li>O telefone pede a configuração nesse endereço, por HTTPS. O endereço é único para aquele aparelho e só responde a pedido feito com o MAC dele.</li>
+        <li>O servidor entrega o ID, o apelido, a senha da linha e o endereço da central.</li>
+        <li>O telefone se registra na central: abre uma conexão com o servidor (protocolo SIP, por TCP, porta 5060), informa o ID e prova que tem a senha, sem enviá-la. A partir daí ele liga e recebe.</li>
+      </ol>
+      <p>Depois disso:</p>
+      <ul class="pontos mb-0">
+        <li>O registro é renovado a cada 2 minutos. É por isso que o site sabe dizer se o telefone está conectado.</li>
+        <li>Uma vez por dia, e sempre que é religado, o telefone confere se a configuração mudou.</li>
+        <li>É sempre o telefone que procura o servidor, nunca o contrário. Não é preciso abrir porta nem mexer no roteador da casa.</li>
+        <li>Se a família remove o telefone no site, ele recebe de volta a configuração de fábrica e sai da nossa conta na Grandstream.</li>
+      </ul>
+    </div>
+    <div class="col-lg-6">
+      <figure class="figura">
+        <svg viewBox="0 0 360 452" role="img" aria-labelledby="fig-reg-t">
+          <title id="fig-reg-t">Seis trocas de mensagem: o servidor cadastra o aparelho na Grandstream; o telefone pergunta à Grandstream se tem configuração; a Grandstream responde com o endereço do servidor e as travas; o telefone pede a configuração ao servidor; o servidor entrega ID, apelido e senha da linha; o telefone se registra na central e renova o registro a cada 2 minutos.</title>
+          <path class="vida" d="M60 42V444M180 42V444M300 42V444"/>
+          <rect class="no" x="8" y="8" width="104" height="34" rx="8"/><text class="t" x="60" y="30">Telefone</text>
+          <rect class="fora" x="128" y="8" width="104" height="34" rx="8"/><text class="t" x="180" y="30" style="font-size:14px">Grandstream</text>
+          <rect class="no" x="248" y="8" width="104" height="34" rx="8"/><text class="t" x="300" y="30">Servidor</text>
+
+          <text class="s dir halo" x="284" y="78">cadastra série e MAC</text>
+          <path class="seta site" d="M288 88H183" marker-end="url(#pd-site)"/>
+          <circle class="n site" cx="300" cy="88" r="11"/><text class="nt" x="300" y="92.5">1</text>
+
+          <text class="s esq halo" x="76" y="136">tem configuração?</text>
+          <path class="seta neutra" d="M72 146H177" marker-end="url(#pd-neutra)"/>
+          <circle class="n neutra" cx="60" cy="146" r="11"/><text class="nt" x="60" y="150.5">2</text>
+
+          <text class="s dir halo" x="164" y="194">endereço e travas</text>
+          <path class="seta neutra" d="M168 204H63" marker-end="url(#pd-neutra)"/>
+          <circle class="n neutra" cx="180" cy="204" r="11"/><text class="nt" x="180" y="208.5">3</text>
+
+          <text class="s halo" x="180" y="252">pede a configuração (HTTPS)</text>
+          <path class="seta site" d="M72 262H297" marker-end="url(#pd-site)"/>
+          <circle class="n site" cx="60" cy="262" r="11"/><text class="nt" x="60" y="266.5">4</text>
+
+          <text class="s halo" x="180" y="310">ID, apelido e senha da linha</text>
+          <path class="seta site" d="M288 320H63" marker-end="url(#pd-site)"/>
+          <circle class="n site" cx="300" cy="320" r="11"/><text class="nt" x="300" y="324.5">5</text>
+
+          <text class="s halo" x="180" y="368">registro na central (SIP)</text>
+          <path class="seta voz" d="M72 378H297" marker-end="url(#pd-voz)"/>
+          <circle class="n voz" cx="60" cy="378" r="11"/><text class="nt" x="60" y="382.5">6</text>
+
+          <text class="s halo" x="180" y="418">renova a cada 2 minutos</text>
+          <path class="seta voz tracejada" d="M63 428H297" marker-start="url(#pd-voz)" marker-end="url(#pd-voz)"/>
+        </svg>
+        <figcaption>Os números são os mesmos dos passos. Azul: configuração. Laranja: telefonia.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" id="ligacao">
+  <div class="bloco-cabeca"><h2>3. O que acontece numa ligação</h2></div>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <p>A criança disca os 6 números do amigo e aperta <span class="mono">#</span>. O pedido chega à central, que consulta o banco de dados antes de fazer qualquer telefone tocar.</p>
+      <p>Se as cinco respostas forem sim, o telefone do amigo toca por até 1 minuto. Se uma for não, ninguém toca: a criança ouve uma mensagem gravada dizendo o motivo, e a tentativa aparece no histórico da família como bloqueada.</p>
+      <ul class="pontos">
+        <li><strong>A voz passa pelo servidor.</strong> Um telefone nunca se conecta direto ao outro, então uma casa não descobre o endereço de internet da outra.</li>
+        <li><strong>Nada é gravado.</strong> A central não tem função de gravação. Fica só o registro: quem ligou, para quem, quando e quanto durou.</li>
+      </ul>
+      <h3 class="mt-4">O que mais dá para discar</h3>
+      <table class="discados">
+        <tbody>
+          <tr><th scope="row">9 ou 8 e o próprio ID</th><td>Celular 1 ou 2 da família</td></tr>
+          <tr><th scope="row">Número do grupo</th><td>Toca em todos os amigos de um grupo criado no site</td></tr>
+          <tr><th scope="row">100</th><td>Hora certa</td></tr>
+          <tr><th scope="row">Qualquer outro</th><td>Mensagem de número inválido</td></tr>
+        </tbody>
+      </table>
+      <p class="mt-3 mb-0">Não existe saída para a telefonia comum além dos celulares que a própria família cadastrou.</p>
+    </div>
+    <div class="col-lg-6">
+      <figure class="figura">
+        <svg viewBox="0 0 360 452" role="img" aria-labelledby="fig-lig-t">
+          <title id="fig-lig-t">A criança disca o ID do amigo. A central confere, nesta ordem: se o telefone que liga está ativo, se o número discado existe na rede, se é horário permitido para quem liga, se é horário permitido para quem recebe e se as duas famílias aceitaram a amizade. Com sim para tudo, o telefone do amigo toca. Com algum não, ninguém toca e a criança ouve o motivo. Nos dois casos fica anotado no histórico.</title>
+          <rect class="no" x="40" y="8" width="280" height="42" rx="8"/><text class="t" x="180" y="34">A criança disca o ID do amigo</text>
+          <path class="seta neutra" d="M180 52V74" marker-end="url(#pd-neutra)"/>
+          <rect class="grupo" x="8" y="76" width="344" height="184" rx="10"/>
+          <text class="t" x="180" y="100">A central confere, nesta ordem</text>
+          <g>
+            <circle class="n neutra" cx="32" cy="124" r="10"/><text class="nt" x="32" y="128.5">1</text><text class="s esq" x="50" y="128.5">O telefone que liga está ativo?</text>
+            <circle class="n neutra" cx="32" cy="152" r="10"/><text class="nt" x="32" y="156.5">2</text><text class="s esq" x="50" y="156.5">O número discado existe na rede?</text>
+            <circle class="n neutra" cx="32" cy="180" r="10"/><text class="nt" x="32" y="184.5">3</text><text class="s esq" x="50" y="184.5">É horário permitido para quem liga?</text>
+            <circle class="n neutra" cx="32" cy="208" r="10"/><text class="nt" x="32" y="212.5">4</text><text class="s esq" x="50" y="212.5">É horário permitido para quem recebe?</text>
+            <circle class="n neutra" cx="32" cy="236" r="10"/><text class="nt" x="32" y="240.5">5</text><text class="s esq" x="50" y="240.5">As duas famílias aceitaram a amizade?</text>
+          </g>
+          <path class="seta sim" d="M92 262V298" marker-end="url(#pd-sim)"/><text class="s esq sim-t" x="102" y="284">sim para tudo</text>
+          <path class="seta nao" d="M268 262V298" marker-end="url(#pd-nao)"/><text class="s esq nao-t" x="278" y="284">algum não</text>
+          <rect class="no-sim" x="8" y="300" width="164" height="56" rx="8"/>
+          <text class="t" x="90" y="324">O telefone do</text><text class="t" x="90" y="343">amigo toca</text>
+          <rect class="no-nao" x="188" y="300" width="164" height="56" rx="8"/>
+          <text class="t" x="270" y="324">Ninguém toca</text><text class="s" x="270" y="343">a criança ouve o motivo</text>
+          <path class="seta neutra" d="M90 358V384" marker-end="url(#pd-neutra)"/>
+          <path class="seta neutra" d="M270 358V384" marker-end="url(#pd-neutra)"/>
+          <rect class="no" x="8" y="386" width="344" height="58" rx="8"/>
+          <text class="t" x="180" y="410">Fica anotado no histórico</text><text class="s" x="180" y="430">quem, para quem, quando, duração ou motivo</text>
+        </svg>
+        <figcaption>A decisão é tomada a cada ligação, na hora. Mudou o horário ou desfez a amizade no site, vale na ligação seguinte.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" id="celular">
+  <div class="bloco-cabeca"><h2>4. Ligações com o celular da família</h2></div>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <p>É a única parte que usa a telefonia comum, e está em fase de teste.</p>
+      <ul class="pontos">
+        <li><strong>A criança liga.</strong> Ela disca 9 (ou 8) e o próprio ID. A central confere o horário e os minutos do mês e passa a ligação para a operadora, que faz o celular tocar. O 9 com o ID de um amigo não funciona: cada criança só alcança os celulares da própria família.</li>
+        <li><strong>A família liga.</strong> De um celular cadastrado, liga para o número fixo da rede. A central olha o número de quem está ligando. Se for de um celular cadastrado, toca o telefone da criança daquela família. Se não for, quem ligou ouve "número inválido" e a ligação cai. Não há menu nem caixa postal.</li>
+      </ul>
+      <p class="mb-0">A operadora vê o número do celular e os registros dessas ligações, como em qualquer chamada telefônica.</p>
+    </div>
+    <div class="col-lg-6">
+      <figure class="figura">
+        <svg viewBox="0 0 360 296" role="img" aria-labelledby="fig-cel-t">
+          <title id="fig-cel-t">Quando a criança liga: telefone da criança, central (confere horário e minutos), operadora, celular da família. Quando a família liga: celular da família, operadora, central (confere se o número é cadastrado), telefone da criança.</title>
+          <text class="r" x="12" y="14">A CRIANÇA LIGA</text>
+          <text class="r" x="192" y="14">A FAMÍLIA LIGA</text>
+          {% for x, nos in [(12, [('Telefone', 'da criança', 'no'), ('Central', 'horário e minutos', 'dentro'), ('Operadora', 'telefonia comum', 'fora'), ('Celular', 'da família', 'no')]),
+                            (192, [('Celular', 'da família', 'no'), ('Operadora', 'telefonia comum', 'fora'), ('Central', 'número cadastrado?', 'dentro'), ('Telefone', 'da criança', 'no')])] %}
+            {% for titulo, sub, classe in nos %}
+            {% set y = 24 + loop.index0 * 70 %}
+            <rect class="{{ classe }}" x="{{ x }}" y="{{ y }}" width="156" height="48" rx="8"/>
+            <text class="t" x="{{ x + 78 }}" y="{{ y + 20 }}">{{ titulo }}</text><text class="s" x="{{ x + 78 }}" y="{{ y + 38 }}">{{ sub }}</text>
+            {% if not loop.last %}<path class="seta voz" d="M{{ x + 78 }} {{ y + 50 }}V{{ y + 68 }}" marker-end="url(#pd-voz)"/>{% endif %}
+            {% endfor %}
+          {% endfor %}
+        </svg>
+        <figcaption>De cima para baixo, o caminho de cada ligação. Número que não está cadastrado para na central.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" id="dados">
+  <div class="bloco-cabeca"><h2>5. Onde fica cada dado</h2></div>
+  <p class="bloco-sub">"Banco de dados" quer dizer o PostgreSQL do servidor, em São Paulo.</p>
+  <table class="dados">
+    <thead><tr><th scope="col">O quê</th><th scope="col">Onde fica</th><th scope="col">Por quanto tempo</th></tr></thead>
+    <tbody>
+      <tr><td>Conta do responsável: nome, e-mail e senha embaralhada</td><td data-rotulo="Onde fica">Banco de dados</td><td data-rotulo="Por quanto tempo">Enquanto a conta existir</td></tr>
+      <tr><td>Criança: apelido, ID e senha da linha</td><td data-rotulo="Onde fica">Banco de dados e o próprio telefone</td><td data-rotulo="Por quanto tempo">Enquanto a conta existir</td></tr>
+      <tr><td>Amizades, turmas, grupos e horários</td><td data-rotulo="Onde fica">Banco de dados</td><td data-rotulo="Por quanto tempo">Enquanto a conta existir</td></tr>
+      <tr><td>Celulares da família: número e apelido</td><td data-rotulo="Onde fica">Banco de dados. A operadora vê o número quando há ligação</td><td data-rotulo="Por quanto tempo">Enquanto estiverem cadastrados</td></tr>
+      <tr><td>Histórico de ligações: quem, para quem, quando, duração e motivo do bloqueio</td><td data-rotulo="Onde fica">Banco de dados</td><td data-rotulo="Por quanto tempo">{{ cfg.RETENCAO_CHAMADAS_DIAS }} dias. Depois ficam só totais por dia, sem identificar ninguém</td></tr>
+      <tr><td>Voz das ligações</td><td data-rotulo="Onde fica">Em lugar nenhum. Passa pelo servidor durante a ligação</td><td data-rotulo="Por quanto tempo">Não é gravada</td></tr>
+      <tr><td>Aparelho: MAC, número de série e modelo</td><td data-rotulo="Onde fica">Banco de dados e a nossa conta na Grandstream (Estados Unidos)</td><td data-rotulo="Por quanto tempo">Enquanto o telefone estiver cadastrado</td></tr>
+      <tr><td>Conexões do telefone: endereço IP e horário</td><td data-rotulo="Onde fica">Banco de dados</td><td data-rotulo="Por quanto tempo">180 dias</td></tr>
+      <tr><td>Registro do que foi feito no site (auditoria)</td><td data-rotulo="Onde fica">Banco de dados, em tabela que só aceita acréscimos</td><td data-rotulo="Por quanto tempo">Permanece, sem nome e sem e-mail. O IP é apagado depois de 1 ano</td></tr>
+      <tr><td>Aceite dos termos: versão, data e IP</td><td data-rotulo="Onde fica">Banco de dados</td><td data-rotulo="Por quanto tempo">5 anos depois da exclusão da conta</td></tr>
+      <tr><td>Acessos ao site: IP e página</td><td data-rotulo="Onde fica">Arquivos de registro do servidor</td><td data-rotulo="Por quanto tempo">6 meses</td></tr>
+      <tr><td>Cópia de segurança do banco de dados</td><td data-rotulo="Onde fica">No próprio servidor</td><td data-rotulo="Por quanto tempo">Feita todo dia, guardada por 14 dias</td></tr>
+    </tbody>
+  </table>
+  <div class="row g-4 mt-1">
+    <div class="col-lg-6">
+      <h3>O que não existe em lugar nenhum</h3>
+      <ul class="pontos mb-0">
+        <li>Gravação de voz.</li>
+        <li>Nome completo, idade, escola, endereço ou foto da criança.</li>
+        <li>Publicidade, perfil de uso ou cookie de rastreamento. O site usa só o cookie de sessão, para manter o login.</li>
+      </ul>
+    </div>
+    <div class="col-lg-6">
+      <h3>Ao excluir a conta</h3>
+      <p class="mb-0">O telefone sai da rede na hora e os dados das crianças são apagados. O que fica, e por quanto tempo, está na <a href="{{ url_for('familia.privacidade') }}">política de privacidade</a>, que é o texto que vale. Um dado apagado ainda pode estar numa cópia de segurança por até 14 dias.</p>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" id="seguranca">
+  <div class="bloco-cabeca"><h2>6. Segurança: o que tem e o que falta</h2></div>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <h3>O que tem</h3>
+      <ul class="pontos mb-0">
+        <li>O site e a entrega da configuração do telefone funcionam só por HTTPS.</li>
+        <li>A senha do site é guardada embaralhada (PBKDF2). Não dá para recuperar a original.</li>
+        <li>Cada telefone tem senha de linha própria, menu de configuração travado e senha de administração própria.</li>
+        <li>A central só completa ligação entre telefones cadastrados e com amizade aceita. Quem está de fora não tem como ligar para dentro, a não ser de um celular que a própria família cadastrou.</li>
+        <li>O acesso ao servidor é só por chave, sem senha, com bloqueio automático de quem insiste em tentar entrar.</li>
+        <li>O registro de auditoria só aceita acréscimos. Nem o próprio site consegue alterar ou apagar o que já foi anotado.</li>
+      </ul>
+    </div>
+    <div class="col-lg-6">
+      <h3>O que falta</h3>
+      <ul class="pontos">
+        <li>O trecho entre o telefone e o servidor (SIP e voz) ainda não é cifrado, como acontece numa linha fixa comum. Os aparelhos aceitam criptografia (TLS e SRTP). É uma melhoria possível, ainda não feita.</li>
+        <li>A cópia de segurança fica no mesmo servidor. Falta uma cópia em outro lugar.</li>
+        <li>Ainda não houve auditoria de segurança feita por terceiros.</li>
+      </ul>
+      <p class="mb-0">Encontrou uma falha? Escreva para <a href="mailto:{{ contato }}">{{ contato }}</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" id="codigo">
+  <div class="bloco-cabeca"><h2>7. O código</h2>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ gh }}" rel="noopener"><i class="bi bi-github" aria-hidden="true"></i> Abrir no GitHub</a></div>
+  <p>Todo o código do site e da central é público, com licença AGPL-3.0: quem modificar e oferecer o serviço a outras pessoas precisa publicar o código modificado. No repositório não há senha, chave nem dado de família.</p>
+  <h3>Por onde começar a ler</h3>
+  <ul class="lista arquivos">
+    <li><div><strong>A regra de cada ligação</strong><span class="caminho"><a href="{{ gh }}/blob/main/portal/rede/servicos/chamadas.py" rel="noopener">portal/rede/servicos/chamadas.py</a></span></div></li>
+    <li><div><strong>O que dá para discar</strong><span class="caminho"><a href="{{ gh }}/blob/main/portal/deploy/asterisk/extensions.conf" rel="noopener">portal/deploy/asterisk/extensions.conf</a></span></div></li>
+    <li><div><strong>Tudo o que é guardado</strong><span class="caminho"><a href="{{ gh }}/blob/main/portal/rede/db.py" rel="noopener">portal/rede/db.py</a></span></div></li>
+    <li><div><strong>A configuração enviada ao telefone</strong><span class="caminho"><a href="{{ gh }}/blob/main/portal/rede/grandstream_xml.py" rel="noopener">portal/rede/grandstream_xml.py</a></span></div></li>
+    <li><div><strong>Termos e política de privacidade</strong><span class="caminho"><a href="{{ gh }}/tree/main/portal/rede/textos" rel="noopener">portal/rede/textos</a></span></div></li>
+    <li><div><strong>Decisões, pesquisa e testes com aparelhos reais</strong><span class="caminho"><a href="{{ gh }}/tree/main/docs" rel="noopener">docs</a> e <a href="{{ gh }}/tree/main/bancada" rel="noopener">bancada</a></span></div></li>
+  </ul>
+</section>
+</div>
+{% endblock %}
