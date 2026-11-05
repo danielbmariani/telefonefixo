@@ -122,3 +122,21 @@ GRP2601, quando o B21 fechar.
 Código: `rede/servicos/familia_telefones.py`, `chamadas.decidir_familia`, `agi/check_entrada.py`,
 `[tronco-entrada]` e `_[89][2-7]XXXXX` em `extensions.conf`, `deploy/tronco.sh`, tela `/celulares`.
 Testes em `tests/test_familia_telefones.py`.
+
+## Reteste de 05/11
+
+Motivo: conferir o caminho do celular depois da mudança do histórico de 28/10.
+
+| hora | evento |
+|---|---|
+| 11:49 e 11:50 | 9+ID: o telefone tocou e caiu em "não atendeu"; o celular não tocou. Nada gravado em `call_logs` |
+| 11:5x | achado 1: `call_logs` sem nenhuma linha desde 28/10 15:40. A reescrita do `agi/log_call.py` naquele dia saiu sem a linha `#!` e o Asterisk não conseguia executar o AGI; falhava calado. Corrigido, com teste que exige `#!` em todo AGI chamado pelo dialplan |
+| 11:56 | 9+ID de novo: gravado como NOANSWER, sem duração |
+| 12:00 | 9+ID: INVITE, 183 aos 2 s, 200 OK aos 5 s, BYE nosso aos 12 s. Gravado ALLOWED, 7 s |
+| 12:0x | achado 2: o celular não tocava porque um aplicativo do próprio aparelho bloqueava números desconhecidos. Sem o bloqueio, tocou e foi atendido |
+
+Aprendido:
+- Mudança em AGI ou dialplan só está provada depois de uma ligação real com a linha conferida em `call_logs`. Teste automático da lógica não pega arquivo que o Asterisk não consegue executar.
+- Celular com bloqueio de desconhecidos (aplicativo, ou "silenciar desconhecidos" do sistema) não toca, e a criança ouve "não atendeu". A família precisa salvar o número fixo da rede nos contatos. Falta dizer isso na página Celulares.
+- O toque que a criança ouve no 9+ID é gerado pela central (opção `r` do Dial), então um aviso falado da operadora não seria ouvido.
+- Saldo na Nvoip em 05/11: R$ 99,33 (visto pelo Daniel no painel).
