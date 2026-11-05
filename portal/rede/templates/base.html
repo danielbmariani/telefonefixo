@@ -29,7 +29,7 @@
 {% set logado = session.get('familia_id') %}
 <body{% if logado and crianca %} class="com-abas"{% endif %}>
 <noscript><style>.topo.quieto .marca > span:last-child { opacity: 1; transform: none; }</style></noscript>
-<header class="topo{% block topo_class %}{% endblock %}{% if logado and session.get('papel') in ('operador', 'admin') %} com-painel{% endif %}">
+<header class="topo{% block topo_class %}{% endblock %}">
   <div class="container">
     <a class="marca" href="{{ url_for('familia.inicio') }}" aria-label="{{ nome_rede }}, página inicial">
       <span class="selo" aria-hidden="true"><svg viewBox="0 0 200 200"><g transform="translate(100 100)"><circle r="96" fill="#d9480f"/><g fill="#fff"><circle cx="16" cy="59.9" r="9"/><circle cx="-16" cy="59.9" r="9"/><circle cx="-43.8" cy="43.8" r="9"/><circle cx="-59.9" cy="16" r="9"/><circle cx="-59.9" cy="-16" r="9"/><circle cx="-43.8" cy="-43.8" r="9"/><circle cx="-16" cy="-59.9" r="9"/><circle cx="16" cy="-59.9" r="9"/><circle cx="43.8" cy="-43.8" r="9"/><circle cx="59.9" cy="-16" r="9"/><circle r="24"/></g><path d="M60 42 L76 53" stroke="#fff" stroke-width="9" stroke-linecap="round" fill="none"/></g></svg></span>
@@ -43,8 +43,6 @@
         {% if session.get('papel') in ('operador', 'admin') %}
         <a class="btn btn-outline-dark btn-sm" href="{{ url_for('admin.painel') }}">Painel</a>
         {% endif %}
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('familia.inicio') }}">Crianças</a>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('familia.celulares') }}">Celulares</a>
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('auth.sair') }}">Sair</a>
       {% else %}
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('auth.entrar') }}">Entrar</a>
@@ -57,6 +55,7 @@
 {# O ID e o que a familia mais procura (para passar a outra familia): fica no alto de todas as paginas da crianca. #}
 <div class="crianca-id"><div class="container">
   {{ etiqueta('ID de ' ~ crianca.apelido, crianca.id_rede|idfmt, crianca.id_rede, 'o ID de ' ~ crianca.apelido) }}
+  {% if tem_outras_criancas() %}<a class="trocar-crianca" href="{{ url_for('familia.criancas') }}"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Trocar de criança</a>{% endif %}
 </div></div>
 <nav class="abas sticky-top" aria-label="Seções de {{ crianca.apelido }}">
   <div class="container">
@@ -65,6 +64,7 @@
       <li class="nav-item"><a class="nav-link {% if active_tab == 'turmas' %}active{% endif %}" href="{{ url_for('familia.turmas', crianca_id=crianca.id) }}"><i class="bi bi-people-fill"></i> <span class="rotulo">Turmas</span></a></li>
       <li class="nav-item"><a class="nav-link {% if active_tab == 'horarios' %}active{% endif %}" href="{{ url_for('familia.horarios', crianca_id=crianca.id) }}"><i class="bi bi-clock"></i> <span class="rotulo">Horários</span></a></li>
       <li class="nav-item"><a class="nav-link {% if active_tab == 'historico' %}active{% endif %}" href="{{ url_for('familia.historico', crianca_id=crianca.id) }}"><i class="bi bi-journal-text"></i> <span class="rotulo">Ligações</span></a></li>
+      <li class="nav-item"><a class="nav-link {% if active_tab == 'celulares' %}active{% endif %}" href="{{ url_for('familia.celulares', crianca_id=crianca.id) }}"><i class="bi bi-phone"></i> <span class="rotulo">Celulares</span></a></li>
       <li class="nav-item"><a class="nav-link {% if active_tab == 'telefone' %}active{% endif %}" href="{{ url_for('familia.telefone', crianca_id=crianca.id) }}"><i class="bi bi-telephone"></i> <span class="rotulo">Telefone</span></a></li>
     </ul>
   </div>
@@ -93,7 +93,7 @@
       <a href="{{ url_for('familia.termos') }}">Termos</a> ·
       <a href="{{ url_for('familia.privacidade') }}">Privacidade</a> ·
       <a href="{{ url_for('familia.contato') }}">Contato e denúncias</a>
-      {% if logado %} · <a href="{{ url_for('familia.meus_dados') }}">Meus dados</a> · <a href="{{ url_for('familia.excluir_conta') }}">Excluir conta</a>{% endif %}
+      {% if logado %} · <a href="{{ url_for('familia.criancas') }}">Crianças</a> · <a href="{{ url_for('familia.meus_dados') }}">Meus dados</a> · <a href="{{ url_for('familia.excluir_conta') }}">Excluir conta</a>{% endif %}
     </span>
   </div>
 </footer>

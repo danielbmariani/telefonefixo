@@ -68,7 +68,14 @@ def create_app(cfg=None):
     @app.context_processor
     def _globais():
         from .seguranca import gerar_csrf_token
-        return {'csrf_token': gerar_csrf_token, 'cfg': cfg, 'nome_rede': cfg.NOME_REDE}
+        def tem_outras_criancas():
+            # para o link "Trocar de crianca" na faixa do ID: so aparece em familia com mais de uma
+            from flask import session
+            from .web.comum import conn
+            from .servicos import criancas as svc_cri
+            fid = session.get('familia_id')
+            return bool(fid) and len(svc_cri.listar(conn(), fid)) > 1
+        return {'csrf_token': gerar_csrf_token, 'cfg': cfg, 'nome_rede': cfg.NOME_REDE, 'tem_outras_criancas': tem_outras_criancas}
 
     from .web import filtros
     filtros.registrar(app)

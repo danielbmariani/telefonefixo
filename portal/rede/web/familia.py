@@ -83,6 +83,17 @@ def _inicio_logado():
     return render_template('criancas.html', dados=dados)
 
 
+@bp.route('/criancas')
+@login_obrigatorio
+@consentimento_obrigatorio
+def criancas():
+    """Lista das criancas da familia, sempre (a pagina inicial pula a lista quando so ha uma)."""
+    cs = svc_cri.listar(conn(), g.familia['id'])
+    if not cs:
+        return redirect(url_for('familia.crianca_nova'))
+    return render_template('criancas.html', dados=[(c, svc_tel.atual_da_crianca(conn(), c['id'])) for c in cs])
+
+
 @bp.route('/crianca/nova', methods=['GET', 'POST'])
 @login_obrigatorio
 @consentimento_obrigatorio
@@ -423,10 +434,23 @@ def historico(crianca_id):
 
 # --- Celulares da familia (9+ID e entrada pelo tronco) ---
 
-@bp.route('/celulares', methods=['GET', 'POST'])
+@bp.route('/celulares')
 @login_obrigatorio
 @consentimento_obrigatorio
-def celulares():
+def celulares_antigo():
+    """Endereco antigo (botao do cabecalho ate 05/11/2026): leva para a aba Celulares da primeira crianca."""
+    cs = svc_cri.listar(conn(), g.familia['id'])
+    if not cs:
+        return redirect(url_for('familia.crianca_nova'))
+    return redirect(url_for('familia.celulares', crianca_id=cs[0]['id']))
+
+
+@bp.route('/crianca/<int:crianca_id>/celulares', methods=['GET', 'POST'])
+@login_obrigatorio
+@consentimento_obrigatorio
+def celulares(crianca_id):
+    """Aba Celulares. Os numeros sao da familia (valem para todas as criancas dela); a aba existe em cada crianca."""
+    c = crianca_da_familia(crianca_id)
     fid = g.familia['id']
     if request.method == 'POST':
         try:
@@ -441,11 +465,11 @@ def celulares():
                 flash(f'Número {svc_fam.formatar(n)} cadastrado.', 'success')
         except ErroUsuario as e:
             flash(str(e), 'danger')
-        return redirect(url_for('familia.celulares'))
+        return redirect(url_for('familia.celulares', crianca_id=c['id']))
     cs = svc_cri.listar(conn(), fid)
     from ..servicos import custos
     usos = [(c, custos.uso_crianca_mes(conn(), c['id_rede'], _cfg())) for c in cs]
-    return render_template('celulares.html', numeros=svc_fam.listar(conn(), fid), criancas=cs, usos=usos,
+    return render_template('celulares.html', crianca=c, active_tab='celulares', numeros=svc_fam.listar(conn(), fid), criancas=cs, usos=usos,
                            maximo=svc_fam.MAX_POR_FAMILIA, formatar=svc_fam.formatar, prefixos=svc_fam.PREFIXOS,
                            numero_rede=svc_fam.formatar(_cfg().TRONCO_NUMERO) or 'o número da rede')
 

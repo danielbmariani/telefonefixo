@@ -38,7 +38,7 @@ def test_meus_dados_exporta_tudo(client, app):
     cid = criar_crianca(client, 'ana01')
     cr = crianca_row(app, cid)
     post(client, f'/crianca/{cid}/telefone', acao='informar', mac=MAC, serial=SN)
-    post(client, '/celulares', numero='11987654321', apelido='Mãe')
+    post(client, f'/crianca/{cid}/celulares', numero='11987654321', apelido='Mãe')
     _ligacao(app, cr['id_rede'], '9' + cr['id_rede'], '2026-10-27 10:00:00')
     r = client.get('/meus-dados.json')
     assert r.status_code == 200 and 'attachment' in r.headers['Content-Disposition']
@@ -78,7 +78,7 @@ def test_exclusao_apaga_celulares_e_ligacoes(client, app):
     cadastrar_e_entrar(client, app)
     cid = criar_crianca(client, 'ana01')
     cr = crianca_row(app, cid)
-    post(client, '/celulares', numero='11987654321', apelido='Mãe')
+    post(client, f'/crianca/{cid}/celulares', numero='11987654321', apelido='Mãe')
     _ligacao(app, cr['id_rede'], '9' + cr['id_rede'], '2026-10-27 10:00:00')
     _ligacao(app, '11987654321', cr['id_rede'], '2026-10-27 11:00:00')
     r = post(client, '/excluir-conta', confirmacao='EXCLUIR')

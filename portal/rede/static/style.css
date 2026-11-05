@@ -166,9 +166,12 @@ body.com-abas .topo { position: static; box-shadow: none; }
 .btn-copiar.copiado { background: var(--verde-claro); border-color: var(--verde); color: #1e5f3b; }
 /* Faixa com o ID acima das abas, em todas as paginas da crianca: e o que a familia procura para passar a outra */
 .crianca-id { background: var(--creme); padding: .65rem 0 .25rem; }
+.crianca-id .container { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .35rem 1rem; }
+.trocar-crianca { font-size: .9rem; font-weight: 700; color: var(--tinta-suave); text-decoration: none; white-space: nowrap; }
+.trocar-crianca:hover, .trocar-crianca:focus-visible { color: var(--tinta); text-decoration: underline; }
 .crianca-id .etiqueta-id .numero { font-size: 1.6rem; }
 @media (max-width: 575.98px) {
-  .crianca-id .etiqueta-id { display: grid; grid-template-columns: 1fr auto; }
+  .crianca-id .etiqueta-id { display: grid; grid-template-columns: 1fr auto; flex: 1 1 100%; }
 }
 
 /* Lista de passos do telefone */
@@ -325,18 +328,6 @@ button[disabled] .spinner-border { vertical-align: -0.15em; }
   .marca .nome { white-space: nowrap; font-size: 1.05rem; }
   .topo-acoes { flex-wrap: nowrap; gap: .3rem; }
   .topo-acoes .btn-sm { padding: .3rem .55rem; font-size: .78rem; white-space: nowrap; }
-  /* operador tem um botao a mais (Painel): fica so o selo, sem o nome, para os quatro caberem */
-  .topo.com-painel .marca > span:last-child { display: none; }
-}
-/* Celulares estreitos (360 px e comum no Android): o cabecalho aperta para o "Sair" nao sair da tela */
-@media (max-width: 380px) {
-  .marca { gap: .4rem; }
-  .marca .selo { width: 30px; height: 30px; }
-  .marca .nome { font-size: .95rem; }
-  .topo-acoes .btn-sm { padding: .3rem .45rem; }
-}
-@media (max-width: 339.98px) {
-  .marca > span:last-child { display: none; }
 }
 @media (max-width: 575.98px) {
   /* abas com icone em cima e nome embaixo */

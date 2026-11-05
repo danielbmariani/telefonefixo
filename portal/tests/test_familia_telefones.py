@@ -34,15 +34,15 @@ def _ativar_telefone(app, crianca_id):
 def test_tela_cadastra_e_remove(client, app):
     cadastrar_e_entrar(client, app)
     cid = criar_crianca(client, 'ana01')
-    r = client.get('/celulares')
+    r = client.get(f'/crianca/{cid}/celulares')
     assert r.status_code == 200 and 'Nenhum celular cadastrado'.encode() in r.data
-    r = post(client, '/celulares', numero='(11) 98765-4321', apelido='  Mãe  ', follow_redirects=True)
+    r = post(client, f'/crianca/{cid}/celulares', numero='(11) 98765-4321', apelido='  Mãe  ', follow_redirects=True)
     assert '(11) 98765-4321'.encode() in r.data and 'Mãe'.encode() in r.data
     # repetido e limite
-    r = post(client, '/celulares', numero='11987654321', apelido='x', follow_redirects=True)
+    r = post(client, f'/crianca/{cid}/celulares', numero='11987654321', apelido='x', follow_redirects=True)
     assert 'já está cadastrado'.encode() in r.data
-    post(client, '/celulares', numero='11911111111', apelido='Pai')
-    r = post(client, '/celulares', numero='11933333333', apelido='Tio', follow_redirects=True)
+    post(client, f'/crianca/{cid}/celulares', numero='11911111111', apelido='Pai')
+    r = post(client, f'/crianca/{cid}/celulares', numero='11933333333', apelido='Tio', follow_redirects=True)
     assert 'No máximo 2'.encode() in r.data
     fid = crianca_row(app, cid)['familia_id']
     with app.engine.begin() as c:
@@ -50,7 +50,7 @@ def test_tela_cadastra_e_remove(client, app):
         assert [(t['numero'], t['posicao']) for t in rows] == [('11987654321', 1), ('11911111111', 2)]
         primeiro = rows[0]['id']
     # trocar ordem pela tela
-    r = post(client, '/celulares', acao='trocar', follow_redirects=True)
+    r = post(client, f'/crianca/{cid}/celulares', acao='trocar', follow_redirects=True)
     assert 'Ordem trocada'.encode() in r.data
     with app.engine.begin() as c:
         assert [(t['numero'], t['posicao']) for t in fam.listar(c, fid)] == [('11911111111', 1), ('11987654321', 2)]
@@ -58,7 +58,7 @@ def test_tela_cadastra_e_remove(client, app):
     r = client.get(f'/crianca/{cid}/cartao')
     cr = crianca_row(app, cid)
     assert f"Pai (celular)".encode() in r.data and f"9{cr['id_rede']}#".encode() in r.data and f"8{cr['id_rede']}#".encode() in r.data
-    r = post(client, '/celulares', acao='remover', id=str(primeiro), follow_redirects=True)
+    r = post(client, f'/crianca/{cid}/celulares', acao='remover', id=str(primeiro), follow_redirects=True)
     assert 'Número removido'.encode() in r.data
     with app.engine.begin() as c:
         rows = fam.listar(c, fid)

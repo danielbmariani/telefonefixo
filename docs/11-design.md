@@ -158,3 +158,13 @@ O que mudou:
 - De passagem: o número da etiqueta não quebra mais em duas linhas com apelido comprido (lista de crianças no celular).
 
 Prova em tela: capturas em 390 e 1280 (`~/Desktop/id-copiar-antes-depois/`), com o clique no botão conferido contra a área de transferência do navegador. Testes em `tests/test_id_visivel.py`.
+
+## Celulares vira aba da criança; cabeçalho só com Sair (05/11/2026)
+
+Pedido do Daniel: Celulares deve ser uma aba como Amigos, Turmas e Horários, e com isso os botões "Crianças" e "Celulares" do cabeçalho deixam de ser necessários.
+
+- Aba "Celulares" entre Ligações e Telefone, em `/crianca/<id>/celulares`. Os números continuam sendo da família (valem para todas as crianças dela); a aba aparece em cada criança. O endereço antigo `/celulares` redireciona para a aba da primeira criança.
+- A aba fala só em minutos (quanto a criança usou e quanto ainda pode ligar no mês). Dinheiro aparece apenas no painel do operador.
+- Cabeçalho da família: selo, nome e "Sair" (o operador tem também "Painel"). Com menos botões, nada passa da largura em 320, 360 e 390 px.
+- Trocar de criança: em família com mais de uma, a faixa do ID mostra "Trocar de criança", que leva à lista. A lista também fica no rodapé ("Crianças"), em `/criancas`, e é onde se adiciona outra criança. O selo continua levando à página inicial.
+- Seis abas cabem no celular (ícone em cima, nome embaixo), conferido em 360 px.
