@@ -134,6 +134,9 @@ Motivo: conferir o caminho do celular depois da mudança do histórico de 28/10.
 | 11:56 | 9+ID de novo: gravado como NOANSWER, sem duração |
 | 12:00 | 9+ID: INVITE, 183 aos 2 s, 200 OK aos 5 s, BYE nosso aos 12 s. Gravado ALLOWED, 7 s |
 | 12:0x | achado 2: o celular não tocava porque um aplicativo do próprio aparelho bloqueava números desconhecidos. Sem o bloqueio, tocou e foi atendido |
+| 12:05 | celular → número fixo da rede: tocou no telefone da criança e foi atendido. Gravado ALLOWED, 23 s |
+
+Resultado: os três casos (atendida, não atendida, entrada pelo celular) gravam certo no histórico depois da correção.
 
 Aprendido:
 - Mudança em AGI ou dialplan só está provada depois de uma ligação real com a linha conferida em `call_logs`. Teste automático da lógica não pega arquivo que o Asterisk não consegue executar.
