@@ -1,3 +1,4 @@
+#!/opt/rede-aberta/venv/bin/python3
 """log_call.py — AGI: registra a chamada em call_logs (depois do Dial ou no hangup handler).
 
 Status vem do DIALSTATUS do Asterisk; a duracao e o tempo atendido (ANSWEREDTIME), nao o tempo
