@@ -79,6 +79,53 @@ fase 1. Para cada uma há uma recomendação; basta confirmar ou mudar.
    26/10: app próprio fica como segundo caminho, só se o custo por minuto
    pesar e houver quem mantenha; o tronco continua para quem não tem
    smartphone.
+
+   **Decisão de 05/11/2026 (quem paga, em escala).** O critério do Daniel: não dar
+   trabalho ao usuário; o trabalho dele não é problema. Sem CNPJ por um bom tempo.
+   Orçamento do projeto: R$ 500 por mês. O pai não paga nem faz nada; quando o gasto
+   chegar perto do orçamento, abrem-se doações voluntárias, sem relação com o uso.
+   No código (`servicos/custos.py`): orçamento mensal da rede `REDE_TETO_REDE_MES`
+   (R$ 450, os R$ 500 menos o número da operadora), teto efetivo por criança igual ao
+   menor entre R$ 5 e o orçamento dividido pelas crianças com celular cadastrado (a
+   soma nunca passa do orçamento), aviso por e-mail a 80% e 100% do orçamento e
+   quadro "Celulares" no painel com gasto, projeção e uso por criança.
+   Continua na Nvoip por minuto; a troca de operadora fica para quando o uso crescer.
+
+   Pesquisa de 05/11 que sustenta a decisão (preços vistos nos sites nesse dia):
+   - *Carteira com recarga do pai*: é o caminho de mais atrito e esbarra na Anatel.
+     Revender telefonia sem autorização é tratado como serviço clandestino; o caminho
+     formal é contrato de marca branca com operadora STFC (VulcaNet, TIP Brasil,
+     DiskFree; a Vono prevê revenda na cláusula 14 das condições gerais). Pix
+     Automático (o pai autoriza uma vez) exige recebedor com CNPJ ativo há 6 meses.
+   - *Canal ilimitado*: Vono, R$ 50 por canal ao mês (R$ 40 de 9 a 20 canais), aceita
+     CPF, sem fidelidade. As condições gerais limitam o "ilimitado" a 5.000 minutos
+     por mês (20.7), proíbem revenda e call center (20.2, 20.6) e deixam a
+     interpretação com a Vono (20.5). Número fixo: R$ 32,90 por mês (por minuto) ou
+     R$ 69,90 (ilimitado, 1 simultânea). Antes de contratar, perguntar por escrito se
+     o uso cabe, se o tronco vem com número, se os 5.000 minutos são por canal e se
+     dá para portar o número da Nvoip.
+   - *Nvoip, onde já estamos*: pacotes mensais Ligar 1000 (R$ 99, 1.000 minutos
+     compartilhados) e Ligar Ilimitado (R$ 99, preso a um ramal). Falta ver no painel
+     se o Ligar 1000 vale para celular e para tronco SIP. A API tem consulta de saldo.
+   - *WhatsApp (API de chamadas da Meta)*: pai liga grátis; criança para o pai a
+     R$ 0,0556 por minuto (valor de fonte secundária); fala SIP (direto ou pela
+     Telnyx). Exige conta com limite de 2.000 mensagens por dia, que vem com a
+     verificação da empresa (CNPJ). Fica para quando houver CNPJ.
+   - *Grandstream/GDMS*: não vende ligações; o CloudUCM é uma central, não um tronco.
+   - Conta de capacidade (Erlang B, pico de 3 horas, 10% de ocupado): com 10 minutos
+     por criança ao mês, 1 canal atende cerca de 60 crianças e 2 canais, 320; com
+     60 minutos, 9 e 53. O uso real ainda não foi medido.
+   Fontes: falevono.com.br/sip-trunk, falevono.com.br/numero-fixo-virtual,
+   falevono.com.br/assets/documents/condicoes-gerais-contratacao.pdf,
+   nvoip.com.br/blog/ligacoes-ilimitadas,
+   developers.facebook.com/documentation/business-messaging/whatsapp/calling (pricing,
+   user-call-permissions, sip) e .../whatsapp/messaging-limits,
+   telnyx.com/release-notes/whatsapp-business-calling-telnyx,
+   vulcanet.com.br/en/solutions/telefonia/atacado/isp, tipbrasil.com.br/tip-fixa,
+   diskfree.com.br/parcerias/negocio-proprio-de-revenda-de-telefonia-voip,
+   telesintese.com.br/anatel-fez-mais-de-200-fiscalizacoes-contra-provedores-sem-outorga,
+   infomoney.com.br (regras de segurança do Pix Automático), woovi.com/planos-e-precos,
+   twilio.com/pt-br/sip-trunking/pricing/br.
 7. **Faixa etária.** A rede é para crianças sem celular (grosso modo 6 a 12).
    Adolescentes podem usar, mas o ECA Digital trata adolescentes diferente.
    Recomendação: não perguntar idade exata; perguntar faixa só para

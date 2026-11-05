@@ -113,3 +113,88 @@ def test_pagina_celulares_mostra_fase_de_teste(client, app):
     assert b'Fase de teste' in r.data and b'R$ 5.00' in r.data and b'ana01: R$ 0.30' in r.data
     r = client.get('/termos')
     assert b'2026-10-' in r.data and b'fase de teste' in r.data
+
+
+def test_orcamento_mensal_da_rede_nunca_e_ultrapassado(client, app):
+    # duas familias, uma crianca com celular em cada: o orcamento da rede e dividido entre as duas
+    cadastrar_e_entrar(client, app)
+    a = crianca_row(app, criar_crianca(client, 'ana01'))
+    client.get('/sair')
+    cadastrar_e_entrar(client, app, email='pai@x.com')
+    b = crianca_row(app, criar_crianca(client, 'beto02'))
+    sem = crianca_row(app, criar_crianca(client, 'caio03'))   # mesma familia de beto: tambem conta
+    cfg = app.cfg
+    with app.engine.begin() as c:
+        assert custos.criancas_com_celular(c) == 0
+        assert custos.teto_crianca(c, cfg) == 5.0             # sem ninguem com celular, vale o teto por crianca
+        fam.adicionar(c, a['familia_id'], '11987654321', 'Mãe')
+        fam.adicionar(c, b['familia_id'], '11911111111', 'Pai')
+        assert custos.criancas_com_celular(c) == 3
+        assert custos.teto_crianca(c, cfg) == 5.0             # 450 / 3 e bem mais que 5
+    cfg.TETO_REDE_MES = 10.0
+    try:
+        with app.engine.begin() as c:
+            assert custos.teto_crianca(c, cfg) == 3.33        # 10 / 3, arredondado para baixo
+        for _ in range(10):
+            _lig(app, a['id_rede'], '9' + a['id_rede'], 60)   # ana: R$ 3,00
+        with app.engine.begin() as c:
+            assert custos.gasto_rede_mes(c, cfg) == 3.0
+            assert custos.segundos_permitidos(c, cfg, a['id_rede'], 'saida') == 66   # sobram R$ 0,33
+            assert custos.segundos_permitidos(c, cfg, b['id_rede'], 'saida') == 666  # beto ainda tem a parte dele
+        _lig(app, a['id_rede'], '9' + a['id_rede'], 60)       # ana: R$ 3,30
+        with app.engine.begin() as c, app.app_context():      # decidir le a config da aplicacao
+            assert custos.segundos_permitidos(c, cfg, a['id_rede'], 'saida') == 0
+            assert chamadas.decidir(c, a['id_rede'], '9' + a['id_rede'], _hoje_15h()) == ('BLOCK_TETO', 'TETO')
+        # mesmo que as tres gastem tudo, a soma fica abaixo do orcamento
+        with app.engine.begin() as c:
+            assert custos.teto_crianca(c, cfg) * custos.criancas_com_celular(c) <= cfg.TETO_REDE_MES
+    finally:
+        cfg.TETO_REDE_MES = 450.0
+
+
+def test_aviso_do_orcamento_mensal_e_resumo_do_painel(client, app):
+    cadastrar_e_entrar(client, app)
+    a = crianca_row(app, criar_crianca(client, 'ana01'))
+    cfg = app.cfg
+    with app.engine.begin() as c:
+        fam.adicionar(c, a['familia_id'], '11987654321', 'Mãe')
+    _lig(app, a['id_rede'], '9' + a['id_rede'], 61)            # 2 min para o celular = R$ 0,60
+    _lig(app, '11987654321', a['id_rede'], 120)                # 2 min do celular = R$ 0,10
+    _lig(app, a['id_rede'], '9' + a['id_rede'], 0, status='NOANSWER')
+    _lig(app, a['id_rede'], '234567', 600)                     # entre criancas: nao conta
+    with app.engine.begin() as c:
+        r = custos.resumo_mes(c, cfg)
+    assert r['gasto'] == 0.70 and r['teto_rede'] == 450.0 and r['pct'] == 0 and r['criancas_com_celular'] == 1
+    assert r['linhas'] == [{'apelido': 'ana01', 'id_rede': a['id_rede'], 'ligacoes': 2, 'min_saida': 2, 'min_entrada': 2, 'gasto': 0.70}]
+    assert r['projecao'] >= r['gasto']
+    cfg.TETO_REDE_MES = 0.80
+    try:
+        with app.engine.begin() as c:
+            assert custos.verificar_alertas(c, cfg, app.mailer) >= 1     # 0,70 de 0,80: passou de 80%
+        m = app.mailer.ultimo_para(cfg.ALERTA_EMAIL)
+        assert '80%' in m['assunto'] and 'orçamento mensal' in m['assunto']
+        with app.engine.begin() as c:
+            assert custos.verificar_alertas(c, cfg, app.mailer) == 0     # nao repete
+        _lig(app, a['id_rede'], '9' + a['id_rede'], 30)                  # R$ 1,00 no total
+        with app.engine.begin() as c:
+            assert custos.verificar_alertas(c, cfg, app.mailer) >= 1
+            assert custos.segundos_permitidos(c, cfg, a['id_rede'], 'saida') == 0
+        assert 'chegou ao orçamento mensal' in app.mailer.ultimo_para(cfg.ALERTA_EMAIL)['assunto']
+        assert 'teto_rede_mes_alerta_enviado' in acoes(app)
+    finally:
+        cfg.TETO_REDE_MES = 450.0
+
+
+def test_painel_mostra_o_gasto_com_celular(client, app):
+    from rede.servicos import contas
+    cadastrar_e_entrar(client, app)
+    a = crianca_row(app, criar_crianca(client, 'ana01'))
+    with app.engine.begin() as c:
+        fam.adicionar(c, a['familia_id'], '11987654321', 'Mãe')
+        contas.criar_operador(c, 'op@x.com', 'senha12345', 'Op', 'operador')
+    _lig(app, a['id_rede'], '9' + a['id_rede'], 61)
+    client.get('/sair')
+    r = post(client, '/entrar', email='op@x.com', senha='senha12345')
+    assert r.status_code == 302, r.data
+    html = client.get('/ong/').get_data(as_text=True)
+    assert 'Celulares em' in html and 'R$ 0.60' in html and 'de R$ 450.00' in html and 'ana01' in html

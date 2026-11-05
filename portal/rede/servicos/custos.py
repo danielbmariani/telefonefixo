@@ -2,6 +2,10 @@
 custos.py — Fase de teste do celular dos pais: o projeto paga, com teto por crianca por mes e um
 disjuntor diario para a rede inteira (decisao do Daniel, 27/10/2026: R$ 5 por crianca).
 
+Desde 05/11/2026 ha tambem um orcamento mensal da rede (TETO_REDE_MES). Ele nunca e ultrapassado por
+construcao: o teto de cada crianca e o menor entre TETO_CRIANCA_MES e o orcamento dividido pelas
+criancas que tem celular cadastrado, e a soma da rede tambem e conferida a cada ligacao.
+
 O custo e estimado a partir de call_logs (duracao arredondada para cima ao minuto) com as tarifas em
 cfg. A fatura real e da operadora; as tarifas aqui sao conservadoras. Quando a crianca chega ao teto,
 9/8+ID e a entrada pelo celular param ate o mes virar, com mensagem no telefone. Avisos por e-mail
@@ -10,7 +14,9 @@ para ALERTA_EMAIL ao passar de ALERTA_FRACAO e ao esgotar.
 
 import math
 
-from sqlalchemy import select, insert, text
+import calendar
+
+from sqlalchemy import select, insert, text, func, and_
 
 from .. import db, auditoria
 from ..tempo import agora, em_sp
@@ -54,14 +60,43 @@ def gasto_rede_dia(conn, cfg, ref=None):
     return round(sum(custo_chamada(r, cfg) for r in rows), 2)
 
 
+def gasto_rede_mes(conn, cfg, ref=None):
+    mes = em_sp(ref or agora()).strftime('%Y-%m')
+    rows = _rows(conn, "timestamp LIKE :m", {'m': mes + '%'})
+    return round(sum(custo_chamada(r, cfg) for r in rows), 2)
+
+
+def criancas_com_celular(conn):
+    """Criancas ativas de familias com pelo menos um celular cadastrado: sao as que podem gastar."""
+    com_celular = select(db.familia_telefones.c.familia_id).where(db.familia_telefones.c.ativo.is_(True))
+    return conn.execute(select(func.count()).select_from(db.criancas)
+                        .where(and_(db.criancas.c.ativa.is_(True), db.criancas.c.familia_id.in_(com_celular)))).scalar() or 0
+
+
+def teto_crianca(conn, cfg):
+    """Teto efetivo por crianca no mes, em R$ (0 = sem teto). E o menor entre TETO_CRIANCA_MES e a parte
+    de cada crianca no orcamento da rede, arredondada para baixo: assim a soma nunca passa do orcamento."""
+    tetos = []
+    if cfg.TETO_CRIANCA_MES > 0:
+        tetos.append(cfg.TETO_CRIANCA_MES)
+    if cfg.TETO_REDE_MES > 0:
+        n = criancas_com_celular(conn)
+        if n:
+            tetos.append(math.floor(cfg.TETO_REDE_MES / n * 100) / 100)
+    return min(tetos) if tetos else 0.0
+
+
 def segundos_permitidos(conn, cfg, id_rede, sentido='saida', ref=None):
     """Quanto tempo a ligacao pode durar sem furar os tetos. 0 = nao pode comecar."""
     tarifa = cfg.TARIFA_SAIDA_MIN if sentido == 'saida' else cfg.TARIFA_ENTRADA_MIN
     if tarifa <= 0:
         return 24 * 3600
     limites = []
-    if cfg.TETO_CRIANCA_MES > 0:
-        limites.append(cfg.TETO_CRIANCA_MES - gasto_crianca_mes(conn, id_rede, cfg, ref))
+    teto = teto_crianca(conn, cfg)
+    if teto > 0:
+        limites.append(teto - gasto_crianca_mes(conn, id_rede, cfg, ref))
+    if cfg.TETO_REDE_MES > 0:
+        limites.append(cfg.TETO_REDE_MES - gasto_rede_mes(conn, cfg, ref))
     if cfg.TETO_REDE_DIA > 0:
         limites.append(cfg.TETO_REDE_DIA - gasto_rede_dia(conn, cfg, ref))
     if not limites:
@@ -86,24 +121,25 @@ def verificar_alertas(conn, cfg, mailer, ref=None):
     mes = em_sp(ref).strftime('%Y-%m')
     dia = em_sp(ref).strftime('%Y-%m-%d')
     enviados = 0
-    if cfg.TETO_CRIANCA_MES > 0:
+    teto = teto_crianca(conn, cfg)
+    if teto > 0:
         criancas = conn.execute(select(db.criancas.c.id, db.criancas.c.id_rede, db.criancas.c.apelido)
                                 .where(db.criancas.c.ativa.is_(True))).mappings().all()
         for c in criancas:
             gasto = gasto_crianca_mes(conn, c['id_rede'], cfg, ref)
-            for nivel, limiar in (('100', cfg.TETO_CRIANCA_MES), ('80', cfg.TETO_CRIANCA_MES * cfg.ALERTA_FRACAO)):
+            for nivel, limiar in (('100', teto), ('80', teto * cfg.ALERTA_FRACAO)):
                 if gasto >= limiar:
                     chave = f"crianca:{c['id']}:{mes}:{nivel}"
                     if not _ja_avisado(conn, chave):
                         _marcar(conn, chave)
                         if nivel == '100':
-                            assunto = f"{c['apelido']} chegou ao teto de R$ {cfg.TETO_CRIANCA_MES:.2f} deste mês"
+                            assunto = f"{c['apelido']} chegou ao teto de R$ {teto:.2f} deste mês"
                             corpo = (f"{c['apelido']} (ID {c['id_rede']}) gastou R$ {gasto:.2f} em ligações com celular em {mes}. "
                                      f"As ligações com celular dessa criança ficam bloqueadas até o mês virar.\n\n"
-                                     f"Para liberar, aumente REDE_TETO_CRIANCA_MES ou aguarde o próximo mês.")
+                                     f"Para liberar, aumente REDE_TETO_CRIANCA_MES (ou REDE_TETO_REDE_MES) ou aguarde o próximo mês.")
                         else:
                             assunto = f"{c['apelido']} já usou {int(cfg.ALERTA_FRACAO * 100)}% do teto deste mês"
-                            corpo = (f"{c['apelido']} (ID {c['id_rede']}) gastou R$ {gasto:.2f} de R$ {cfg.TETO_CRIANCA_MES:.2f} "
+                            corpo = (f"{c['apelido']} (ID {c['id_rede']}) gastou R$ {gasto:.2f} de R$ {teto:.2f} "
                                      f"em ligações com celular em {mes}.")
                         mailer.enviar(cfg.ALERTA_EMAIL, assunto, corpo)
                         auditoria.registrar(conn, 'teto_alerta_enviado', 'sistema', objeto_tipo='crianca', objeto_id=c['id'],
@@ -121,4 +157,49 @@ def verificar_alertas(conn, cfg, mailer, ref=None):
                               f'Se não for uso normal, confira o histórico no painel da ONG.')
                 auditoria.registrar(conn, 'teto_rede_alerta_enviado', 'sistema', detalhes={'dia': dia, 'gasto': gasto})
                 enviados += 1
+    if cfg.TETO_REDE_MES > 0:
+        gasto = gasto_rede_mes(conn, cfg, ref)
+        for nivel, limiar in (('100', cfg.TETO_REDE_MES), ('80', cfg.TETO_REDE_MES * cfg.ALERTA_FRACAO)):
+            if gasto >= limiar:
+                chave = f'rede-mes:{mes}:{nivel}'
+                if not _ja_avisado(conn, chave):
+                    _marcar(conn, chave)
+                    if nivel == '100':
+                        assunto = f'Rede chegou ao orçamento mensal de R$ {cfg.TETO_REDE_MES:.2f}'
+                        corpo = (f'As ligações com celular de toda a rede somaram R$ {gasto:.2f} em {mes} e ficam pausadas '
+                                 f'até o mês virar. Entre crianças continua funcionando.')
+                    else:
+                        assunto = f'Rede já usou {int(cfg.ALERTA_FRACAO * 100)}% do orçamento mensal de celular'
+                        corpo = (f'As ligações com celular somaram R$ {gasto:.2f} de R$ {cfg.TETO_REDE_MES:.2f} em {mes}. '
+                                 f'É o gatilho combinado para pensar em doações ou em trocar de plano na operadora.')
+                    mailer.enviar(cfg.ALERTA_EMAIL, assunto, corpo)
+                    auditoria.registrar(conn, 'teto_rede_mes_alerta_enviado', 'sistema', detalhes={'nivel': nivel, 'mes': mes, 'gasto': gasto})
+                    enviados += 1
+                break   # so o nivel mais alto atingido
     return enviados
+
+
+def resumo_mes(conn, cfg, ref=None):
+    """Para o painel: quanto a rede gastou com celular no mes, a projecao ate o fim do mes e o uso por crianca."""
+    ref = ref or agora()
+    hoje = em_sp(ref)
+    mes = hoje.strftime('%Y-%m')
+    dias_no_mes = calendar.monthrange(hoje.year, hoje.month)[1]
+    gasto = gasto_rede_mes(conn, cfg, ref)
+    linhas = []
+    for c in conn.execute(select(db.criancas.c.id_rede, db.criancas.c.apelido).where(db.criancas.c.ativa.is_(True))).mappings().all():
+        rows = _rows(conn, "(caller_ext = :e OR callee_ext = :e OR callee_ext = :n OR callee_ext = :o) AND timestamp LIKE :m",
+                     {'e': c['id_rede'], 'n': '9' + c['id_rede'], 'o': '8' + c['id_rede'], 'm': mes + '%'})
+        rows = [r for r in rows if (_saida(r) or _entrada(r)) and r['status'] == 'ALLOWED' and r['duration_seconds']]
+        if not rows:
+            continue
+        linhas.append({'apelido': c['apelido'], 'id_rede': c['id_rede'], 'ligacoes': len(rows),
+                       'min_saida': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if _saida(r)),
+                       'min_entrada': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if _entrada(r)),
+                       'gasto': round(sum(custo_chamada(r, cfg) for r in rows), 2)})
+    linhas.sort(key=lambda x: -x['gasto'])
+    return {'mes': mes, 'gasto': gasto, 'teto_rede': cfg.TETO_REDE_MES,
+            'pct': int(round(gasto / cfg.TETO_REDE_MES * 100)) if cfg.TETO_REDE_MES > 0 else None,
+            'projecao': round(gasto / hoje.day * dias_no_mes, 2), 'teto_crianca': teto_crianca(conn, cfg),
+            'criancas_com_celular': criancas_com_celular(conn), 'linhas': linhas,
+            'tarifa_saida': cfg.TARIFA_SAIDA_MIN, 'tarifa_entrada': cfg.TARIFA_ENTRADA_MIN}

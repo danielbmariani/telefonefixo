@@ -89,6 +89,9 @@ class Config:
         # Fase de teste do celular dos pais (doc 08, 6c): o projeto paga, com teto por crianca e por dia.
         self.TETO_CRIANCA_MES = float(g('REDE_TETO_CRIANCA_MES', '5.00'))       # R$ por crianca por mes (0 = sem teto)
         self.TETO_REDE_DIA = float(g('REDE_TETO_REDE_DIA', '20.00'))            # R$ por dia na rede inteira (disjuntor)
+        # Orcamento do projeto: R$ 500 por mes no total (decisao de 05/11/2026). Aqui entra a parte dos minutos,
+        # ja descontados os custos fixos (numero da operadora). Nunca e ultrapassado: ver custos.teto_crianca.
+        self.TETO_REDE_MES = float(g('REDE_TETO_REDE_MES', '450.00'))           # R$ por mes na rede inteira (0 = sem teto)
         self.TARIFA_SAIDA_MIN = float(g('REDE_TARIFA_SAIDA_MIN', '0.30'))       # estimativa R$/min crianca -> celular
         self.TARIFA_ENTRADA_MIN = float(g('REDE_TARIFA_ENTRADA_MIN', '0.05'))   # estimativa R$/min celular -> crianca
         self.ALERTA_EMAIL = g('REDE_ALERTA_EMAIL', '') or self.CONTATO_EMAIL     # quem recebe os avisos de teto

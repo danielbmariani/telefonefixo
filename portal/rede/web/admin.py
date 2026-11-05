@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from sqlalchemy import select, update, and_, or_, desc
 
 from .. import db, auditoria
-from ..servicos import reconciliacao, gdms_fila, telefones as svc_tel, criancas as svc_cri
+from ..servicos import reconciliacao, gdms_fila, telefones as svc_tel, criancas as svc_cri, custos
 from ..tempo import agora
 from .comum import conn, operador_obrigatorio
 
@@ -20,7 +20,8 @@ def painel():
     ultima_rec = c.execute(select(db.audit_log).where(db.audit_log.c.acao == 'reconciliacao_executada')
                            .order_by(desc(db.audit_log.c.id)).limit(1)).mappings().first()
     return render_template('ong/painel.html', funil=reconciliacao.funil(c), por_estado=svc_tel.contar_por_estado(c),
-                           casos=casos_abertos, tarefas=tarefas_abertas, ultima_rec=ultima_rec)
+                           casos=casos_abertos, tarefas=tarefas_abertas, ultima_rec=ultima_rec,
+                           celular=custos.resumo_mes(c, current_app.cfg))
 
 
 @bp.route('/casos', methods=['GET', 'POST'])
