@@ -444,8 +444,8 @@ def celulares():
         return redirect(url_for('familia.celulares'))
     cs = svc_cri.listar(conn(), fid)
     from ..servicos import custos
-    gastos = [(c, custos.gasto_crianca_mes(conn(), c['id_rede'], _cfg())) for c in cs]
-    return render_template('celulares.html', numeros=svc_fam.listar(conn(), fid), criancas=cs, gastos=gastos, teto=custos.teto_crianca(conn(), _cfg()),
+    usos = [(c, custos.uso_crianca_mes(conn(), c['id_rede'], _cfg())) for c in cs]
+    return render_template('celulares.html', numeros=svc_fam.listar(conn(), fid), criancas=cs, usos=usos,
                            maximo=svc_fam.MAX_POR_FAMILIA, formatar=svc_fam.formatar, prefixos=svc_fam.PREFIXOS,
                            numero_rede=svc_fam.formatar(_cfg().TRONCO_NUMERO) or 'o número da rede')
 

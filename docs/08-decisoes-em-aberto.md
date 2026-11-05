@@ -90,6 +90,8 @@ fase 1. Para cada uma há uma recomendação; basta confirmar ou mudar.
    soma nunca passa do orçamento), aviso por e-mail a 80% e 100% do orçamento e
    quadro "Celulares" no painel com gasto, projeção e uso por criança.
    Continua na Nvoip por minuto; a troca de operadora fica para quando o uso crescer.
+   Para os pais, a aba Celulares fala só em minutos (quanto a criança usou e quanto
+   ainda pode ligar no mês); dinheiro aparece apenas no painel do operador.
 
    Pesquisa de 05/11 que sustenta a decisão (preços vistos nos sites nesse dia):
    - *Carteira com recarga do pai*: é o caminho de mais atrito e esbarra na Anatel.

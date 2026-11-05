@@ -54,6 +54,17 @@ def gasto_crianca_mes(conn, id_rede, cfg, ref=None):
     return round(sum(custo_chamada(r, cfg) for r in rows if _saida(r) or _entrada(r)), 2)
 
 
+def uso_crianca_mes(conn, id_rede, cfg, ref=None):
+    """Para a pagina Celulares, em minutos e sem dinheiro: quanto a crianca ja falou com celular no mes
+    (cada ligacao arredondada para cima) e por quantos minutos ainda pode ligar para o celular."""
+    mes = em_sp(ref or agora()).strftime('%Y-%m')
+    rows = _rows(conn, "(caller_ext = :e OR callee_ext = :e OR callee_ext = :n OR callee_ext = :o) AND timestamp LIKE :m",
+                 {'e': id_rede, 'n': '9' + id_rede, 'o': '8' + id_rede, 'm': mes + '%'})
+    usados = sum(math.ceil(r['duration_seconds'] / 60) for r in rows
+                 if (_saida(r) or _entrada(r)) and r['status'] == 'ALLOWED' and r['duration_seconds'])
+    return {'usados': usados, 'restam': segundos_permitidos(conn, cfg, id_rede, 'saida', ref) // 60}
+
+
 def gasto_rede_dia(conn, cfg, ref=None):
     dia = em_sp(ref or agora()).strftime('%Y-%m-%d')
     rows = _rows(conn, "timestamp LIKE :d", {'d': dia + '%'})

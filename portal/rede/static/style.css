@@ -325,6 +325,20 @@ button[disabled] .spinner-border { vertical-align: -0.15em; }
   .marca .nome { white-space: nowrap; font-size: 1.05rem; }
   .topo-acoes { flex-wrap: nowrap; gap: .3rem; }
   .topo-acoes .btn-sm { padding: .3rem .55rem; font-size: .78rem; white-space: nowrap; }
+  /* operador tem um botao a mais (Painel): fica so o selo, sem o nome, para os quatro caberem */
+  .topo.com-painel .marca > span:last-child { display: none; }
+}
+/* Celulares estreitos (360 px e comum no Android): o cabecalho aperta para o "Sair" nao sair da tela */
+@media (max-width: 380px) {
+  .marca { gap: .4rem; }
+  .marca .selo { width: 30px; height: 30px; }
+  .marca .nome { font-size: .95rem; }
+  .topo-acoes .btn-sm { padding: .3rem .45rem; }
+}
+@media (max-width: 339.98px) {
+  .marca > span:last-child { display: none; }
+}
+@media (max-width: 575.98px) {
   /* abas com icone em cima e nome embaixo */
   .abas .nav { gap: 0; }
   .abas .nav-link { display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .4rem .1rem .45rem; font-size: .68rem; font-weight: 700; letter-spacing: .01em; line-height: 1.1; }

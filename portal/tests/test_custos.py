@@ -110,7 +110,10 @@ def test_pagina_celulares_mostra_fase_de_teste(client, app):
     cid = criar_crianca(client, 'ana01'); cr = crianca_row(app, cid)
     _lig(app, cr['id_rede'], '9' + cr['id_rede'], 60)
     r = client.get('/celulares')
-    assert b'Fase de teste' in r.data and b'R$ 5.00' in r.data and b'ana01: R$ 0.30' in r.data
+    html = r.get_data(as_text=True)
+    # em minutos, sem dinheiro: 1 min usado; do teto de R$ 5 sobram R$ 4,70, que dao 15 min para o celular
+    assert 'Fase de teste' in html and 'ana01: usou 1 min, restam cerca de 15 min' in html
+    assert 'R$' not in html and 'custo' not in html and 'paga' not in html
     r = client.get('/termos')
     assert b'2026-10-' in r.data and b'fase de teste' in r.data
 
