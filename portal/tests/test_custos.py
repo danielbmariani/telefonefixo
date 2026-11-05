@@ -115,7 +115,7 @@ def test_pagina_celulares_mostra_fase_de_teste(client, app):
     assert 'Fase de teste' in html and 'ana01: usou 1 min, restam cerca de 15 min' in html
     assert 'R$' not in html and 'custo' not in html and 'paga' not in html
     r = client.get('/termos')
-    assert b'2026-10-' in r.data and b'fase de teste' in r.data
+    assert b'2026-11-' in r.data and b'fase de teste' in r.data and b'R$' not in r.data
 
 
 def test_orcamento_mensal_da_rede_nunca_e_ultrapassado(client, app):

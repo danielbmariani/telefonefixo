@@ -91,7 +91,9 @@ fase 1. Para cada uma há uma recomendação; basta confirmar ou mudar.
    quadro "Celulares" no painel com gasto, projeção e uso por criança.
    Continua na Nvoip por minuto; a troca de operadora fica para quando o uso crescer.
    Para os pais, a aba Celulares fala só em minutos (quanto a criança usou e quanto
-   ainda pode ligar no mês); dinheiro aparece apenas no painel do operador.
+   ainda pode ligar no mês); dinheiro aparece apenas no painel do operador. Os termos
+   passaram à versão 2026-11-a com o mesmo ajuste (limite de minutos, sem valor em
+   reais); como a versão mudou, cada família aceita os termos de novo no próximo acesso.
 
    Pesquisa de 05/11 que sustenta a decisão (preços vistos nos sites nesse dia):
    - *Carteira com recarga do pai*: é o caminho de mais atrito e esbarra na Anatel.

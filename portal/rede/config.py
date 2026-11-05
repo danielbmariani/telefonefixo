@@ -77,7 +77,7 @@ class Config:
         self.RESET_EXPIRA_MIN = 60
 
         # Versoes dos textos legais (o hash do texto vai no consentimento)
-        self.VERSAO_TERMOS = g('REDE_VERSAO_TERMOS', '2026-10-d')
+        self.VERSAO_TERMOS = g('REDE_VERSAO_TERMOS', '2026-11-a')
         self.VERSAO_PRIVACIDADE = g('REDE_VERSAO_PRIVACIDADE', '2026-10-b')
         self.VERSAO_CONSENTIMENTO = g('REDE_VERSAO_CONSENTIMENTO', '2026-10-b')
         # LGPD / ECA Digital (doc 13): quem responde e por onde; retencao dos registros

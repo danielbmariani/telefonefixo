@@ -19,7 +19,7 @@ def test_contato_publico_e_rodape(client, app):
     assert 'Contato e denúncias'.encode() in r.data and 'a partir de 6 anos'.encode() in r.data
     for u in ('/termos', '/privacidade'):
         r = client.get(u)
-        assert r.status_code == 200 and b'2026-10-' in r.data
+        assert r.status_code == 200 and b'(vers' in r.data and b'2026-1' in r.data
     # textos: sem travessao e com os canais
     import pathlib
     for f in pathlib.Path('rede/textos').glob('*.md'):
