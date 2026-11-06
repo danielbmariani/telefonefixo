@@ -157,7 +157,8 @@ def processar(conn, cfg, http=None, ref=None, cliente=None):
                 cr = svc_cri.por_id(conn, tel['crianca_id'])
                 from .. import grandstream_xml
                 if linha:
-                    pv = grandstream_xml.pvalues_linha(cfg.SIP_HOST, svc_cri.cifragem(conn, cr['id_rede']), cfg.SIP_TLS_PORTA)
+                    pv = grandstream_xml.pvalues_linha(cfg.SIP_HOST, svc_cri.cifragem(conn, cr['id_rede']), cfg.SIP_TLS_PORTA,
+                                                       svc_cri.nome_certificado(cfg, cr['id_rede']))
                 else:
                     pv = grandstream_xml.pvalues_teclas(svc_tel.amigos_para_teclas(conn, cr), 'grp')
                 xml = grandstream_xml.gerar_xml(tel['mac'], pv, tel['xml_versao'])

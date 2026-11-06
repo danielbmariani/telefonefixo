@@ -237,3 +237,27 @@ def test_aviso_de_copia_externa_atrasada(app, tmp_path):
         assert reconciliacao.verificar_copia_externa(conn, cfg, app.mailer) == 'atrasada'     # parou ha 40 horas
         novos = app.mailer.enviados[antes:]
         assert len(novos) == 2 and all('alerta@exemplo.org' in str(m) and 'atrasada' in str(m) for m in novos)
+
+
+def test_aviso_do_certificado_da_central(app):
+    """Com os aparelhos conferindo o certificado (B27), o job diario avisa antes de ele vencer ou se nao conferir."""
+    import ssl
+    from datetime import timedelta
+    from rede.config import Config
+    from rede.servicos import reconciliacao
+    from rede.tempo import agora
+
+    def falha(nome, porta):
+        raise ssl.SSLCertVerificationError('certificate has expired')
+
+    with app.engine.begin() as conn:
+        assert reconciliacao.verificar_certificado_sip(conn, app.cfg, app.mailer) is None      # sem configurar, nao confere
+        cfg = Config(env={}, SIP_CERT_NOME='rede.teste', ALERTA_EMAIL='alerta@exemplo.org')
+        antes = len(app.mailer.enviados)
+        assert reconciliacao.verificar_certificado_sip(conn, cfg, app.mailer, ler=lambda n, p: agora() + timedelta(days=40)) == 'ok'
+        assert (n_ok := len(app.mailer.enviados)) == antes
+        assert reconciliacao.verificar_certificado_sip(conn, cfg, app.mailer, ler=lambda n, p: agora() + timedelta(days=9)) == 'problema'
+        assert reconciliacao.verificar_certificado_sip(conn, cfg, app.mailer, ler=falha) == 'problema'
+        novos = app.mailer.enviados[n_ok:]
+        assert len(novos) == 2 and all('alerta@exemplo.org' in str(m) and 'certificado' in str(m) for m in novos)
+        assert 'vence em' in str(novos[0]) and 'não passou na conferência' in str(novos[1])

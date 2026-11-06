@@ -7,6 +7,8 @@ import csv
 import hashlib
 import io
 import os
+import socket
+import ssl
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select, insert, and_, func
@@ -106,6 +108,39 @@ def verificar_copia_externa(conn, cfg, mailer, ref=None):
                   'endereço de gravação venceu, rode deploy/copia-externa.sh com NOVO_ENDERECO=1.')
     auditoria.registrar(conn, 'copia_externa_atrasada', 'sistema', detalhes={'ultima': ultima.isoformat() if ultima else None})
     return 'atrasada'
+
+
+def _validade_certificado_sip(nome, porta):
+    """Vencimento do certificado que a central serve na porta TLS, conferindo cadeia e nome como o aparelho faz.
+    Levanta ssl.SSLError (que e um OSError) se a conferencia falhar."""
+    ctx = ssl.create_default_context()
+    with socket.create_connection(('127.0.0.1', porta), timeout=10) as s, ctx.wrap_socket(s, server_hostname=nome) as t:
+        return datetime.fromtimestamp(ssl.cert_time_to_seconds(t.getpeercert()['notAfter']), timezone.utc)
+
+
+def verificar_certificado_sip(conn, cfg, mailer, ref=None, ler=_validade_certificado_sip):
+    """Com a conferencia do certificado ligada nos aparelhos (SIP_CERT_NOME), certificado vencido ou trocado
+    por um que nao confere tira todos os telefones do ar. O certbot renova sozinho e um gancho copia para o
+    Asterisk (deploy/tls.sh); se isso falhar calado, este aviso chega SIP_CERT_DIAS_MIN dias antes.
+    Retorna 'ok', 'problema' ou None (sem conferencia configurada)."""
+    if not cfg.SIP_CERT_NOME:
+        return None
+    ref = ref or agora()
+    try:
+        vence, erro = ler(cfg.SIP_CERT_NOME, cfg.SIP_TLS_PORTA), None
+    except (OSError, ValueError, KeyError) as e:
+        vence, erro = None, f'{type(e).__name__}: {e}'[:200]
+    if vence and vence - utc(ref) > timedelta(days=cfg.SIP_CERT_DIAS_MIN):
+        return 'ok'
+    oque = f'vence em {vence:%d/%m/%Y}' if vence else f'não passou na conferência ({erro})'
+    mailer.enviar(cfg.ALERTA_EMAIL, 'O certificado da central precisa de atenção',
+                  f'O certificado que a central serve aos telefones (porta {cfg.SIP_TLS_PORTA}) {oque}.\n\n'
+                  'Os telefones conferem esse certificado: se ele vencer ou não bater com o nome '
+                  f'{cfg.SIP_CERT_NOME}, eles param de se conectar. No servidor, veja `certbot certificates` e rode '
+                  'de novo deploy/tls.sh, que recopia o certificado para o Asterisk.')
+    auditoria.registrar(conn, 'certificado_sip_problema', 'sistema',
+                        detalhes={'vence': vence.isoformat() if vence else None, 'erro': erro})
+    return 'problema'
 
 
 def exportar_auditoria(conn, dia=None, destino='.'):

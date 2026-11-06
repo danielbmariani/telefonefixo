@@ -88,13 +88,19 @@ def test_pvalues_teclas():
 
 
 def test_pvalues_linha_e_cifragem():
-    assert gx.pvalues_linha('h') == {'P47': 'h', 'P130': '1', 'P2329': '0', 'P183': '0'}
-    assert gx.pvalues_linha('h', 'transicao') == {'P47': 'h:5061', 'P130': '2', 'P2329': '0', 'P183': '1'}
-    assert gx.pvalues_linha('h', 'exigida', 5071) == {'P47': 'h:5071', 'P130': '2', 'P2329': '0', 'P183': '2'}
+    sem = {'P2311': '0', 'P2367': '0'}
+    assert gx.pvalues_linha('h') == {'P47': 'h', 'P130': '1', 'P2329': '0', 'P183': '0', **sem}
+    assert gx.pvalues_linha('h', 'transicao') == {'P47': 'h:5061', 'P130': '2', 'P2329': '0', 'P183': '1', **sem}
+    assert gx.pvalues_linha('h', 'exigida', 5071) == {'P47': 'h:5071', 'P130': '2', 'P2329': '0', 'P183': '2', **sem}
+    # conferencia do certificado: o aparelho aponta para o nome e confere cadeia e nome; sem TLS nao ha o que conferir
+    assert gx.pvalues_linha('1.2.3.4', 'exigida', nome_certificado='rede.teste') == {
+        'P47': 'rede.teste:5061', 'P130': '2', 'P2329': '0', 'P183': '2', 'P2311': '1', 'P2367': '1'}
+    assert gx.pvalues_linha('1.2.3.4', 'nenhuma', nome_certificado='rede.teste') == {
+        'P47': '1.2.3.4', 'P130': '1', 'P2329': '0', 'P183': '0', **sem}
     pv = gx.pvalues_sip('h', '345678', 'senha-longa-123', 'ana', 'grp', cifragem='exigida')
     assert pv['P130'] == '2' and pv['P183'] == '2' and pv['P47'] == 'h:5061'
     import pytest
     with pytest.raises(ValueError):
         gx.pvalues_linha('h', 'talvez')
     fab = gx.pvalues_fabrica('grp')
-    assert fab['P130'] == '0' and fab['P183'] == '0'
+    assert fab['P130'] == '0' and fab['P183'] == '0' and fab['P2311'] == '0' and fab['P2367'] == '0'

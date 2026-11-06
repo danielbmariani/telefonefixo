@@ -25,6 +25,14 @@ class Config:
         #   exigida    SIP por TLS, SRTP obrigatorio: sem cifra a ligacao nao completa
         self.SIP_CIFRAGEM = g('REDE_SIP_CIFRAGEM', 'nenhuma')
         self.SIP_TLS_PORTA = int(g('REDE_SIP_TLS_PORTA', '5061'))
+        # Conferencia do certificado da central pelo aparelho (bancada B27). SIP_CERT_NOME e o nome que esta no
+        # certificado servido na porta TLS: a linha que confere aponta para ele (nao para o IP) e so registra se a
+        # cadeia e o nome baterem. SIP_CERT_LINHAS diz quais linhas conferem: vazio (nenhuma), 'todas' ou IDs
+        # separados por virgula (piloto). O job diario avisa se o certificado servido falhar na conferencia ou
+        # tiver menos de SIP_CERT_DIAS_MIN dias: com a conferencia ligada, certificado vencido derruba os telefones.
+        self.SIP_CERT_NOME = g('REDE_SIP_CERT_NOME', '')
+        self.SIP_CERT_LINHAS = g('REDE_SIP_CERT_LINHAS', '')
+        self.SIP_CERT_DIAS_MIN = int(g('REDE_SIP_CERT_DIAS_MIN', '15'))
         self.TIMEZONE = g('REDE_TIMEZONE', 'America/Sao_Paulo')
         # Repositorio publico do codigo (AGPL-3.0): link na pagina inicial, no rodape e em /por-dentro
         self.CODIGO_URL = g('REDE_CODIGO_URL', 'https://github.com/danielbmariani/telefonefixo').rstrip('/')

@@ -67,22 +67,30 @@ def nome_arquivo(mac):
 CIFRAGENS = ('nenhuma', 'transicao', 'exigida')
 
 
-def pvalues_linha(servidor, cifragem='nenhuma', porta_tls=5061):
+def pvalues_linha(servidor, cifragem='nenhuma', porta_tls=5061, nome_certificado=None):
     """Endereco da central, transporte do SIP e cifragem da voz. Nao tem segredo: pode ir pelo GDMS.
     Referencia: bancada/referencia-pvalues/grp260x_config_1.0.7.74.txt.
       P130   SIP Transport: 1 = TCP, 2 = TLS
       P2329  SIP URI Scheme when using TLS: 0 = sip (o Asterisk nao lida bem com sips)
       P183   SRTP Mode: 0 = desligado, 1 = ligado sem obrigar, 2 = ligado e obrigatorio
+      P2367  Validate Certification Chain: 1 = so aceita certificado de autoridade que o aparelho conhece
+      P2311  Check Domain Certificates: 1 = o nome do servidor (P47) tem de estar no certificado
     nenhuma: TCP na porta padrao, voz sem cifra. transicao: TLS + SRTP sem obrigar (migracao de aparelho
-    que ja esta em uso). exigida: TLS + SRTP obrigatorio. Casa com criancas.CIFRAGENS (lado da central)."""
+    que ja esta em uso). exigida: TLS + SRTP obrigatorio. Casa com criancas.CIFRAGENS (lado da central).
+    nome_certificado (so com TLS): o aparelho aponta para esse nome em vez de `servidor` e confere cadeia e nome;
+    com o IP no P47 a conferencia do nome falha e o aparelho nao registra (bancada B27). Sem ele, as duas
+    conferencias vao desligadas de forma explicita, para a configuracao do nosso servidor valer sempre."""
     if cifragem not in CIFRAGENS:
         raise ValueError(f'cifragem deve ser uma de {CIFRAGENS}')
     if cifragem == 'nenhuma':
-        return {'P47': servidor, 'P130': '1', 'P2329': '0', 'P183': '0'}
-    return {'P47': f'{servidor}:{int(porta_tls)}', 'P130': '2', 'P2329': '0', 'P183': '1' if cifragem == 'transicao' else '2'}
+        return {'P47': servidor, 'P130': '1', 'P2329': '0', 'P183': '0', 'P2311': '0', 'P2367': '0'}
+    confere = '1' if nome_certificado else '0'
+    return {'P47': f'{nome_certificado or servidor}:{int(porta_tls)}', 'P130': '2', 'P2329': '0',
+            'P183': '1' if cifragem == 'transicao' else '2', 'P2311': confere, 'P2367': confere}
 
 
-def pvalues_sip(servidor, ramal, senha_sip, nome_exibicao, modelo='gxp', cifragem='nenhuma', porta_tls=5061):
+def pvalues_sip(servidor, ramal, senha_sip, nome_exibicao, modelo='gxp', cifragem='nenhuma', porta_tls=5061,
+                nome_certificado=None):
     """P-values de conta SIP, NAT, transporte e audio.
     Copiados do configurar-telefone.sh (passo [3/7]). Transporte e cifragem: pvalues_linha."""
     if modelo not in MODELOS:
@@ -109,7 +117,7 @@ def pvalues_sip(servidor, ramal, senha_sip, nome_exibicao, modelo='gxp', cifrage
         'P59': '8',           # Vocoder 3 = PCMA
     }
     # Primary SIP Server, transporte (TCP ou TLS; nunca UDP, que o SIP ALG dos roteadores corrompe) e SRTP
-    pv.update(pvalues_linha(servidor, cifragem, porta_tls))
+    pv.update(pvalues_linha(servidor, cifragem, porta_tls, nome_certificado))
     if modelo in ('gxp', 'grp', 'grpw'):
         pv['P72'] = '1'       # Use # as Dial Key (ramal + # envia)
     else:
@@ -211,6 +219,7 @@ def pvalues_fabrica(modelo='grp'):
     o aparelho fica como novo para outra familia cadastrar; o reset de fabrica pela API (task/add tipo 2)
     e tentado em seguida e, se funcionar, apaga tambem o que nao listamos aqui."""
     pv = {'P271': '0', 'P47': '', 'P35': '', 'P36': '', 'P34': '', 'P3': '', 'P130': '0', 'P183': '0', 'P2329': '1',
+          'P2311': '0', 'P2367': '0',
           'P237': 'fm.grandstream.com/gs', 'P194': '0', 'P2': 'admin', 'P1650': '3', 'P276': '0'}
     if modelo == 'ht':
         pv['P6767'] = '2'

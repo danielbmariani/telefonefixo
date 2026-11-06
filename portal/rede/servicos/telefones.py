@@ -249,7 +249,8 @@ def gerar_xml(conn, telefone, cfg):
     tok = token_ativo(conn, telefone['id'])
     modelo_xml = 'ht' if telefone['modelo'] == 'ht' else 'grp'   # conta SIP: GRP usa os mesmos P-values base do GXP (confirmar em B09)
     pv = grandstream_xml.pvalues_sip(cfg.SIP_HOST, crianca['id_rede'], crianca['senha_sip'], crianca['apelido'], modelo_xml,
-                                     cifragem=svc_cri.cifragem(conn, crianca['id_rede']), porta_tls=cfg.SIP_TLS_PORTA)
+                                     cifragem=svc_cri.cifragem(conn, crianca['id_rede']), porta_tls=cfg.SIP_TLS_PORTA,
+                                     nome_certificado=svc_cri.nome_certificado(cfg, crianca['id_rede']))
     if tok:
         pv.update(grandstream_xml.pvalues_provisionamento(url_provisionamento(cfg, tok['token']), cfg.PROV_INTERVALO_MIN, modelo_xml))
     pv.update(grandstream_xml.pvalues_travas(telefone['admin_senha'], modelo_xml))

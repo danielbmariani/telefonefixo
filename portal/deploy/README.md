@@ -33,5 +33,8 @@ Servidor Ubuntu 22.04/24.04 (Oracle Ampere A1). Portas: TCP 22, 80, 443, 5060; U
    cria o `transport-tls` na 5061 sem reiniciar e abre a porta (iptables e NSG da Oracle só desta máquina).
    Cada linha muda de modo com `flask sip-cifragem <ID|todas> <nenhuma|transicao|exigida>`; linhas novas seguem
    `REDE_SIP_CIFRAGEM`. Registro do teste com aparelho real: `bancada/B26-tls-e-srtp.md`.
+   Para o aparelho conferir o certificado da central: `REDE_SIP_CERT_NOME` (nome do certificado) e
+   `REDE_SIP_CERT_LINHAS` (`todas` ou IDs do piloto) no `portal.env`, reiniciar o portal e reenviar a linha
+   (`flask sip-cifragem <ID|todas> exigida`). Teste e cuidados: `bancada/B27-conferencia-do-certificado.md`.
 
 Verificação de auditoria pós-deploy: como `portal`, `UPDATE audit_log SET acao='x' WHERE id=1` deve falhar.

@@ -209,6 +209,7 @@ def _registrar_comandos(app):
             from .servicos import retencao
             r['retencao'] = retencao.aplicar(conn, app.cfg)
             r['copia_externa'] = reconciliacao.verificar_copia_externa(conn, app.cfg, app.mailer)
+            r['certificado_sip'] = reconciliacao.verificar_certificado_sip(conn, app.cfg, app.mailer)
         click.echo(str(r))
 
     @app.cli.command('exportar-auditoria')

@@ -296,4 +296,19 @@ def test_cifragem_da_linha_muda_central_e_aparelho(app):
         from rede.servicos import reconciliacao
         assert reconciliacao.executar(conn, cfg)['linhas_sem_cifra'] == 0
         assert reconciliacao.executar(conn, cfg2)['linhas_sem_cifra'] == 1
+        # conferencia do certificado (B27): so a linha do piloto aponta para o nome e confere; depois, todas
+        telefones.aplicar_cifragem(conn, ca, 'exigida')
+        tel = telefones.por_id(conn, t['id'])
+        assert '<P2311>0</P2311>' in telefones.gerar_xml(conn, tel, cfg) and '<P2367>0</P2367>' in telefones.gerar_xml(conn, tel, cfg)
+        outra = _cfg(app, SIP_CERT_NOME='rede.teste', SIP_CERT_LINHAS=cb['id_rede'])
+        assert '<P47>sip.teste:5061</P47>' in telefones.gerar_xml(conn, tel, outra)
+        for linhas in (f"{cb['id_rede']}, {ca['id_rede']}", 'todas'):
+            piloto = _cfg(app, SIP_CERT_NOME='rede.teste', SIP_CERT_LINHAS=linhas)
+            xml = telefones.gerar_xml(conn, tel, piloto)
+            assert '<P47>rede.teste:5061</P47>' in xml and '<P2311>1</P2311>' in xml and '<P2367>1</P2367>' in xml
+        n = len(chamadas)
+        gdms_fila.atualizar_linha(conn, ca['id'])
+        gdms_fila.processar(conn, piloto, http=_http(chamadas))
+        corpo = [c[2] for c in chamadas[n:] if 'config/xml' in c[0]][0]
+        assert b'<P47>rede.teste:5061</P47>' in corpo and b'<P2311>1</P2311>' in corpo and b'<P2367>1</P2367>' in corpo
     assert 'cifragem_alterada' in acoes(app, 'crianca', ca['id']) and 'gdms_linha_enviadas' in acoes(app, 'telefone', t['id'])

@@ -1,0 +1,67 @@
+# B27 — O aparelho confere o certificado da central
+
+Objetivo: fechar o que a B26 deixou aberto. Com TLS e SRTP a ligação é cifrada, mas o aparelho aceitava qualquer
+servidor que respondesse no endereço da central. Aqui o aparelho passa a conferir a cadeia do certificado e o nome.
+
+## Parâmetros (GRP2601 1.0.7.11; os mesmos números existem no HT80x)
+
+| P-value | Nome na referência | O que faz |
+|---|---|---|
+| P2367 | Validate Certification Chain | só aceita certificado assinado por autoridade que o aparelho conhece |
+| P2311 | Check Domain Certificates | o nome do servidor (P47) tem de estar no certificado (RFC 5922) |
+| P47 | Primary SIP Server | precisa ser o nome (`telefonefixo.org:5061`), não o IP |
+
+`P8502` (Load CA Certificates) ficou no padrão, 0: as autoridades que vêm no aparelho bastam. Não mexemos nele
+porque pode valer também para a conexão do aparelho com o GDMS, que é o nosso caminho de volta.
+
+## Teste com aparelho real (06/11/2026)
+
+Linha de teste (GRP2601 do Daniel), em modo `exigida`. Cada passo foi um envio de P-values pelo GDMS, aplicado
+pelo aparelho em cerca de 20 s, sem ninguém tocar nele. O registro foi lido em `ps_contacts`.
+
+| Passo | Enviado | Esperado | Resultado |
+|---|---|---|---|
+| 1 | P2367=1, servidor ainda pelo IP | registra (se o aparelho confiar na autoridade) | **registrou** em 25 s, em conexão nova |
+| 2 | P2311=1, servidor ainda pelo IP | não registra: o certificado não tem o IP | **parou de registrar** (3 min observados) |
+| 3 | P47=`telefonefixo.org:5061` | registra | **registrou** em 20 s |
+| 4 | P2311=0, P2367=0, P47 = servidor falso | aceita o falso (é o risco de antes) | **aceitou**: TLS completo e enviou REGISTER ao falso |
+| 5 | P2367=1, P47 = servidor falso | recusa o falso | **recusou**: abre a conexão, vê o certificado, fecha sem enviar nada; tenta de novo a cada 21 s |
+| 6 | P47=`telefonefixo.org:5061`, P2311=1, P2367=1 | registra | **registrou** em 20 s |
+
+O servidor falso foi um programa neste computador, na mesma rede do aparelho, com certificado autoassinado no
+nome `telefonefixo.org`. Ele só anota o resultado do aperto de mão e o método da primeira mensagem, nunca o
+conteúdo.
+
+O que o teste mostra:
+
+- O GRP2601 confia na cadeia atual do Let's Encrypt (folha ECDSA, YE1, Root YE, ISRG Root X2, ISRG Root X1; a
+  central entrega os quatro) sem carregar autoridade nenhuma.
+- A conferência da cadeia acontece depois do aperto de mão: do lado do servidor falso o TLS completa, mas o
+  aparelho não envia o REGISTER. Não vaza o ID da linha nem a resposta da senha.
+- A conferência do nome funciona e depende do P47: com o IP, o aparelho fica sem registro. Por isso o nome e as
+  duas conferências têm de ir sempre juntos, na mesma configuração.
+
+Não testado: só P2311=1 contra certificado autoassinado com o nome certo (em produção as duas vão juntas), e
+uma ligação com a conferência ligada (o registro e a ligação usam a mesma conexão; falta alguém ligar).
+
+## Como ficou no código
+
+- `REDE_SIP_CERT_NOME` (nome que está no certificado da porta TLS) e `REDE_SIP_CERT_LINHAS` (`todas`, ou IDs
+  separados por vírgula num piloto) em `/etc/rede-aberta/portal.env`.
+- `grandstream_xml.pvalues_linha(..., nome_certificado=)`: a linha que confere recebe P47 com o nome, P2311=1 e
+  P2367=1; as outras recebem as duas em 0, de forma explícita. Vale para a configuração que o aparelho busca no
+  nosso servidor e para o envio pelo GDMS (etapa `linha`), então as duas fontes nunca se contradizem.
+- Job diário (`reconciliacao.verificar_certificado_sip`): confere o certificado servido na 5061 como o aparelho
+  confere (cadeia e nome) e avisa por e-mail se falhar ou se faltarem menos de 15 dias. Com a conferência ligada,
+  certificado vencido derruba os telefones; a renovação é automática (certbot e o gancho do `deploy/tls.sh`).
+
+## Estado (06/11/2026)
+
+Piloto: só a linha de teste confere. As outras seguem cifradas, sem conferir.
+
+## O que falta
+
+1. Uma ligação na linha de teste com a conferência ligada, e tirar o aparelho da tomada e ligar de novo: ele deve
+   buscar a configuração e voltar sozinho (prova a hora certa do aparelho e a configuração do nosso servidor).
+2. Com o sim do Daniel: `REDE_SIP_CERT_LINHAS=todas`, reiniciar o portal e mandar a etapa `linha` aos outros
+   aparelhos, conferindo que cada um volta a registrar. Para desfazer: tirar a linha do `portal.env` e reenviar.

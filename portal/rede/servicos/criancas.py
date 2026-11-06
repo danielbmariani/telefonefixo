@@ -86,6 +86,13 @@ def cifragem(conn, id_rede):
     return 'transicao' if e[1] == 'yes' else 'exigida'
 
 
+def nome_certificado(cfg, id_rede):
+    """Nome que o aparelho desta linha confere no certificado da central, ou None se a linha nao confere
+    (config SIP_CERT_NOME e SIP_CERT_LINHAS)."""
+    linhas = {x.strip() for x in (cfg.SIP_CERT_LINHAS or '').split(',') if x.strip()}
+    return cfg.SIP_CERT_NOME if cfg.SIP_CERT_NOME and ('todas' in linhas or id_rede in linhas) else None
+
+
 def definir_cifragem(conn, crianca, modo, ator_tipo='sistema', ator_id=None):
     """Muda a cifragem do ramal de uma crianca. O aparelho so acompanha quando recebe a configuracao nova
     (telefones.aplicar_cifragem cuida disso). Retorna o modo anterior."""

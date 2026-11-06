@@ -59,3 +59,5 @@ a dizer que a ligação entre o telefone e o servidor é cifrada.
 Não validamos o certificado no aparelho (P2311 e P2367 ficam no padrão, desligados): a cifra protege contra quem
 escuta a rede, não contra quem consegue se passar pelo servidor. Ligar a validação exige apontar o aparelho para o
 nome `telefonefixo.org` em vez do IP e testar se o GRP2601 confia na autoridade do Let's Encrypt.
+
+Feito em 06/11/2026 na linha de teste: `B27-conferencia-do-certificado.md`.
