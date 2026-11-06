@@ -61,11 +61,17 @@ conferência, que só falharia com o relógio fora da validade do certificado.
   confere (cadeia e nome) e avisa por e-mail se falhar ou se faltarem menos de 15 dias. Com a conferência ligada,
   certificado vencido derruba os telefones; a renovação é automática (certbot e o gancho do `deploy/tls.sh`).
 
-## Estado (06/11/2026)
+## Todas as linhas (06/11/2026, 12h40)
 
-Piloto: só a linha de teste confere. As outras seguem cifradas, sem conferir.
+Com o sim do Daniel: `REDE_SIP_CERT_LINHAS=todas`, portal reiniciado e etapa `linha` enviada ao segundo aparelho.
+Ele registrou em conexão nova, pelo nome e com as duas conferências, cerca de um minuto depois (o roteiro
+desfaria tudo se ele não voltasse em 4 minutos). As cinco linhas ativas conferem, e as novas já nascem assim.
+Para desfazer: voltar `REDE_SIP_CERT_LINHAS` no `portal.env`, reiniciar o portal e reenviar a linha
+(`flask sip-cifragem <ID|todas> exigida`).
 
-## O que falta
+## Relógio do aparelho
 
-1. Com o sim do Daniel: `REDE_SIP_CERT_LINHAS=todas`, reiniciar o portal e mandar a etapa `linha` aos outros
-   aparelhos, conferindo que cada um volta a registrar. Para desfazer: tirar a linha do `portal.env` e reenviar.
+No fuso automático o GRP2601 aplica ao Brasil a regra antiga de horário de verão e fica uma hora adiantado de
+novembro a fevereiro. A configuração passou a mandar fuso fixo (`grandstream_xml.pvalues_relogio`: P64=customize,
+P246=`UTC+3`, P143=0), calculado de `REDE_TIMEZONE`. Enviado à linha de teste pelo GDMS em 06/11; os outros
+aparelhos recebem na busca diária de configuração. Falta alguém olhar o visor para confirmar a hora.

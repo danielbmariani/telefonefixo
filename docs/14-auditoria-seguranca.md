@@ -94,9 +94,8 @@ duplicar os do Flask; `www` redireciona; após o reinício, tronco registrado e 
   todas as linhas em modo `exigida`, `REDE_SIP_CIFRAGEM=exigida` para as novas, TCP 5060 fechada no iptables (a
   security list da Oracle ainda a libera porque é dividida com a VM antiga). A reconciliação diária abre caso se
   alguma linha sair do modo cifrado. Falta: ligação entre duas crianças conferida por alguém.
-- [ ] O aparelho confere o certificado da central (06/11/2026, `bancada/B27-conferencia-do-certificado.md`):
+- [x] O aparelho confere o certificado da central (06/11/2026, `bancada/B27-conferencia-do-certificado.md`):
   provado na linha de teste (cadeia e nome; não envia nada a um servidor falso com certificado autoassinado) e
-  ligado só nela (`REDE_SIP_CERT_LINHAS`). Nas outras linhas a cifra protege de quem escuta, não de quem se passa
-  pelo servidor. Falta estender a todas. O job diário avisa se o certificado da 5061 falhar ou estiver a menos
-  de 15 dias de vencer.
+  ligado em todas as linhas (`REDE_SIP_CERT_LINHAS=todas`); as novas já nascem assim. O job diário avisa se o
+  certificado da 5061 falhar ou estiver a menos de 15 dias de vencer.
 - [ ] Repetir esta auditoria depois de qualquer mudança no dialplan ou nas rotas do portal (os testes em `tests/test_seguranca.py`, `test_lgpd.py` e o roteiro `scratchpad/audit_dyn.py` cobrem o essencial).

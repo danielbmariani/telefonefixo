@@ -166,6 +166,25 @@ def senha_usuario_aparelho(senha_admin):
     return hashlib.sha256(('user:' + senha_admin).encode('utf-8')).hexdigest()[:16]
 
 
+def pvalues_relogio(fuso='America/Sao_Paulo'):
+    """Fuso do relogio do visor (GRP260x). No automatico, o aparelho aplica ao Brasil a regra antiga de horario
+    de verao (BRST+3BRDT+2,M11.1.0,M2.3.0) e fica uma hora adiantado de novembro a fevereiro (visto em 06/11/2026).
+      P64   Time Zone: 'customize' = usa o P246
+      P246  Self Defined Time Zone, formato POSIX: 'UTC+3' e UTC-3 sem horario de verao (o sinal e invertido)
+      P143  Allow DHCP Option 2 to Override Time Zone: 0 (o roteador da casa nao muda o fuso)
+    So para fuso sem horario de verao; com horario de verao devolve {} e o aparelho segue no automatico."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    zona, ano = ZoneInfo(fuso), datetime.now().year
+    deslocamentos = {datetime(ano, mes, 1, 12, tzinfo=zona).utcoffset() for mes in (1, 7)}
+    if len(deslocamentos) != 1:
+        return {}
+    minutos = -int(deslocamentos.pop().total_seconds() // 60)
+    horas, resto = divmod(abs(minutos), 60)
+    return {'P64': 'customize', 'P246': f"UTC{'+' if minutos >= 0 else '-'}{horas}" + (f':{resto:02d}' if resto else ''),
+            'P143': '0'}
+
+
 def pvalues_travas(senha_admin, modelo='grp'):
     """Travas para telefone de crianca. Referencia oficial: bancada/referencia-pvalues/
     grp260x_config_1.0.7.74.txt (secao Security Settings) e ht80x_v2_config_1.0.15.3.txt.
@@ -224,7 +243,8 @@ def pvalues_fabrica(modelo='grp'):
     if modelo == 'ht':
         pv['P6767'] = '2'
     else:
-        pv.update({'P212': '2', 'P238': '0', 'P145': '1', 'P196': '123', 'P1357': '0', 'P22373': '0', 'P8469': '0'})
+        pv.update({'P212': '2', 'P238': '0', 'P145': '1', 'P196': '123', 'P1357': '0', 'P22373': '0', 'P8469': '0',
+                   'P64': 'auto', 'P143': '1'})
         pv.update(pvalues_teclas([], 'grp'))
     return pv
 

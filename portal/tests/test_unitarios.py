@@ -104,3 +104,13 @@ def test_pvalues_linha_e_cifragem():
         gx.pvalues_linha('h', 'talvez')
     fab = gx.pvalues_fabrica('grp')
     assert fab['P130'] == '0' and fab['P183'] == '0' and fab['P2311'] == '0' and fab['P2367'] == '0'
+
+
+def test_pvalues_relogio_sem_horario_de_verao():
+    # o sinal do formato POSIX e invertido: UTC-3 vira 'UTC+3'
+    assert gx.pvalues_relogio('America/Sao_Paulo') == {'P64': 'customize', 'P246': 'UTC+3', 'P143': '0'}
+    assert gx.pvalues_relogio('America/Manaus')['P246'] == 'UTC+4'
+    assert gx.pvalues_relogio('Asia/Kolkata')['P246'] == 'UTC-5:30'
+    assert gx.pvalues_relogio('Europe/Lisbon') == {}          # com horario de verao, o aparelho segue no automatico
+    fab = gx.pvalues_fabrica('grp')
+    assert fab['P64'] == 'auto' and 'P64' not in gx.pvalues_fabrica('ht')

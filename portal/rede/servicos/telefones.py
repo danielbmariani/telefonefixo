@@ -255,6 +255,8 @@ def gerar_xml(conn, telefone, cfg):
         pv.update(grandstream_xml.pvalues_provisionamento(url_provisionamento(cfg, tok['token']), cfg.PROV_INTERVALO_MIN, modelo_xml))
     pv.update(grandstream_xml.pvalues_travas(telefone['admin_senha'], modelo_xml))
     pv.update(grandstream_xml.pvalues_teclas(amigos_para_teclas(conn, crianca), modelo_xml))
+    if modelo_xml != 'ht':
+        pv.update(grandstream_xml.pvalues_relogio(cfg.TIMEZONE))
     return grandstream_xml.gerar_xml(telefone['mac'], pv, versao=telefone['xml_versao'])
 
 
