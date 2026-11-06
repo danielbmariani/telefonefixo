@@ -275,6 +275,7 @@
     <div class="col-lg-6">
       <ul class="pontos mb-0">
         <li>A ligação entre o telefone e o servidor é cifrada: a sinalização por TLS e a voz por SRTP. Sem cifra, a central não completa a ligação. Nas ligações com celular, o trecho da operadora segue como telefonia comum.</li>
+        <li>O telefone confere a identidade do servidor pelo certificado. Diante de um servidor falso, ele fecha a conexão sem enviar nada.</li>
         <li>O site e a entrega da configuração do telefone funcionam só por HTTPS.</li>
         <li>A senha do site é guardada embaralhada (PBKDF2). Não dá para recuperar a original.</li>
         <li>Cada telefone tem senha de linha própria, menu de configuração travado e senha de administração própria.</li>

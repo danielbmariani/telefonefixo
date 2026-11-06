@@ -24,6 +24,7 @@ def test_por_dentro_e_publica_com_os_desenhos_e_as_secoes(client, app):
                   'ainda não é cifrado', 'O que falta', 'porta 5060'):
         assert frase not in html, frase
     assert 'a sinalização por TLS e a voz por SRTP' in html and 'porta 5061' in html
+    assert 'O telefone confere a identidade do servidor pelo certificado' in html
     # as fontes de terceiros e a copia de seguranca passam a constar da politica de privacidade
     pol = client.get('/privacidade').get_data(as_text=True)
     assert 'Google Fonts e jsDelivr' in pol and 'Cópias de segurança' in pol and 'versão 2026-11-a' in pol
