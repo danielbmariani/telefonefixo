@@ -38,6 +38,7 @@ ligações entre crianças e as que chegam do celular não mudaram. Aplicado com
 |---|---|
 | Telefone para o celular, depois da mudança (12h34, 12 s) | **áudio nos dois lados**, conferido pelo Daniel |
 | Celular para o número fixo (12h34, 7 s) | **áudio nos dois lados**, conferido pelo Daniel |
+| Telefone para o celular, de novo (13h08, 8 s) | **áudio nos dois lados**, conferido pelo Daniel |
 
 ## O que isto prova e o que não prova
 
@@ -46,7 +47,7 @@ ligações entre crianças e as que chegam do celular não mudaram. Aplicado com
 - A explicação do mecanismo é hipótese: a operadora manda áudio antes do atendimento e troca de fluxo quando o
   celular atende; o amortecedor adaptativo deixaria passar os primeiros quadros (os 2 a 5 pacotes) e seguraria o
   resto. Não medimos os carimbos de tempo do RTP para confirmar.
-- Foi uma ligação boa depois de quatro ruins. Como o defeito era intermitente (11h07 funcionou; na B26 uma
+- Foram duas ligações boas depois de quatro ruins. Como o defeito era intermitente (11h07 funcionou; na B26 uma
   captura mostrou metade da voz), vale observar as próximas ligações para celular.
 - As medições detalhadas (contagem por canal) já tinham expirado na hora da ligação de prova; o resultado vem do
   relato de quem ligou e do `call_logs`.
