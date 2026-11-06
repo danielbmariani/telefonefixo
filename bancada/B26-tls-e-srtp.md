@@ -21,16 +21,35 @@ os dois sem cifra.
   `flask sip-cifragem <ID|todas> <modo>` muda a central na hora e manda os parâmetros da linha ao aparelho pelo
   GDMS (etapa `linha` da fila, sem senha nenhuma dentro). Linhas novas nascem no modo de `REDE_SIP_CIFRAGEM`.
 
-## O que falta provar com aparelho real
+## Teste com aparelho real (05/11/2026, noite)
 
-1. Linha de teste em `exigida`: o aparelho recebe os parâmetros pelo GDMS e volta a registrar sozinho, agora por
-   TLS (`ps_contacts.uri` com `transport=TLS`)? Se não voltar em dois minutos, religar o aparelho.
-2. Ligação entre a linha de teste e outra linha, nos dois sentidos: completa, com áudio nos dois lados, e a
-   central mostra SRTP na perna cifrada.
-3. Ligação para o celular (9 + ID) e do celular para a criança continuam funcionando.
-4. Voltar a linha para `nenhuma` e conferir que ela registra por TCP de novo (caminho de volta).
-5. Só então: `flask sip-cifragem todas exigida`, `REDE_SIP_CIFRAGEM=exigida` no `portal.env`, fechar a TCP 5060
-   no iptables e trocar a frase da página `/por-dentro`.
+Uma linha de teste (GRP2601 do Daniel) passou para `exigida` com `flask sip-cifragem`.
+
+| Passo | Resultado |
+|---|---|
+| Aparelho recebe os parâmetros pelo GDMS e volta a registrar sozinho | **sim**: fila do minuto enviou em cerca de 50 s; registro por TLS 65 s depois do comando, sem ninguém tocar no aparelho |
+| Criança liga para o celular (9 + ID) | **sim**: completou, áudio nos dois lados |
+| Celular liga para o número fixo e toca a criança | **sim**, duas vezes: completou, áudio nos dois lados |
+| Voz cifrada no trecho do telefone | **sim**: pacotes de voz de 182 bytes nos dois sentidos (172 do RTP mais 10 da autenticação do SRTP); no trecho da operadora, 172 bytes, sem cifra, como esperado |
+| Volta para `nenhuma` | **sim**: registro por TCP 65 s depois |
+| De novo `exigida` | **sim**: registro por TLS 65 s depois |
+| Ligação entre duas crianças com a linha cifrada | **pendente**: o segundo aparelho não estava à mão |
+
+Como conferir a cifra sem ver segredo nenhum: `tcpdump -n -i any udp portrange 10000-20000` e olhar o tamanho.
+Com G.722 ou PCM de 20 ms, 172 bytes é RTP sem cifra e 182 é SRTP. Na última ligação (19 s) os quatro sentidos
+tiveram a mesma contagem de pacotes, cerca de 950.
+
+Observação: na primeira captura, somada sem separar por tempo, a central parecia ter enviado ao telefone metade da
+voz esperada. O Daniel confirmou áudio nos dois lados e a captura seguinte, em blocos de 10 segundos, fechou a
+conta. Para a próxima vez, capturar sempre por blocos de tempo.
+
+## O que falta
+
+1. Ligação entre duas crianças com pelo menos uma linha cifrada, nos dois sentidos.
+2. `flask sip-cifragem todas exigida` (as outras linhas), conferindo que cada aparelho volta a registrar por TLS;
+   se algum não voltar em 4 minutos, devolver a linha dele para `nenhuma`.
+3. `REDE_SIP_CIFRAGEM=exigida` no `portal.env`, para as linhas novas.
+4. Fechar a TCP 5060 no iptables (o tronco da operadora usa UDP) e trocar a frase da página `/por-dentro`.
 
 Não validamos o certificado no aparelho (P2311 e P2367 ficam no padrão, desligados): a cifra protege contra quem
 escuta a rede, não contra quem consegue se passar pelo servidor. Ligar a validação exige apontar o aparelho para o
