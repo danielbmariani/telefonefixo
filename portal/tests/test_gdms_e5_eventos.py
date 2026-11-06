@@ -292,4 +292,8 @@ def test_cifragem_da_linha_muda_central_e_aparelho(app):
         cfg2 = Config(env={}, AMBIENTE='teste', DATABASE_URL=cfg.DATABASE_URL, SIP_HOST='sip.teste', SIP_CIFRAGEM='exigida', SECRET_KEY='x' * 64)
         cb = criancas.criar(conn, fa, 'bia', cfg2)
         assert criancas.cifragem(conn, cb['id_rede']) == 'exigida'
+        # com a rede em modo exigido, a reconciliacao diaria acusa a linha que ficou para tras (caio, em transicao)
+        from rede.servicos import reconciliacao
+        assert reconciliacao.executar(conn, cfg)['linhas_sem_cifra'] == 0
+        assert reconciliacao.executar(conn, cfg2)['linhas_sem_cifra'] == 1
     assert 'cifragem_alterada' in acoes(app, 'crianca', ca['id']) and 'gdms_linha_enviadas' in acoes(app, 'telefone', t['id'])

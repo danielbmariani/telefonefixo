@@ -10,6 +10,9 @@
 #      da subnet e dividida com a VM antiga e nao e tocada)
 #   4. confere o aperto de mao TLS de fora
 # Os telefones so passam a usar TLS quando a linha muda de modo: flask sip-cifragem <ID|todas> <modo>.
+# Ultimo passo, depois de todas as linhas estarem em modo exigida e registradas por TLS:
+#   FECHAR_TCP=1 deploy/tls.sh   grava REDE_SIP_CIFRAGEM=exigida (linhas novas ja nascem cifradas), reinicia o
+#                                portal e fecha a TCP 5060 no iptables (o tronco da operadora usa UDP e continua).
 set -euo pipefail
 ENVF="${1:-$HOME/.config/rede-aberta/bancada.env}"
 set -a; . "$ENVF"; set +a
@@ -93,4 +96,23 @@ echo "==> 4. aperto de mao TLS visto de fora"
 sleep 5
 openssl s_client -connect "$BANCADA_IP:$PORTA" -servername "$DOMINIO" </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate 2>/dev/null | sed 's/^/    /' \
   || { echo "    sem resposta TLS em $PORTA"; exit 1; }
+if [ "${FECHAR_TCP:-0}" = 1 ]; then
+  echo "==> 5. linhas novas cifradas e porta TCP 5060 fechada"
+  "${SSH[@]}" "sudo bash -s" <<'REMOTO'
+set -euo pipefail
+Q() { sudo -u postgres psql -d telefone -Atc "$1"; }
+SEM=$(Q "select count(*) from criancas c join ps_endpoints e on e.id=c.id_rede where c.ativa and (e.media_encryption::text is distinct from 'sdes' or e.media_encryption_optimistic::text is distinct from 'no')")
+TCP=$(Q "select count(*) from ps_contacts where uri ilike '%transport=tcp%'")
+[ "$SEM" = 0 ] && [ "$TCP" = 0 ] || { echo "    ainda ha $SEM linha(s) fora do modo exigida e $TCP aparelho(s) registrado(s) por TCP; nada foi fechado"; exit 4; }
+if grep -q '^REDE_SIP_CIFRAGEM=' /etc/rede-aberta/portal.env; then sed -i 's/^REDE_SIP_CIFRAGEM=.*/REDE_SIP_CIFRAGEM=exigida/' /etc/rede-aberta/portal.env
+else echo 'REDE_SIP_CIFRAGEM=exigida' >> /etc/rede-aberta/portal.env; fi
+systemctl restart rede-portal; sleep 3
+curl -s -o /dev/null -w "    portal: HTTP %{http_code}\n" http://127.0.0.1:5000/entrar
+while iptables -C INPUT -p tcp -m tcp --dport 5060 -j ACCEPT 2>/dev/null; do iptables -D INPUT -p tcp -m tcp --dport 5060 -j ACCEPT; done
+netfilter-persistent save >/dev/null 2>&1
+echo "    regras de entrada para SIP agora:"; iptables -S INPUT | grep -E -- "--dport (5060|5061) " | sed 's/^/      /'
+REMOTO
+  sleep 3
+  if timeout 6 bash -c "exec 3<>/dev/tcp/$BANCADA_IP/5060" 2>/dev/null; then echo "    ATENCAO: TCP 5060 ainda responde de fora"; else echo "    de fora, TCP 5060 nao responde mais"; fi
+fi
 echo "==> fim"

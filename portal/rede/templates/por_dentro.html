@@ -26,7 +26,7 @@
       <li><a href="#ligacao">O que acontece numa ligação</a></li>
       <li><a href="#celular">Ligações com o celular da família</a></li>
       <li><a href="#dados">Onde fica cada dado</a></li>
-      <li><a href="#seguranca">Segurança: o que tem e o que falta</a></li>
+      <li><a href="#seguranca">Segurança</a></li>
       <li><a href="#codigo">O código</a></li>
     </ol>
   </nav>
@@ -95,7 +95,7 @@
         <li>A Grandstream responde com duas coisas: um endereço único no nosso servidor e as travas do aparelho (menu fechado e senha de administração própria). O apelido, o ID e a senha da linha não passam por ela.</li>
         <li>O telefone pede a configuração nesse endereço, por HTTPS. O endereço é único para aquele aparelho e só responde a pedido feito com o MAC dele.</li>
         <li>O servidor entrega o ID, o apelido, a senha da linha e o endereço da central.</li>
-        <li>O telefone se registra na central: abre uma conexão com o servidor (protocolo SIP, por TCP, porta 5060), informa o ID e prova que tem a senha, sem enviá-la. A partir daí ele liga e recebe.</li>
+        <li>O telefone se registra na central: abre uma conexão cifrada com o servidor (protocolo SIP sobre TLS, porta 5061), informa o ID e prova que tem a senha, sem enviá-la. A partir daí ele liga e recebe.</li>
       </ol>
       <p>Depois disso:</p>
       <ul class="pontos mb-0">
@@ -108,7 +108,7 @@
     <div class="col-lg-6">
       <figure class="figura">
         <svg viewBox="0 0 360 452" role="img" aria-labelledby="fig-reg-t">
-          <title id="fig-reg-t">Seis trocas de mensagem: o servidor cadastra o aparelho na Grandstream; o telefone pergunta à Grandstream se tem configuração; a Grandstream responde com o endereço do servidor e as travas; o telefone pede a configuração ao servidor; o servidor entrega ID, apelido e senha da linha; o telefone se registra na central e renova o registro a cada 2 minutos.</title>
+          <title id="fig-reg-t">Seis trocas de mensagem: o servidor cadastra o aparelho na Grandstream; o telefone pergunta à Grandstream se tem configuração; a Grandstream responde com o endereço do servidor e as travas; o telefone pede a configuração ao servidor; o servidor entrega ID, apelido e senha da linha; o telefone se registra na central, por conexão cifrada, e renova o registro a cada 2 minutos.</title>
           <path class="vida" d="M60 42V444M180 42V444M300 42V444"/>
           <rect class="no" x="8" y="8" width="104" height="34" rx="8"/><text class="t" x="60" y="30">Telefone</text>
           <rect class="fora" x="128" y="8" width="104" height="34" rx="8"/><text class="t" x="180" y="30" style="font-size:14px">Grandstream</text>
@@ -134,7 +134,7 @@
           <path class="seta site" d="M288 320H63" marker-end="url(#pd-site)"/>
           <circle class="n site" cx="300" cy="320" r="11"/><text class="nt" x="300" y="324.5">5</text>
 
-          <text class="s halo" x="180" y="368">registro na central (SIP)</text>
+          <text class="s halo" x="180" y="368">registro cifrado na central</text>
           <path class="seta voz" d="M72 378H297" marker-end="url(#pd-voz)"/>
           <circle class="n voz" cx="60" cy="378" r="11"/><text class="nt" x="60" y="382.5">6</text>
 
@@ -154,7 +154,7 @@
       <p>A criança disca os 6 números do amigo e aperta <span class="mono">#</span>. O pedido chega à central, que consulta o banco de dados antes de fazer qualquer telefone tocar.</p>
       <p>Se as cinco respostas forem sim, o telefone do amigo toca por até 1 minuto. Se uma for não, ninguém toca: a criança ouve uma mensagem gravada dizendo o motivo, e a tentativa aparece no histórico da família como bloqueada.</p>
       <ul class="pontos">
-        <li><strong>A voz passa pelo servidor.</strong> Um telefone nunca se conecta direto ao outro, então uma casa não descobre o endereço de internet da outra.</li>
+        <li><strong>A voz passa pelo servidor.</strong> Ela vai cifrada entre cada telefone e o servidor. Um telefone nunca se conecta direto ao outro, então uma casa não descobre o endereço de internet da outra.</li>
         <li><strong>Nada é gravado.</strong> A central não tem função de gravação. Fica só o registro: quem ligou, para quem, quando e quanto durou.</li>
       </ul>
       <h3 class="mt-4">O que mais dá para discar</h3>
@@ -270,24 +270,22 @@
 </section>
 
 <section class="bloco" id="seguranca">
-  <div class="bloco-cabeca"><h2>6. Segurança: o que tem e o que falta</h2></div>
+  <div class="bloco-cabeca"><h2>6. Segurança</h2></div>
   <div class="row g-4">
     <div class="col-lg-6">
-      <h3>O que tem</h3>
       <ul class="pontos mb-0">
+        <li>A ligação entre o telefone e o servidor é cifrada: a sinalização por TLS e a voz por SRTP. Sem cifra, a central não completa a ligação. Nas ligações com celular, o trecho da operadora segue como telefonia comum.</li>
         <li>O site e a entrega da configuração do telefone funcionam só por HTTPS.</li>
         <li>A senha do site é guardada embaralhada (PBKDF2). Não dá para recuperar a original.</li>
         <li>Cada telefone tem senha de linha própria, menu de configuração travado e senha de administração própria.</li>
+      </ul>
+    </div>
+    <div class="col-lg-6">
+      <ul class="pontos">
         <li>A central só completa ligação entre telefones cadastrados e com amizade aceita. Quem está de fora não tem como ligar para dentro, a não ser de um celular que a própria família cadastrou.</li>
         <li>O acesso ao servidor é só por chave, sem senha, com bloqueio automático de quem insiste em tentar entrar.</li>
         <li>O registro de auditoria só aceita acréscimos. Nem o próprio site consegue alterar ou apagar o que já foi anotado.</li>
         <li>O banco de dados é copiado todo dia para fora do servidor, cifrado com uma chave que não fica no servidor.</li>
-      </ul>
-    </div>
-    <div class="col-lg-6">
-      <h3>O que falta</h3>
-      <ul class="pontos">
-        <li>O trecho entre o telefone e o servidor (SIP e voz) ainda não é cifrado, como acontece numa linha fixa comum. Os aparelhos aceitam criptografia (TLS e SRTP). É uma melhoria possível, ainda não feita.</li>
       </ul>
       <p class="mb-0">Encontrou uma falha? Escreva para <a href="mailto:{{ contato }}">{{ contato }}</a>.</p>
     </div>

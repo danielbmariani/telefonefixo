@@ -28,7 +28,7 @@ def _caso(conn, tipo, descricao, detalhes, telefone_id=None, crianca_id=None, gr
 def executar(conn, cfg, gdms_macs=None, ref=None):
     """gdms_macs: conjunto de MACs (12 hex) na organizacao do GDMS, se o chamador conseguiu listar."""
     ref = ref or agora()
-    r = {'ramais_sem_linhas': 0, 'linhas_sem_crianca': 0, 'tokens_divergentes': 0,
+    r = {'ramais_sem_linhas': 0, 'linhas_sem_crianca': 0, 'linhas_sem_cifra': 0, 'tokens_divergentes': 0,
          'estados_sem_fato': 0, 'gdms_orfaos': 0, 'gdms_faltando': 0, 'gdms_verificado': gdms_macs is not None}
 
     # 1. Asterisk x banco
@@ -39,6 +39,11 @@ def executar(conn, cfg, gdms_macs=None, ref=None):
             r['ramais_sem_linhas'] += 1
             _caso(conn, 'ramal_inconsistente', f'Criança {c["id_rede"]} ativa sem as 3 linhas ps_*', {'id_rede': c['id_rede']},
                   crianca_id=c['id'], gravidade='alta')
+        elif cfg.SIP_CIFRAGEM == 'exigida' and svc_cri.cifragem(conn, c['id_rede']) != 'exigida':
+            # o site promete ligacao cifrada: linha fora do modo exigido vira caso para o operador
+            r['linhas_sem_cifra'] += 1
+            _caso(conn, 'linha_sem_cifra', f'Criança {c["id_rede"]} com a linha fora do modo cifrado (flask sip-cifragem)',
+                  {'id_rede': c['id_rede']}, crianca_id=c['id'], gravidade='alta')
     for (idr,) in conn.execute(select(db.ps_endpoints.c.id)).all():
         if idr not in ids_ativos and idr.isdigit() and len(idr) == 6:
             r['linhas_sem_crianca'] += 1

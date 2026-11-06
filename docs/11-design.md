@@ -190,10 +190,10 @@ entender onde fica cada dado e como o telefone se registra.
   (região, transportes SIP, modo "ponteiro" do GDMS, cópia diária, prazos de retenção). Mudou a central, o
   provisionamento ou a política de privacidade, a página tem de ser revista. Os prazos repetem a política de
   privacidade, que continua sendo o texto que vale; o do histórico vem de `RETENCAO_CHAMADAS_DIAS`.
-- **O que a página admite que falta** (revisto pelo Daniel no mesmo dia): fica só "SIP e voz ainda sem
-  criptografia entre o telefone e o servidor", até a migração para TLS e SRTP terminar (doc 14); aí a frase sai
-  e entra, em "O que tem", que a ligação é cifrada. A cópia de segurança fora do servidor foi feita e a frase
-  saiu. A frase sobre auditoria externa saiu. A menção ao Google Fonts e ao jsDelivr saiu da página e foi para
+- **O que a página admitia que faltava** (revisto pelo Daniel no mesmo dia): nada mais. A ligação passou a ser
+  cifrada com TLS e SRTP em todas as linhas (doc 14, bancada B26) e o bloco virou só "Segurança", dizendo isso
+  e avisando que o trecho da operadora, nas ligações com celular, segue como telefonia comum. A cópia de
+  segurança fora do servidor foi feita e a frase saiu. A frase sobre auditoria externa saiu. A menção ao Google Fonts e ao jsDelivr saiu da página e foi para
   a política de privacidade 2026-11-a (doc 13), junto com as cópias de segurança.
 - Página inicial, mesma data: a pergunta sobre celular e o bloco "Só quem a família aprovou" passam a citar
   os celulares da própria família, para não contradizer a aba Celulares.

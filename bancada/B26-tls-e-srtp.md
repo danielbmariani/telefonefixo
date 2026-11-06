@@ -45,11 +45,16 @@ conta. Para a próxima vez, capturar sempre por blocos de tempo.
 
 ## O que falta
 
-1. Ligação entre duas crianças com pelo menos uma linha cifrada, nos dois sentidos.
-2. `flask sip-cifragem todas exigida` (as outras linhas), conferindo que cada aparelho volta a registrar por TLS;
-   se algum não voltar em 4 minutos, devolver a linha dele para `nenhuma`.
-3. `REDE_SIP_CIFRAGEM=exigida` no `portal.env`, para as linhas novas.
-4. Fechar a TCP 5060 no iptables (o tronco da operadora usa UDP) e trocar a frase da página `/por-dentro`.
+1. Ligação entre duas crianças, nos dois sentidos, conferida por quem estiver com os aparelhos.
+
+## Migração de todas as linhas (05/11/2026, 21h10)
+
+Com o sim do Daniel: a segunda linha com aparelho passou para `exigida` e registrou por TLS em 57 s, sozinha (o
+roteiro devolveria a linha ao modo antigo se ela não voltasse em 4 minutos). As linhas sem aparelho conectado
+passaram para `exigida` só na central. Depois, `FECHAR_TCP=1 deploy/tls.sh`: `REDE_SIP_CIFRAGEM=exigida` (linhas
+novas já nascem cifradas), TCP 5060 fechada no iptables e conferida de fora. Dois minutos depois os dois aparelhos
+tinham renovado o registro por TLS e o tronco da operadora (UDP) seguia registrado. A página `/por-dentro` passou
+a dizer que a ligação entre o telefone e o servidor é cifrada.
 
 Não validamos o certificado no aparelho (P2311 e P2367 ficam no padrão, desligados): a cifra protege contra quem
 escuta a rede, não contra quem consegue se passar pelo servidor. Ligar a validação exige apontar o aparelho para o

@@ -20,8 +20,10 @@ def test_por_dentro_e_publica_com_os_desenhos_e_as_secoes(client, app):
     # mesmas regras de texto do resto do site: sem travessao; nada de dinheiro para as familias
     assert '—' not in html and '–' not in html and 'R$' not in html
     # decisoes de 05/11: saem da pagina as frases sobre auditoria externa, copia so no servidor e fontes de terceiros
-    for frase in ('auditoria de segurança feita por terceiros', 'Falta uma cópia em outro lugar', 'Google Fonts'):
+    for frase in ('auditoria de segurança feita por terceiros', 'Falta uma cópia em outro lugar', 'Google Fonts',
+                  'ainda não é cifrado', 'O que falta', 'porta 5060'):
         assert frase not in html, frase
+    assert 'a sinalização por TLS e a voz por SRTP' in html and 'porta 5061' in html
     # as fontes de terceiros e a copia de seguranca passam a constar da politica de privacidade
     pol = client.get('/privacidade').get_data(as_text=True)
     assert 'Google Fonts e jsDelivr' in pol and 'Cópias de segurança' in pol and 'versão 2026-11-a' in pol

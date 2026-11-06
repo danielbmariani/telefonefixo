@@ -89,7 +89,10 @@ duplicar os do Flask; `www` redireciona; após o reinício, tronco registrado e 
   do operador, 14 dias de guarda feitos pelo próprio bucket, servidor só com permissão de gravar, aviso por e-mail se
   atrasar mais de 36 horas. Primeira cópia enviada e aberta com a chave local no mesmo dia. Risco que fica: o bucket
   está na mesma conta Oracle do servidor; um problema na conta inteira atinge os dois.
-- [ ] SIP por TLS e SRTP (05/11/2026): central pronta (`deploy/tls.sh`: `transport-tls` na 5061, certificado do site,
-  NSG só desta máquina) e portal com modo por linha (`flask sip-cifragem`). Falta o teste com aparelho real
-  (`bancada/B26-tls-e-srtp.md`), migrar as linhas existentes, pôr `REDE_SIP_CIFRAGEM=exigida` e fechar a TCP 5060.
+- [x] SIP por TLS e SRTP (05/11/2026): `deploy/tls.sh` (`transport-tls` na 5061, certificado do site, NSG só desta
+  máquina) e modo por linha no portal (`flask sip-cifragem`). Provado com aparelho real (`bancada/B26-tls-e-srtp.md`),
+  todas as linhas em modo `exigida`, `REDE_SIP_CIFRAGEM=exigida` para as novas, TCP 5060 fechada no iptables (a
+  security list da Oracle ainda a libera porque é dividida com a VM antiga). A reconciliação diária abre caso se
+  alguma linha sair do modo cifrado. Falta: ligação entre duas crianças conferida por alguém, e validar o
+  certificado no aparelho (hoje a cifra protege de quem escuta, não de quem se passa pelo servidor).
 - [ ] Repetir esta auditoria depois de qualquer mudança no dialplan ou nas rotas do portal (os testes em `tests/test_seguranca.py`, `test_lgpd.py` e o roteiro `scratchpad/audit_dyn.py` cobrem o essencial).
