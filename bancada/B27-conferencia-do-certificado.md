@@ -74,4 +74,4 @@ Para desfazer: voltar `REDE_SIP_CERT_LINHAS` no `portal.env`, reiniciar o portal
 No fuso automático o GRP2601 aplica ao Brasil a regra antiga de horário de verão e fica uma hora adiantado de
 novembro a fevereiro. A configuração passou a mandar fuso fixo (`grandstream_xml.pvalues_relogio`: P64=customize,
 P246=`UTC+3`, P143=0), calculado de `REDE_TIMEZONE`. Enviado à linha de teste pelo GDMS em 06/11; os outros
-aparelhos recebem na busca diária de configuração. Falta alguém olhar o visor para confirmar a hora.
+aparelhos recebem na busca diária de configuração. O Daniel conferiu o visor da linha de teste: hora certa.
