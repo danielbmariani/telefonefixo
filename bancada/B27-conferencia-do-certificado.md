@@ -41,8 +41,14 @@ O que o teste mostra:
 - A conferência do nome funciona e depende do P47: com o IP, o aparelho fica sem registro. Por isso o nome e as
   duas conferências têm de ir sempre juntos, na mesma configuração.
 
-Não testado: só P2311=1 contra certificado autoassinado com o nome certo (em produção as duas vão juntas), e
-uma ligação com a conferência ligada (o registro e a ligação usam a mesma conexão; falta alguém ligar).
+Não testado: só P2311=1 contra certificado autoassinado com o nome certo (em produção as duas vão juntas).
+
+Depois, no mesmo dia, com a conferência ligada: ligação para o celular às 11h07 com áudio nos dois lados; aparelho
+tirado da tomada e religado às 11h10, buscou a configuração no nosso servidor e registrou sozinho. As ligações
+seguintes ficaram sem áudio num sentido por outro motivo, na central (`B28-audio-do-celular-e-jitterbuffer.md`).
+
+Observação: o relógio do aparelho estava uma hora adiantado (fuso com horário de verão). Não atrapalhou a
+conferência, que só falharia com o relógio fora da validade do certificado.
 
 ## Como ficou no código
 
@@ -61,7 +67,5 @@ Piloto: só a linha de teste confere. As outras seguem cifradas, sem conferir.
 
 ## O que falta
 
-1. Uma ligação na linha de teste com a conferência ligada, e tirar o aparelho da tomada e ligar de novo: ele deve
-   buscar a configuração e voltar sozinho (prova a hora certa do aparelho e a configuração do nosso servidor).
-2. Com o sim do Daniel: `REDE_SIP_CERT_LINHAS=todas`, reiniciar o portal e mandar a etapa `linha` aos outros
+1. Com o sim do Daniel: `REDE_SIP_CERT_LINHAS=todas`, reiniciar o portal e mandar a etapa `linha` aos outros
    aparelhos, conferindo que cada um volta a registrar. Para desfazer: tirar a linha do `portal.env` e reenviar.

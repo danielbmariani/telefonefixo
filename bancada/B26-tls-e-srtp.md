@@ -61,3 +61,6 @@ escuta a rede, não contra quem consegue se passar pelo servidor. Ligar a valida
 nome `telefonefixo.org` em vez do IP e testar se o GRP2601 confia na autoridade do Let's Encrypt.
 
 Feito em 06/11/2026 na linha de teste: `B27-conferencia-do-certificado.md`.
+
+Em 06/11/2026 às 6h29 o Asterisk reiniciou sozinho (atualização automática de segurança do sistema). O
+`transport-tls` subiu da configuração e os dois aparelhos voltaram a registrar por TLS sem ninguém mexer.
