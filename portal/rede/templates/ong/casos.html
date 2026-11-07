@@ -7,8 +7,13 @@
   <div class="d-flex justify-content-between"><div><span class="badge bg-{{ 'danger' if c.gravidade == 'alta' else ('warning text-dark' if c.gravidade == 'media' else 'secondary') }}">{{ c.tipo }}</span>
     <small class="text-muted ms-2">#{{ c.id }} · {{ c.criado_em|datahora }}</small></div>
     {% if c.telefone_id %}<a class="small" href="{{ url_for('admin.linha_tempo', telefone_id=c.telefone_id) }}">linha do tempo</a>{% endif %}</div>
+  {% if c.tipo == 'mensagem' and c.detalhes %}
+  <div class="mt-1"><strong>{{ c.detalhes.nome }}</strong> <a href="mailto:{{ c.detalhes.email }}">{{ c.detalhes.email }}</a>{% if c.detalhes.conta %} <span class="badge text-bg-light border">tem conta</span>{% endif %}</div>
+  <blockquote class="mb-1 mt-1 ps-3 border-start border-3" style="white-space: pre-wrap">{{ c.detalhes.mensagem }}</blockquote>
+  {% else %}
   <div class="mt-1">{{ c.descricao }}</div>
   {% if c.detalhes %}<pre class="small text-muted mb-1">{{ c.detalhes }}</pre>{% endif %}
+  {% endif %}
   {% if c.estado == 'aberto' %}
   <form method="post" class="d-flex gap-2 mt-2"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="caso_id" value="{{ c.id }}">
     <input class="form-control form-control-sm" name="motivo" placeholder="O que foi feito (obrigatório)" required><button class="btn btn-sm btn-success">Resolver</button></form>

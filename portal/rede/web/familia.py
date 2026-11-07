@@ -32,10 +32,24 @@ def privacidade():
                            versao=_cfg().VERSAO_PRIVACIDADE)
 
 
-@bp.route('/contato')
+@bp.route('/contato', methods=['GET', 'POST'])
 def contato():
-    """Canal publico de atendimento e de denuncias (ECA Digital, arts. 28 e 29; LGPD, canal do titular)."""
-    return render_template('contato.html', contato=_cfg().CONTATO_EMAIL, privacidade=_cfg().PRIVACIDADE_EMAIL)
+    """Canal publico de atendimento e de denuncias (ECA Digital, arts. 28 e 29; LGPD, canal do titular).
+    O formulario vira um caso no painel e um e-mail de aviso (servicos/mensagens.py)."""
+    from ..servicos import mensagens as svc_msg
+    fam = contas.por_id(conn(), session['familia_id']) if 'familia_id' in session else None
+    valores = {'nome': fam['nome'] if fam else '', 'email': fam['email'] if fam else '', 'mensagem': ''}
+    if request.method == 'POST':
+        valores = {k: request.form.get(k, '') for k in valores}
+        if request.form.get('site'):          # campo escondido: so robo preenche
+            return redirect(url_for('familia.contato'))
+        try:
+            svc_msg.receber(conn(), _cfg(), current_app.mailer, valores['nome'], valores['email'], valores['mensagem'], g.ip, fam)
+            flash('Mensagem recebida. Respondemos pelo e-mail informado em até 48 horas úteis.', 'success')
+            return redirect(url_for('familia.contato'))
+        except ErroUsuario as e:
+            flash(str(e), 'danger')
+    return render_template('contato.html', contato=_cfg().CONTATO_EMAIL, privacidade=_cfg().PRIVACIDADE_EMAIL, valores=valores)
 
 
 @bp.route('/por-dentro')
