@@ -29,7 +29,6 @@
 {% endif %}
 <h1 class="h3 mb-2">Conectar o telefone</h1>
 <p>Vire o telefone Grandstream e olhe a etiqueta embaixo. Copie os dois códigos na ordem em que aparecem: primeiro o S/N, depois o MAC. <strong>Não ligue o telefone na tomada ainda.</strong></p>
-<p class="text-muted">Um telefone para cada criança. Outra criança precisa de outro telefone.</p>
 <div class="card mb-3"><div class="card-body">
 <form method="post" data-enviando="Registrando…" data-aviso="Estamos registrando o telefone na Grandstream. Leva uns 10 segundos, não feche a página."><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="informar">
   {% include '_modelos.html' %}
@@ -102,7 +101,7 @@
       {% if d.chave == 'ativo' and d.estado in ('agora', 'feito') %}
         <div class="d-flex flex-wrap gap-2 mt-2">
           <a class="btn btn-primary" href="{{ url_for('familia.contatos', crianca_id=crianca.id) }}"><i class="bi bi-people"></i> Autorizar amigos</a>
-          <a class="btn btn-outline-secondary" href="{{ url_for('familia.crianca_nova') }}">Cadastrar outro telefone para outra criança</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('familia.crianca_nova') }}">Cadastrar outro telefone</a>
         </div>
       {% endif %}
 

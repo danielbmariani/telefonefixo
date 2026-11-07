@@ -1,5 +1,5 @@
 {# Barra de progresso do cadastro. Uso: {% include "_passos.html" with context %} com a variável passo_atual (1..5). #}
-{% set nomes = ['Conta', 'E-mail', 'Aceite', 'Criança', 'Telefone'] %}
+{% set nomes = ['Conta', 'E-mail', 'Aceite', 'Apelido', 'Telefone'] %}
 <ol class="passos" aria-label="Etapas do cadastro">
 {% for n in nomes %}
   {% set i = loop.index %}
