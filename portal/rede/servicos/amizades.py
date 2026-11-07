@@ -7,7 +7,7 @@ from sqlalchemy import select, insert, update, and_, or_, func
 from .. import db, auditoria, ids
 from ..tempo import agora
 from .contas import ErroUsuario
-from . import criancas as svc_cri
+from . import criancas as svc_cri, telefones as svc_tel
 
 
 def _par(conn, a, b):
@@ -166,7 +166,9 @@ def listar(conn, crianca_id):
         outro = svc_cri.por_id(conn, outro_id)
         item = {'amizade_id': a['id'], 'apelido': outro['apelido'] if outro else '?',
                 'id_rede': outro['id_rede'] if outro else '', 'id_fmt': ids.formatar_id(outro['id_rede']) if outro else '',
-                'desde': a['respondido_em'] or a['criado_em'], 'mensagem': a['mensagem'] if a['estado'] == 'pendente' else None}
+                'desde': a['respondido_em'] or a['criado_em'], 'mensagem': a['mensagem'] if a['estado'] == 'pendente' else None,
+                # amigo sem aparelho na rede (removido ou ainda nao conectado): a pagina avisa e o cartao nao lista
+                'tem_telefone': bool(outro and svc_tel.listar_da_crianca(conn, outro['id']))}
         if a['estado'] == 'aceita':
             out['amigos'].append(item)
         elif a['estado'] == 'pendente':

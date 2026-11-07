@@ -7,7 +7,7 @@ td{padding:10px 12px;border-bottom:1px solid #eee;font-size:16px}td.ext{font-siz
 <body>
 <h1>{{ crianca.apelido }}</h1><div>Meu número:</div><div class="id">{{ crianca.id_rede|idfmt }}</div>
 <table><thead><tr><th>Amigo</th><th>Discar</th></tr></thead><tbody>
-{% for a in amigos %}<tr><td>{{ a.apelido }}</td><td class="ext">{{ a.id_rede }}#</td></tr>{% endfor %}
+{% for a in amigos if a.tem_telefone %}<tr><td>{{ a.apelido }}</td><td class="ext">{{ a.id_rede }}#</td></tr>{% endfor %}
 {% for nome, disca in celulares %}<tr><td>{{ nome }} (celular)</td><td class="ext">{{ disca }}#</td></tr>{% endfor %}
 {% for nome, disca in grupos %}<tr><td>{{ nome }} (grupo)</td><td class="ext">{{ disca }}#</td></tr>{% endfor %}
 <tr><td>Hora certa</td><td class="ext">100#</td></tr></tbody></table>

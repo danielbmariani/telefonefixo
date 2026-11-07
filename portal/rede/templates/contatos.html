@@ -32,7 +32,7 @@
   <p class="bloco-sub">Quem {{ crianca.apelido }} pode ligar e de quem recebe ligação. No telefone, disca o número e <span class="mono">#</span>.</p>
   <ul class="lista">
   {% for c in lst.amigos %}
-    <li><div><strong>{{ c.apelido }}</strong> <span class="discar">discar <span class="mono">{{ c.id_rede }}#</span></span></div>
+    <li><div><strong>{{ c.apelido }}</strong> {% if c.tem_telefone %}<span class="discar">discar <span class="mono">{{ c.id_rede }}#</span></span>{% else %}<span class="text-muted small">sem telefone na rede agora: não dá para ligar</span>{% endif %}</div>
       <div class="acoes">{{ botao(c.amizade_id, 'remover', 'Remover', 'btn-link', 'Remover amizade?') }}{{ botao(c.amizade_id, 'bloquear', 'Bloquear', 'btn-link perigo', 'Bloquear este contato?') }}</div></li>
   {% endfor %}
   </ul>

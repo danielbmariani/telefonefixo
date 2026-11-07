@@ -152,3 +152,24 @@ def test_link_do_email_abre_pagina_so_com_o_pedido(client, app):
     r = post(client, f'/crianca/{ca}/contatos', acao='aceitar', amizade_id=aid, follow_redirects=True)
     assert 'Amizade aceita' in r.get_data(as_text=True)
     assert 'já foi respondido' in client.get(f'/crianca/{ca}/contatos/pedido/{aid}').get_data(as_text=True)
+
+
+def test_amigo_sem_telefone_aparece_avisado_e_fora_do_cartao(client, app):
+    from conftest import MAC, SN
+    ca, cb = _duas_familias(client, app)
+    A = crianca_row(app, ca)
+    post(client, f'/crianca/{cb}/contatos', acao='pedir', id_rede=A['id_rede'])
+    _login(client, app, 'a@x.com')
+    with app.engine.begin() as c:
+        aid = c.execute(text('SELECT id FROM amizades')).scalar()
+    post(client, f'/crianca/{ca}/contatos', acao='aceitar', amizade_id=aid)
+    html = client.get(f'/crianca/{ca}/contatos').get_data(as_text=True)
+    assert 'bia02' in html and 'sem telefone na rede' in html and 'discar' not in html
+    assert 'bia02' not in client.get(f'/crianca/{ca}/cartao').get_data(as_text=True)
+    # bia ganha um telefone: volta a aparecer com o numero
+    _login(client, app, 'b@x.com')
+    post(client, f'/crianca/{cb}/telefone', acao='informar', mac=MAC, serial=SN)
+    _login(client, app, 'a@x.com')
+    html = client.get(f'/crianca/{ca}/contatos').get_data(as_text=True)
+    assert 'sem telefone na rede' not in html and 'discar' in html
+    assert 'bia02' in client.get(f'/crianca/{ca}/cartao').get_data(as_text=True)
