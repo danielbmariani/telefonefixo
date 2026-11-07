@@ -18,7 +18,7 @@
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="remover"><input type="hidden" name="id" value="{{ t.id }}">
       <button class="btn btn-outline-danger btn-sm">Remover</button></form>
   </div>
-  <p class="mb-1">No telefone de {{ crianca.apelido }}, para ligar para {{ t.apelido or 'este celular' }}, disque <span class="mono discar-caixa">{{ prefixos[t.posicao] }}{{ crianca.id_rede }}#</span></p>
+  <p class="mb-1">No telefone de {{ crianca.apelido }}, para ligar para <strong>{{ t.apelido or 'este celular' }}</strong>, disque <span class="mono discar-caixa">{{ prefixos[t.posicao] }}{{ crianca.id_rede }}#</span></p>
   <p class="mb-0 small text-muted">É o {{ prefixos[t.posicao] }} seguido do ID de {{ crianca.apelido }}. Deste celular, para ligar para {{ crianca.apelido }}: <span class="mono">{{ numero_rede }}</span>.</p>
 </div></div>
 {% endfor %}
