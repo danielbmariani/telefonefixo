@@ -8,15 +8,24 @@
   <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.auditoria_view') }}">Auditoria</a>
 </div>
 <div class="row g-3">
+  <div class="col-12"><div class="card"><div class="card-body"><h6>Rede</h6>
+    <p class="mb-3"><span class="fs-4 fw-bold">{{ uso.telefones.cadastrados }}</span> telefone{{ 's' if uso.telefones.cadastrados != 1 }} cadastrado{{ 's' if uso.telefones.cadastrados != 1 }}
+      <span class="text-muted">· {% if uso.telefones.conectados is not none %}{{ uso.telefones.conectados }} conectado{{ 's' if uso.telefones.conectados != 1 }} agora · {% endif %}{{ uso.telefones.ativos }} já {{ 'fizeram' if uso.telefones.ativos != 1 else 'fez' }} ligação</span></p>
+    <div class="table-responsive"><table class="table table-sm mb-1"><thead><tr><th>Ligações</th><th class="text-end" colspan="2">{{ uso.mes }}</th><th class="text-end d-none d-sm-table-cell" colspan="2">{{ uso.mes_anterior }}</th></tr>
+      <tr class="small text-muted"><th></th><th class="text-end fw-normal">completadas</th><th class="text-end fw-normal">minutos</th><th class="text-end fw-normal d-none d-sm-table-cell">completadas</th><th class="text-end fw-normal d-none d-sm-table-cell">minutos</th></tr></thead>
+      {% for chave, nome in uso.tipos %}{% set a = uso.atual[chave] %}{% set b = uso.anterior[chave] %}
+      <tr><td>{{ nome }}</td><td class="text-end fw-bold">{{ a.ligacoes }}{% if a.nao_completadas %} <span class="text-muted fw-normal small">+{{ a.nao_completadas }} sem completar</span>{% endif %}</td><td class="text-end fw-bold">{{ a.minutos }}</td>
+        <td class="text-end d-none d-sm-table-cell">{{ b.ligacoes }}</td><td class="text-end d-none d-sm-table-cell">{{ b.minutos }}</td></tr>
+      {% endfor %}
+    </table></div>
+    <small class="text-muted">Só totais da rede. O que cada criança ligou fica no histórico da própria família.</small>
+  </div></div></div>
   <div class="col-12"><div class="card {% if celular.pct is not none and celular.pct >= 80 %}border-warning{% endif %}"><div class="card-body"><h6>Celulares em {{ celular.mes }} (estimativa)</h6>
     <p class="mb-2"><span class="fs-4 fw-bold">R$ {{ '%.2f'|format(celular.gasto) }}</span>{% if celular.pct is not none %} de R$ {{ '%.2f'|format(celular.teto_rede) }} <span class="text-muted">({{ celular.pct }}% do orçamento do mês)</span>{% endif %}
       <span class="text-muted">· projeção até o fim do mês: R$ {{ '%.2f'|format(celular.projecao) }}</span></p>
     {% if celular.pct is not none %}<div class="progress mb-2" role="progressbar" aria-label="Orçamento do mês usado" aria-valuenow="{{ celular.pct }}" aria-valuemin="0" aria-valuemax="100" style="height: 8px"><div class="progress-bar {% if celular.pct >= 80 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ [celular.pct, 100]|min }}%"></div></div>{% endif %}
     <p class="small text-muted mb-2">{{ celular.criancas_com_celular }} criança{{ 's' if celular.criancas_com_celular != 1 }} com celular cadastrado · teto por criança neste mês: R$ {{ '%.2f'|format(celular.teto_crianca) }} · tarifas usadas na conta: R$ {{ '%.2f'|format(celular.tarifa_saida) }}/min para o celular e R$ {{ '%.2f'|format(celular.tarifa_entrada) }}/min do celular. O valor real é o que a operadora debita.</p>
-    {% if celular.linhas %}
-    <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Criança</th><th class="text-end d-none d-sm-table-cell">Ligações</th><th class="text-end">Min. para o celular</th><th class="text-end">Min. do celular</th><th class="text-end text-nowrap">Gasto</th></tr></thead>
-      {% for l in celular.linhas %}<tr><td>{{ l.apelido }} <span class="text-muted font-monospace small">{{ l.id_rede }}</span></td><td class="text-end d-none d-sm-table-cell">{{ l.ligacoes }}</td><td class="text-end">{{ l.min_saida }}</td><td class="text-end">{{ l.min_entrada }}</td><td class="text-end fw-bold text-nowrap">R$ {{ '%.2f'|format(l.gasto) }}</td></tr>{% endfor %}
-    </table></div>
+    {% if celular.totais.ligacoes %}<span class="small">{{ celular.totais.ligacoes }} ligaç{{ 'ões' if celular.totais.ligacoes != 1 else 'ão' }} com celular: {{ celular.totais.min_saida }} min para o celular, {{ celular.totais.min_entrada }} min do celular.</span>
     {% else %}<span class="text-muted small">Nenhuma ligação com celular atendida neste mês.</span>{% endif %}
   </div></div></div>
   <div class="col-md-6"><div class="card"><div class="card-body"><h6>Funil (30 dias)</h6>

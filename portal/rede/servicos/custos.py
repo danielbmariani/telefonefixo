@@ -211,26 +211,20 @@ def verificar_alertas(conn, cfg, mailer, ref=None):
 
 
 def resumo_mes(conn, cfg, ref=None):
-    """Para o painel: quanto a rede gastou com celular no mes, a projecao ate o fim do mes e o uso por crianca."""
+    """Para o painel: quanto a rede gastou com celular no mes, a projecao ate o fim do mes e os totais de uso.
+    Sem discriminar crianca: o painel mostra a rede, nao as familias."""
     ref = ref or agora()
     hoje = em_sp(ref)
     mes = hoje.strftime('%Y-%m')
     dias_no_mes = calendar.monthrange(hoje.year, hoje.month)[1]
     gasto = gasto_rede_mes(conn, cfg, ref)
-    linhas = []
-    for c in conn.execute(select(db.criancas.c.id_rede, db.criancas.c.apelido).where(db.criancas.c.ativa.is_(True))).mappings().all():
-        rows = _rows(conn, "(caller_ext = :e OR callee_ext = :e OR callee_ext = :n OR callee_ext = :o) AND timestamp LIKE :m",
-                     {'e': c['id_rede'], 'n': '9' + c['id_rede'], 'o': '8' + c['id_rede'], 'm': mes + '%'})
-        rows = [r for r in rows if (_saida(r) or _entrada(r)) and r['status'] == 'ALLOWED' and r['duration_seconds']]
-        if not rows:
-            continue
-        linhas.append({'apelido': c['apelido'], 'id_rede': c['id_rede'], 'ligacoes': len(rows),
-                       'min_saida': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if _saida(r)),
-                       'min_entrada': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if _entrada(r)),
-                       'gasto': round(sum(custo_chamada(r, cfg) for r in rows), 2)})
-    linhas.sort(key=lambda x: -x['gasto'])
+    rows = [r for r in _rows(conn, "timestamp LIKE :m", {'m': mes + '%'})
+            if (_saida(r) or _entrada(r)) and r['status'] == 'ALLOWED' and r['duration_seconds']]
+    totais = {'ligacoes': len(rows),
+              'min_saida': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if _saida(r)),
+              'min_entrada': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if _entrada(r))}
     return {'mes': mes, 'gasto': gasto, 'teto_rede': cfg.TETO_REDE_MES,
             'pct': int(round(gasto / cfg.TETO_REDE_MES * 100)) if cfg.TETO_REDE_MES > 0 else None,
             'projecao': round(gasto / hoje.day * dias_no_mes, 2), 'teto_crianca': teto_crianca(conn, cfg),
-            'criancas_com_celular': criancas_com_celular(conn), 'linhas': linhas,
+            'criancas_com_celular': criancas_com_celular(conn), 'totais': totais,
             'tarifa_saida': cfg.TARIFA_SAIDA_MIN, 'tarifa_entrada': cfg.TARIFA_ENTRADA_MIN}

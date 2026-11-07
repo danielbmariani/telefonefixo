@@ -171,7 +171,7 @@ def test_aviso_do_orcamento_mensal_e_resumo_do_painel(client, app):
     with app.engine.begin() as c:
         r = custos.resumo_mes(c, cfg)
     assert r['gasto'] == 0.70 and r['teto_rede'] == 450.0 and r['pct'] == 0 and r['criancas_com_celular'] == 1
-    assert r['linhas'] == [{'apelido': 'ana01', 'id_rede': a['id_rede'], 'ligacoes': 2, 'min_saida': 2, 'min_entrada': 2, 'gasto': 0.70}]
+    assert r['totais'] == {'ligacoes': 2, 'min_saida': 2, 'min_entrada': 2}
     assert r['projecao'] >= r['gasto']
     cfg.TETO_REDE_MES = 0.80
     try:
@@ -203,4 +203,32 @@ def test_painel_mostra_o_gasto_com_celular(client, app):
     r = post(client, '/entrar', email='op@x.com', senha='senha12345')
     assert r.status_code == 302, r.data
     html = client.get('/ong/').get_data(as_text=True)
-    assert 'Celulares em' in html and 'R$ 0.60' in html and 'de R$ 450.00' in html and 'ana01' in html
+    assert 'Celulares em' in html and 'R$ 0.60' in html and 'de R$ 450.00' in html
+    assert 'ana01' not in html and a['id_rede'] not in html   # painel sem discriminar crianca
+
+
+def test_quadro_de_uso_da_rede_sem_criancas(client, app):
+    from rede.servicos import contas, uso
+    cadastrar_e_entrar(client, app)
+    a = crianca_row(app, criar_crianca(client, 'ana01'))
+    b = crianca_row(app, criar_crianca(client, 'bia02'))
+    _ativar_telefone(app, a['id'])
+    with app.engine.begin() as c:
+        fam.adicionar(c, a['familia_id'], '11987654321', 'Mãe')
+        contas.criar_operador(c, 'op@x.com', 'senha12345', 'Op', 'operador')
+    _lig(app, a['id_rede'], b['id_rede'], 130)                      # telefone com telefone: 3 min
+    _lig(app, b['id_rede'], a['id_rede'], 0, status='NOANSWER')
+    _lig(app, a['id_rede'], '9' + a['id_rede'], 61)                 # telefone para celular: 2 min
+    _lig(app, '11987654321', a['id_rede'], 30)                      # celular para telefone: 1 min
+    _lig(app, a['id_rede'], b['id_rede'], 600, agora() - timedelta(days=40))   # mes anterior (ou retrasado)
+    with app.engine.begin() as c:
+        r = uso.resumo(c)
+    assert r['telefones']['cadastrados'] == 1 and r['telefones']['ativos'] == 1
+    assert r['atual']['crianca_crianca'] == {'ligacoes': 1, 'minutos': 3, 'nao_completadas': 1}
+    assert r['atual']['crianca_celular'] == {'ligacoes': 1, 'minutos': 2, 'nao_completadas': 0}
+    assert r['atual']['celular_crianca'] == {'ligacoes': 1, 'minutos': 1, 'nao_completadas': 0}
+    client.get('/sair')
+    post(client, '/entrar', email='op@x.com', senha='senha12345')
+    html = client.get('/ong/').get_data(as_text=True)
+    assert '</span> telefone cadastrado' in html and 'Telefone com telefone' in html and '+1 sem completar' in html
+    assert 'ana01' not in html and 'bia02' not in html
