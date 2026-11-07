@@ -13,8 +13,7 @@
 {% for t in numeros %}
 <div class="card mb-2"><div class="card-body py-3">
   <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
-    <div><span class="badge text-bg-light border me-1">Celular {{ t.posicao }}</span>
-      {% if t.apelido %}<strong>{{ t.apelido }}</strong> <span class="text-muted mono">{{ formatar(t.numero) }}</span>{% else %}<strong class="mono">{{ formatar(t.numero) }}</strong>{% endif %}</div>
+    <h3 class="h5 fw-bold mb-0"><span class="badge text-bg-light border me-2 align-middle">Celular {{ t.posicao }}</span>{% if t.apelido %}{{ t.apelido }} <span class="mono text-muted fw-normal">{{ formatar(t.numero) }}</span>{% else %}<span class="mono">{{ formatar(t.numero) }}</span>{% endif %}</h3>
     <form method="post" data-enviando="Removendo…" onsubmit="return confirm('Remover este número?')">
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="remover"><input type="hidden" name="id" value="{{ t.id }}">
       <button class="btn btn-outline-danger btn-sm">Remover</button></form>
