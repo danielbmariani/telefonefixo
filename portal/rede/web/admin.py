@@ -1,7 +1,7 @@
 """admin.py — painel da ONG: funil, casos, tarefas, telefones, linha do tempo, auditoria (consulta registrada)."""
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, g, current_app, abort
-from sqlalchemy import select, update, and_, or_, desc
+from sqlalchemy import select, update, and_, or_, desc, func
 
 from .. import db, auditoria
 from ..servicos import reconciliacao, gdms_fila, telefones as svc_tel, criancas as svc_cri, custos
@@ -67,13 +67,19 @@ def tarefas():
 def telefones():
     c = conn()
     busca = (request.args.get('q') or '').strip().upper().replace(':', '').replace('-', '')
+    # Removidos (desativado/cancelado) ficam fora da lista, a nao ser com ?removidos=1 ou numa busca
+    removidos = request.args.get('removidos') == '1'
     q = select(db.telefones, db.criancas.c.id_rede, db.criancas.c.apelido).join(db.criancas, db.criancas.c.id == db.telefones.c.crianca_id)
     if busca:
         q = q.where(or_(db.telefones.c.mac.like(f'%{busca}%'), db.criancas.c.id_rede == busca))
+    elif not removidos:
+        q = q.where(db.telefones.c.estado.notin_(svc_tel.ESTADOS_REMOVIDO))
     rows = c.execute(q.order_by(desc(db.telefones.c.id)).limit(200)).mappings().all()
+    n_removidos = c.execute(select(func.count()).select_from(db.telefones)
+                            .where(db.telefones.c.estado.in_(svc_tel.ESTADOS_REMOVIDO))).scalar()
     if busca:
         auditoria.registrar(c, 'telefones_pesquisados', 'operador', g.familia['email'], detalhes={'q': busca, 'n': len(rows)})
-    return render_template('ong/telefones.html', rows=rows, q=busca)
+    return render_template('ong/telefones.html', rows=rows, q=busca, removidos=removidos, n_removidos=n_removidos)
 
 
 @bp.route('/telefone/<int:telefone_id>')

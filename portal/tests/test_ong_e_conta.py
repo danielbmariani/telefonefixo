@@ -105,3 +105,15 @@ def test_login_rate_limit_e_reset(client, app):
     assert r.status_code == 302
     a = acoes(app)
     assert 'reset_solicitado' in a and 'senha_redefinida' in a and 'login_falhou' in a
+
+
+def test_lista_de_telefones_esconde_removidos(client, app):
+    cadastrar_e_entrar(client, app)
+    cid = criar_crianca(client)
+    post(client, f'/crianca/{cid}/telefone', acao='informar', mac=MAC, serial=SN)
+    post(client, '/excluir-conta', confirmacao='EXCLUIR')
+    _operador(client, app)
+    html = client.get('/ong/telefones').get_data(as_text=True)
+    assert 'jose07' not in html and '1 removido fora da lista' in html
+    html = client.get('/ong/telefones?removidos=1').get_data(as_text=True)
+    assert html.count('linha do tempo') == 1 and '>removido<' in html and 'desativado' not in html

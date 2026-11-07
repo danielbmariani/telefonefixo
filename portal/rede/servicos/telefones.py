@@ -20,6 +20,7 @@ SERIAL_RE = re.compile(r'^[A-Z0-9]{8,32}$')
 # Modelos que a familia pode escolher na tela. 'grpw' = GRP2602W (Wi-Fi): mesma configuracao do GRP2601,
 # muda so o passo "ligar" (sem cabo de rede, com o passo a passo do Wi-Fi no menu do aparelho).
 MODELOS_FAMILIA = {'grp': 'GRP2601 (cabo de rede)', 'grpw': 'GRP2602W (Wi-Fi)'}
+ESTADOS_REMOVIDO = ('desativado', 'cancelado')   # fora da rede: nao liga nem recebe
 
 def por_id(conn, telefone_id):
     return conn.execute(select(db.telefones).where(db.telefones.c.id == telefone_id)).mappings().first()
