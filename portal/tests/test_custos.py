@@ -79,13 +79,15 @@ def test_disjuntor_da_rede_e_avisos(client, app):
         assert custos.verificar_alertas(c, cfg, app.mailer) == 1
         assert custos.verificar_alertas(c, cfg, app.mailer) == 0
     m = app.mailer.ultimo_para(cfg.ALERTA_EMAIL)
-    assert '80%' in m['assunto'] and 'ana01' in m['assunto'] and 'R$ 4.20' in m['corpo'].replace(',', '.')
+    assert '80%' in m['assunto'] and 'ana01' in m['assunto'] and 'celular' in m['assunto']
+    assert 'R$' not in m['assunto'] and 'R$' not in m['corpo'] and '14 minutos' in m['corpo'] and 'cabem cerca de 2 minutos' in m['corpo']
     # chega a 100%: segundo aviso
     for _ in range(3):
         _lig(app, cr['id_rede'], '9' + cr['id_rede'], 60)
     with app.engine.begin() as c:
         assert custos.verificar_alertas(c, cfg, app.mailer) == 1
-    assert 'teto' in app.mailer.ultimo_para(cfg.ALERTA_EMAIL)['assunto']
+    m = app.mailer.ultimo_para(cfg.ALERTA_EMAIL)
+    assert 'limite de minutos com celular' in m['assunto'] and 'R$' not in m['corpo'] and '17 minutos' in m['corpo']
     # disjuntor da rede: R$ 20 no dia bloqueia ate quem nao gastou nada
     for _ in range(50):
         _lig(app, cr2['id_rede'], '9' + cr2['id_rede'], 60)   # bia: R$ 15 (acima do teto dela tambem)

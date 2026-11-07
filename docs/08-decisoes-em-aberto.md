@@ -86,8 +86,8 @@ fase 1. Para cada uma há uma recomendação; basta confirmar ou mudar.
    chegar perto do orçamento, abrem-se doações voluntárias, sem relação com o uso.
    No código (`servicos/custos.py`): orçamento mensal da rede `REDE_TETO_REDE_MES`
    (R$ 450, os R$ 500 menos o número da operadora), teto efetivo por criança igual ao
-   menor entre R$ 5 e o orçamento dividido pelas crianças com celular cadastrado (a
-   soma nunca passa do orçamento), aviso por e-mail a 80% e 100% do orçamento e
+   menor entre `REDE_TETO_CRIANCA_MES` e o orçamento dividido pelas crianças com celular
+   cadastrado (a soma nunca passa do orçamento), aviso por e-mail a 80% e 100% do orçamento e
    quadro "Celulares" no painel com gasto, projeção e uso por criança.
    Continua na Nvoip por minuto; a troca de operadora fica para quando o uso crescer.
    Para os pais, a aba Celulares fala só em minutos (quanto a criança usou e quanto
@@ -185,3 +185,10 @@ pendentes advogado, ONG como controladora, cobrança de minutos (Anatel/CDC).
     modificada a publicar o código)? Recomendação: AGPL-3.0 para a rede
     aberta, por ser infraestrutura para crianças operada por terceiros;
     discutir com a ONG.
+
+   **Ajuste de 07/11/2026.** O teto por linha começou em R$ 5 e, com os testes de
+   uma semana, a linha de teste chegou a 80% no dia 7. Decisão do Daniel: cerca de 50
+   minutos por linha neste começo, `REDE_TETO_CRIANCA_MES=15` (50 minutos ligando para o
+   celular ou 300 recebendo, por mês); depois se pensa melhor. Os e-mails de 80% e 100% por linha passaram a
+   falar só em minutos, com "celular" no título; dinheiro fica só nos avisos do
+   orçamento da rede e no painel.

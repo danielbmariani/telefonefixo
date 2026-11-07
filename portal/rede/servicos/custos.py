@@ -155,15 +155,23 @@ def verificar_alertas(conn, cfg, mailer, ref=None):
                     chave = f"crianca:{c['id']}:{mes}:{nivel}"
                     if not _ja_avisado(conn, chave):
                         _marcar(conn, chave)
+                        # Em minutos, nunca em dinheiro; e sempre dizendo que e so das ligacoes com celular.
+                        usados = uso_crianca_mes(conn, c['id_rede'], cfg, ref)['usados']
                         if nivel == '100':
-                            assunto = f"{c['apelido']} chegou ao teto de R$ {teto:.2f} deste mês"
-                            corpo = (f"{c['apelido']} (ID {c['id_rede']}) gastou R$ {gasto:.2f} em ligações com celular em {mes}. "
-                                     f"As ligações com celular dessa criança ficam bloqueadas até o mês virar.\n\n"
-                                     f"Para liberar, aumente REDE_TETO_CRIANCA_MES (ou REDE_TETO_REDE_MES) ou aguarde o próximo mês.")
+                            assunto = f"{c['apelido']} chegou ao limite de minutos com celular deste mês"
+                            corpo = (f"{c['apelido']} (ID {c['id_rede']}) já falou {usados} minutos com celular em {mes} e chegou ao "
+                                     f"limite do mês. As ligações com celular dessa linha ficam bloqueadas até o mês virar; "
+                                     f"ligações entre crianças continuam normais.\n\n"
+                                     f"Para liberar, aumente o limite mensal por linha (REDE_TETO_CRIANCA_MES no portal.env) "
+                                     f"ou aguarde o próximo mês.")
                         else:
-                            assunto = f"{c['apelido']} já usou {int(cfg.ALERTA_FRACAO * 100)}% do teto deste mês"
-                            corpo = (f"{c['apelido']} (ID {c['id_rede']}) gastou R$ {gasto:.2f} de R$ {teto:.2f} "
-                                     f"em ligações com celular em {mes}.")
+                            restam_saida = segundos_permitidos(conn, cfg, c['id_rede'], 'saida', ref) // 60
+                            restam_entrada = segundos_permitidos(conn, cfg, c['id_rede'], 'entrada', ref) // 60
+                            assunto = (f"{c['apelido']} já usou {int(cfg.ALERTA_FRACAO * 100)}% dos minutos com celular "
+                                       f"deste mês")
+                            corpo = (f"{c['apelido']} (ID {c['id_rede']}) já falou {usados} minutos com celular em {mes}. "
+                                     f"Ainda cabem cerca de {restam_saida} minutos ligando para o celular ou {restam_entrada} "
+                                     f"recebendo do celular. Só ligações com celular contam; entre crianças não há limite.")
                         mailer.enviar(cfg.ALERTA_EMAIL, assunto, corpo)
                         auditoria.registrar(conn, 'teto_alerta_enviado', 'sistema', objeto_tipo='crianca', objeto_id=c['id'],
                                             detalhes={'nivel': nivel, 'mes': mes, 'gasto': gasto})
@@ -175,7 +183,7 @@ def verificar_alertas(conn, cfg, mailer, ref=None):
             chave = f'rede:{dia}'
             if not _ja_avisado(conn, chave):
                 _marcar(conn, chave)
-                mailer.enviar(cfg.ALERTA_EMAIL, f'Rede chegou ao teto diário de R$ {cfg.TETO_REDE_DIA:.2f}',
+                mailer.enviar(cfg.ALERTA_EMAIL, f'Rede chegou ao teto diário de ligações com celular (R$ {cfg.TETO_REDE_DIA:.2f})',
                               f'As ligações com celular de toda a rede somaram R$ {gasto:.2f} em {dia} e foram pausadas até amanhã. '
                               f'Se não for uso normal, confira o histórico no painel da ONG.')
                 auditoria.registrar(conn, 'teto_rede_alerta_enviado', 'sistema', detalhes={'dia': dia, 'gasto': gasto})
@@ -188,7 +196,7 @@ def verificar_alertas(conn, cfg, mailer, ref=None):
                 if not _ja_avisado(conn, chave):
                     _marcar(conn, chave)
                     if nivel == '100':
-                        assunto = f'Rede chegou ao orçamento mensal de R$ {cfg.TETO_REDE_MES:.2f}'
+                        assunto = f'Rede chegou ao orçamento mensal de ligações com celular (R$ {cfg.TETO_REDE_MES:.2f})'
                         corpo = (f'As ligações com celular de toda a rede somaram R$ {gasto:.2f} em {mes} e ficam pausadas '
                                  f'até o mês virar. Entre crianças continua funcionando.')
                     else:
