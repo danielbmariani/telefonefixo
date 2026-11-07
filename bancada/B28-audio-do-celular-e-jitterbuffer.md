@@ -59,3 +59,26 @@ ligações entre crianças e as que chegam do celular não mudaram. Aplicado com
 - `asterisk -rx "pjsip show channelstats"` durante a ligação: Receive e Transmit de cada canal.
 - Nunca ligar `pjsip set logger` nem depuração do `res_srtp` em arquivo sem filtrar: os dois escrevem as chaves
   da ligação.
+
+## Parte 2: ligação que chega do celular (07/11/2026)
+
+Uma família nova (primeiro aparelho a nascer com TLS, SRTP exigido, conferência do certificado e fuso fixo;
+registrou sozinho às 7h34) relatou o mesmo sintoma no sentido inverso: o celular ligou para a criança, três
+ligações atendidas de 18 a 33 s, a mãe ouvia a criança e a criança não ouvia a mãe. O contexto `entrada` ainda
+tinha `Set(JITTERBUFFER(adaptive))` no canal do tronco.
+
+Mudança às 8h30: tirada essa linha (a perna do telefone continua com `set-jitterbuffer`). `dialplan reload`,
+sem reiniciar. Backup em `/etc/asterisk/extensions.conf.antes-b28b`.
+
+Não provado ainda: até 8h55 não houve ligação do celular para a criança depois da mudança. A família testou
+só o sentido criança para celular (47 s, funcionou). O teste do Daniel com o próprio aparelho não valeu: o
+celular estava no Bluetooth.
+
+Medição útil para a próxima vez, sem gravar áudio: no trecho da operadora (ulaw, sem cifra) dá para calcular o
+volume médio por segundo e por sentido direto do `tcpdump -w -` com um filtro em Python, imprimindo só números.
+Numa ligação de 12 s, o tom de chamada apareceu com volume 5000, voz com 1000 a 2000 e silêncio com menos de
+200. Com o telefone, cifrado, isso não funciona.
+
+A mesma família também ligou da criança para a criança do Daniel (8h50): deu ocupado porque o aparelho do
+Daniel estava em ligação. As duas são amigas, então a ligação entre duas crianças com linhas cifradas pode ser
+testada por aí.
