@@ -126,3 +126,29 @@ def test_horarios_via_http_e_historico(client, app):
     assert client.get(f'/crianca/{cb}/historico').status_code == 200
     assert client.get(f'/crianca/{cb}/horarios').status_code == 200
     assert client.get(f'/crianca/{cb}/cartao').status_code == 200
+
+
+def test_link_do_email_abre_pagina_so_com_o_pedido(client, app):
+    ca, cb = _duas_familias(client, app)
+    A = crianca_row(app, ca)
+    post(client, f'/crianca/{cb}/contatos', acao='pedir', id_rede=A['id_rede'], mensagem='mae da bia, da escola')
+    with app.engine.begin() as c:
+        aid = c.execute(text('SELECT id FROM amizades')).scalar()
+    corpo = [m['corpo'] for m in app.mailer.enviados if m['para'] == 'a@x.com'][-1]
+    assert f'/crianca/{ca}/contatos/pedido/{aid}' in corpo
+    # sem sessao, o link leva ao login e volta para a mesma pagina
+    client.get('/sair')
+    r = client.get(f'/crianca/{ca}/contatos/pedido/{aid}')
+    assert r.status_code == 302 and r.headers['Location'] == f'/entrar?proximo=/crianca/{ca}/contatos/pedido/{aid}'
+    r = post(client, '/entrar', email='a@x.com', senha='senha12345', proximo=f'/crianca/{ca}/contatos/pedido/{aid}')
+    assert r.status_code == 302 and r.headers['Location'].endswith(f'/crianca/{ca}/contatos/pedido/{aid}')
+    html = client.get(f'/crianca/{ca}/contatos/pedido/{aid}').get_data(as_text=True)
+    assert 'bia02' in html and 'mae da bia' in html and 'value="aceitar"' in html and 'value="recusar"' in html
+    assert 'Aguardando a outra família' not in html   # so o pedido, sem o resto da pagina de amigos
+    # a outra familia nao abre o pedido; endereco de fora do site nao vale como proximo
+    r = post(client, '/entrar', email='b@x.com', senha='senha12345', proximo='https://outro.site/x')
+    assert r.headers['Location'].endswith('/')
+    _login(client, app, 'a@x.com')
+    r = post(client, f'/crianca/{ca}/contatos', acao='aceitar', amizade_id=aid, follow_redirects=True)
+    assert 'Amizade aceita' in r.get_data(as_text=True)
+    assert 'já foi respondido' in client.get(f'/crianca/{ca}/contatos/pedido/{aid}').get_data(as_text=True)

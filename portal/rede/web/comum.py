@@ -2,7 +2,7 @@
 
 import functools
 
-from flask import session, redirect, url_for, abort, g, current_app, flash
+from flask import session, redirect, url_for, abort, g, current_app, flash, request
 
 from .. import db
 from ..servicos import contas, criancas as svc_cri
@@ -16,7 +16,8 @@ def login_obrigatorio(f):
     @functools.wraps(f)
     def w(*a, **kw):
         if 'familia_id' not in session:
-            return redirect(url_for('auth.entrar'))
+            # Link de e-mail aberto sem sessao: volta para a mesma pagina depois do login
+            return redirect(url_for('auth.entrar', proximo=request.full_path.rstrip('?')))
         fam = contas.por_id(conn(), session['familia_id'])
         if not fam or fam['suspensa']:
             session.clear()

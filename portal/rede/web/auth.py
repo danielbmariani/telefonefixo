@@ -24,6 +24,10 @@ def entrar():
         session['papel'] = f['papel']
         if f['papel'] in ('operador', 'admin'):
             return redirect(url_for('admin.painel'))
+        proximo = request.form.get('proximo', '')
+        # So caminho dentro do site (comeca com uma barra so): nunca manda para fora
+        if proximo.startswith('/') and not proximo.startswith('//'):
+            return redirect(proximo)
         return redirect(url_for('familia.inicio'))
     return render_template('entrar.html')
 

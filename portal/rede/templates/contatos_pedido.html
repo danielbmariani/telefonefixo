@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Pedido de amizade para {{ crianca.apelido }}{% endblock %}
+{% block content %}
+{% macro botao(aid, acao, rotulo, cls, confirmar=None) %}
+<form method="post" action="{{ url_for('familia.contatos', crianca_id=crianca.id) }}" class="d-inline"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="{{ acao }}"><input type="hidden" name="amizade_id" value="{{ aid }}">
+<button class="btn {{ cls }}" {% if confirmar %}onclick="return confirm('{{ confirmar }}')"{% endif %}>{{ rotulo }}</button></form>
+{% endmacro %}
+<div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mt-3 mb-2">
+  <h1 class="h3 mb-0">Pedido de amizade</h1>
+  <a class="small" href="{{ url_for('familia.contatos', crianca_id=crianca.id) }}">Ver todos os amigos</a>
+</div>
+{% if pedido %}
+<div class="card mb-3"><div class="card-body">
+  <p class="mb-1"><strong>{{ pedido.apelido }}</strong> <span class="mono text-muted small">{{ pedido.id_fmt }}</span> quer ligar para {{ crianca.apelido }}.</p>
+  {% if pedido.mensagem %}<p class="mensagem-pedido mb-3">"{{ pedido.mensagem }}"</p>{% else %}<p class="text-muted small mb-3">Sem apresentação. Se não reconhecer, recuse.</p>{% endif %}
+  <div class="d-flex flex-wrap gap-2">{{ botao(pedido.amizade_id, 'aceitar', 'Aceitar', 'btn-success') }}{{ botao(pedido.amizade_id, 'recusar', 'Recusar', 'btn-outline-secondary') }}{{ botao(pedido.amizade_id, 'bloquear', 'Bloquear', 'btn-outline-danger', 'Bloquear este contato?') }}</div>
+</div></div>
+<p class="text-muted small">Depois de aceitar, as duas crianças podem ligar uma para a outra pelo ID.</p>
+{% else %}
+<p>Este pedido já foi respondido ou não existe mais.</p>
+{% endif %}
+{% endblock %}

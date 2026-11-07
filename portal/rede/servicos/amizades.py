@@ -80,11 +80,11 @@ def pedir(conn, crianca, id_rede_destino, familia_id, cfg, mailer=None, mensagem
                                                       estado='pendente', criado_em=agora(), mensagem=mensagem)).inserted_primary_key[0]
     auditoria.registrar(conn, 'pedido_amizade_enviado', 'familia', familia_id, 'crianca', crianca['id'],
                         detalhes={'destino': dest['id'], 'amizade_id': aid})
-    _avisar(conn, dest, crianca, cfg, mailer, mensagem)
+    _avisar(conn, dest, crianca, cfg, mailer, mensagem, aid)
     return conn.execute(select(db.amizades).where(db.amizades.c.id == aid)).mappings().first()
 
 
-def _avisar(conn, dest, origem, cfg, mailer, mensagem=None):
+def _avisar(conn, dest, origem, cfg, mailer, mensagem=None, amizade_id=None):
     if mailer is None:
         try:
             from flask import current_app
@@ -97,7 +97,7 @@ def _avisar(conn, dest, origem, cfg, mailer, mensagem=None):
                       f'A família de {origem["apelido"]} (ID {ids.formatar_id(origem["id_rede"])}) pediu para ligar para '
                       f'{dest["apelido"]}.\n\n'
                       + (f'Quem está pedindo: "{mensagem}"\n\n' if mensagem else '')
-                      + f'Aceite ou recuse em {cfg.SITE_URL}/crianca/{dest["id"]}/contatos\n\n'
+                      + f'Aceite ou recuse em {cfg.SITE_URL}/crianca/{dest["id"]}/contatos/pedido/{amizade_id}\n\n'
                       f'Se você não conhece essa criança, basta recusar.')
 
 

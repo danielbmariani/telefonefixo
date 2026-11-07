@@ -279,6 +279,16 @@ def contatos_pedir(crianca_id):
     return _pagina_pedir(crianca_da_familia(crianca_id))
 
 
+@bp.route('/crianca/<int:crianca_id>/contatos/pedido/<int:amizade_id>')
+@login_obrigatorio
+@consentimento_obrigatorio
+def contatos_pedido(crianca_id, amizade_id):
+    """Pagina de um pedido recebido, aberta pelo link do e-mail. Os botoes vao para a rota contatos."""
+    c = crianca_da_familia(crianca_id)
+    pedido = next((p for p in svc_ami.listar(conn(), c['id'])['recebidos'] if p['amizade_id'] == amizade_id), None)
+    return render_template('contatos_pedido.html', crianca=c, active_tab='contatos', pedido=pedido)
+
+
 @bp.route('/crianca/<int:crianca_id>/grupos/novo')
 @login_obrigatorio
 @consentimento_obrigatorio
