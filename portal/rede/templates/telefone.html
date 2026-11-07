@@ -102,7 +102,7 @@
       {% if d.chave == 'ativo' and d.estado in ('agora', 'feito') %}
         <div class="d-flex flex-wrap gap-2 mt-2">
           <a class="btn btn-primary" href="{{ url_for('familia.contatos', crianca_id=crianca.id) }}"><i class="bi bi-people"></i> Autorizar amigos</a>
-          <a class="btn btn-outline-secondary" href="{{ url_for('familia.crianca_nova') }}">Cadastrar outra criança</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('familia.crianca_nova') }}">Cadastrar outro telefone para outra criança</a>
         </div>
       {% endif %}
 
