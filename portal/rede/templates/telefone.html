@@ -29,6 +29,7 @@
 {% endif %}
 <h1 class="h3 mb-2">Conectar o telefone</h1>
 <p>Vire o telefone Grandstream e olhe a etiqueta embaixo. Copie os dois códigos na ordem em que aparecem: primeiro o S/N, depois o MAC. <strong>Não ligue o telefone na tomada ainda.</strong></p>
+<p class="text-muted">Cada telefone fica no nome de uma criança só. Se irmãos vão dividir o mesmo aparelho, cadastre-o em uma das crianças e peça as amizades pelo ID dela: é esse ID que faz o telefone tocar.</p>
 <div class="card mb-3"><div class="card-body">
 <form method="post" data-enviando="Registrando…" data-aviso="Estamos registrando o telefone na Grandstream. Leva uns 10 segundos, não feche a página."><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="informar">
   {% include '_modelos.html' %}
