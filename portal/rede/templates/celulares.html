@@ -19,13 +19,18 @@
       <button class="btn btn-outline-danger btn-sm">Remover</button></form>
   </div>
   <p class="mb-1">No telefone de {{ crianca.apelido }}, para ligar para <strong>{{ t.apelido or 'este celular' }}</strong>, disque <span class="mono discar-caixa">{{ prefixos[t.posicao] }}{{ crianca.id_rede }}#</span></p>
-  <p class="mb-0 small text-muted">É o {{ prefixos[t.posicao] }} seguido do ID de {{ crianca.apelido }}. Deste celular, para ligar para {{ crianca.apelido }}: <span class="mono">{{ numero_rede }}</span>.</p>
+  <p class="mb-0 small text-muted">É o {{ prefixos[t.posicao] }} seguido do ID de {{ crianca.apelido }}.</p>
 </div></div>
 {% endfor %}
 {% if numeros|length == 2 %}
 <form method="post" class="mb-3" data-enviando="Trocando…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="trocar">
   <button class="btn btn-outline-secondary btn-sm">Trocar a ordem (9 vira 8, 8 vira 9)</button></form>
 {% endif %}
+<h2 class="h5 mt-4 mb-2">Do celular para {{ crianca.apelido }}</h2>
+<div class="card mb-3"><div class="card-body py-3">
+  <p class="mb-1">De qualquer um {% if numeros|length == 1 %}deste celular{% else %}destes celulares{% endif %}, para ligar para <strong>{{ crianca.apelido }}</strong>, disque <span class="mono discar-caixa">{{ numero_rede }}</span></p>
+  <p class="mb-0 small text-muted">É o número da rede. Toca no telefone de {{ crianca.apelido }}. De um número que não esteja cadastrado aqui, não toca.</p>
+</div></div>
 {% else %}
 <div class="alert alert-warning">Nenhum celular cadastrado. Quando houver um, {{ crianca.apelido }} vai ligar para ele discando <span class="mono discar-caixa">9{{ crianca.id_rede }}#</span>, e o segundo com <span class="mono discar-caixa">8{{ crianca.id_rede }}#</span>.</div>
 {% endif %}
