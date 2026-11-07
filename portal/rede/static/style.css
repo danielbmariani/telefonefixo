@@ -146,7 +146,7 @@ body.com-abas .topo { position: static; box-shadow: none; }
 
 /* Numero que a crianca disca (pagina Celulares): caixa propria para saltar aos olhos */
 .discar-caixa {
-  display: inline-block; background: var(--fio-claro); border: 2px solid var(--fio); border-radius: var(--raio-p);
+  display: inline-block; background: var(--mar-claro); border: 2px solid var(--mar); border-radius: var(--raio-p);
   padding: .25rem .75rem; margin: .15rem 0; font-size: 1.6rem; font-weight: 700; letter-spacing: .1em;
   font-variant-numeric: tabular-nums; color: var(--tinta); white-space: nowrap; vertical-align: middle;
 }
