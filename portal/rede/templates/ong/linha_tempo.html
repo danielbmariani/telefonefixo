@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "ong/base.html" %}{% set aba = 'telefones' %}
 {% block title %}Telefone {{ tel.id }} | Painel{% endblock %}
 {% block content %}
 <h5>Telefone #{{ tel.id }} <span class="font-monospace">{{ tel.mac|mac }}</span> <span class="badge bg-secondary">{{ tel.estado }}</span></h5>

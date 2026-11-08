@@ -1,0 +1,112 @@
+{% extends "ong/base.html" %}{% set aba = 'uso' %}
+{% block title %}Uso | Painel{% endblock %}
+{% block content %}
+{% set cores = {'crianca_crianca': '#2a78d6', 'crianca_celular': '#d9480f', 'celular_crianca': '#1baf7a'} %}
+{% set g = dados.granularidade %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <h1 class="h4 mb-0">Uso da rede</h1>
+  <nav aria-label="Período"><ul class="nav nav-pills nav-sm gap-1">
+    {% for chave, (nome, padrao, maximo) in granularidades.items() %}
+    <li class="nav-item"><a class="nav-link py-1 px-3 {% if g == chave %}active{% endif %}" href="{{ url_for('admin.uso', g=chave) }}">{{ nome }}</a></li>
+    {% endfor %}
+  </ul></nav>
+</div>
+<p class="small text-muted mb-3">{{ dados.n }} {{ nomes_periodo[g] }}, o atual incluído, ainda em andamento.
+  {% if dados.n < granularidades[g][2] %}<a href="{{ url_for('admin.uso', g=g, n=[dados.n * 2, granularidades[g][2]]|min) }}">Mostrar mais</a> ·{% endif %}
+  <a href="{{ url_for('admin.uso_csv', g=g, n=dados.n) }}">Baixar CSV</a></p>
+
+{# ---- Números de agora, comparados com o período anterior ---- #}
+{% set a = dados.atual %}{% set b = dados.anterior %}
+{% macro delta(atual, anterior, unidade='') -%}
+  {%- if anterior is not none -%}{% set d = atual - anterior %}
+  <span class="small {% if d > 0 %}text-success{% elif d < 0 %}text-danger{% else %}text-muted{% endif %}">{% if d == 0 %}igual a {{ b.rotulo }}{% else %}{% if d > 0 %}+{% endif %}{{ d }}{{ unidade }}{% if anterior %} ({{ '%+d'|format((100 * d / anterior)|round|int) }}%){% endif %} vs {{ b.rotulo }}{% endif %}</span>
+  {%- endif -%}
+{%- endmacro %}
+<div class="row g-2 mb-3">
+  <div class="col-6 col-md-3"><div class="card h-100"><div class="card-body py-2"><h6 class="mb-1">Telefones na rede</h6><div class="fs-3 fw-bold lh-1">{{ a.telefones }}</div>{{ delta(a.telefones, b.telefones if b else none) }}</div></div></div>
+  <div class="col-6 col-md-3"><div class="card h-100"><div class="card-body py-2"><h6 class="mb-1">Famílias</h6><div class="fs-3 fw-bold lh-1">{{ a.familias }}</div>{{ delta(a.familias, b.familias if b else none) }}</div></div></div>
+  <div class="col-6 col-md-3"><div class="card h-100"><div class="card-body py-2"><h6 class="mb-1">Ligações em {{ a.rotulo }}</h6><div class="fs-3 fw-bold lh-1">{{ a.ligacoes }}</div>{{ delta(a.ligacoes, b.ligacoes if b else none) }}</div></div></div>
+  <div class="col-6 col-md-3"><div class="card h-100"><div class="card-body py-2"><h6 class="mb-1">Minutos em {{ a.rotulo }}</h6><div class="fs-3 fw-bold lh-1">{{ a.minutos }}</div>{{ delta(a.minutos, b.minutos if b else none, ' min') }}</div></div></div>
+</div>
+
+{# ---- Gráfico: ligações completadas por período, por tipo ---- #}
+{% set ns = namespace(max=1) %}
+{% for l in dados.periodos %}{% if l.ligacoes > ns.max %}{% set ns.max = l.ligacoes %}{% endif %}{% endfor %}
+{% set n = dados.periodos|length %}{% set passo = [[(900 / n)|int, 28]|max, 90]|min %}{% set esq = 34 %}{% set alt = 160 %}{% set base = 130 %}
+{% set largura = esq + n * passo + 8 %}{% set salto = ((56 / passo)|round(0, 'ceil')|int) or 1 %}
+<div class="card mb-3"><div class="card-body">
+  <h6>Ligações completadas por {{ nomes_periodo_sing[g] }}</h6>
+  <div class="d-flex flex-wrap gap-3 small mb-2">{% for chave, nome in dados.tipos %}<span><span class="viz-cor" style="background: {{ cores[chave] }}"></span> {{ nome }}</span>{% endfor %}{% if dados.periodos|sum(attribute='antigas') %}<span><span class="viz-cor" style="background: #9aa3ab"></span> Antes do prazo de guarda (sem tipo)</span>{% endif %}</div>
+  <svg class="viz" viewBox="0 0 {{ largura }} {{ alt }}" role="img" aria-label="Ligações completadas por período, empilhadas por tipo" style="min-width: {{ [largura, 320]|max }}px">
+    {% for y, v in [(base, 0), (base - 100, ns.max)] %}<line x1="{{ esq }}" y1="{{ y }}" x2="{{ largura - 4 }}" y2="{{ y }}" class="viz-grade"/><text x="{{ esq - 4 }}" y="{{ y + 4 }}" class="viz-eixo" text-anchor="end">{{ v }}</text>{% endfor %}
+    {% for l in dados.periodos %}{% set x = esq + loop.index0 * passo + 4 %}{% set ys = namespace(y=base) %}
+    <g><title>{{ l.rotulo }}: {{ l.ligacoes }} ligaç{{ 'ões' if l.ligacoes != 1 else 'ão' }}, {{ l.minutos }} min{% for chave, nome in dados.tipos %}{% if l.tipos[chave].ligacoes %}
+{{ nome }}: {{ l.tipos[chave].ligacoes }} ({{ l.tipos[chave].minutos }} min){% endif %}{% endfor %}{% if l.nao_completadas %}
+Sem completar: {{ l.nao_completadas }}{% endif %}</title>
+      <rect x="{{ x }}" y="{{ base - 100 }}" width="{{ passo - 8 }}" height="100" fill="transparent"/>
+      {% for chave, nome in dados.tipos %}{% set h = (100 * l.tipos[chave].ligacoes / ns.max)|round(1) %}{% if h %}
+      <rect x="{{ x }}" y="{{ ys.y - h }}" width="{{ passo - 8 }}" height="{{ [h - 1, 0.5]|max }}" fill="{{ cores[chave] }}"/>{% set ys.y = ys.y - h %}{% endif %}{% endfor %}
+      {% set h = (100 * l.antigas / ns.max)|round(1) %}{% if h %}<rect x="{{ x }}" y="{{ ys.y - h }}" width="{{ passo - 8 }}" height="{{ [h - 1, 0.5]|max }}" fill="#9aa3ab"/>{% endif %}
+      {% if l.ligacoes %}<text x="{{ x + (passo - 8) / 2 }}" y="{{ ys.y - (100 * l.antigas / ns.max) - 4 }}" class="viz-valor" text-anchor="middle">{{ l.ligacoes }}</text>{% endif %}
+      {% if loop.index0 % salto == (n - 1) % salto %}<text x="{{ x + (passo - 8) / 2 }}" y="{{ base + 14 }}" class="viz-eixo" text-anchor="middle">{{ l.rotulo if g != 'semana' else l.inicio.strftime('%d/%m') }}</text>{% endif %}
+    </g>{% endfor %}
+  </svg>
+</div></div>
+
+{# ---- Gráfico: telefones na rede e telefones que ligaram ---- #}
+{% set nt = namespace(max=1) %}
+{% for l in dados.periodos %}{% if l.telefones > nt.max %}{% set nt.max = l.telefones %}{% endif %}{% endfor %}
+<div class="card mb-3"><div class="card-body">
+  <h6>Telefones na rede ao fim de cada {{ nomes_periodo_sing[g] }}</h6>
+  <div class="d-flex flex-wrap gap-3 small mb-2"><span><span class="viz-cor" style="background: #b9cfe0"></span> Na rede</span><span><span class="viz-cor" style="background: #1d5f8a"></span> Que fizeram ou receberam ligação no período</span></div>
+  <svg class="viz" viewBox="0 0 {{ largura }} {{ alt }}" role="img" aria-label="Telefones na rede e telefones ativos por período" style="min-width: {{ [largura, 320]|max }}px">
+    {% for y, v in [(base, 0), (base - 100, nt.max)] %}<line x1="{{ esq }}" y1="{{ y }}" x2="{{ largura - 4 }}" y2="{{ y }}" class="viz-grade"/><text x="{{ esq - 4 }}" y="{{ y + 4 }}" class="viz-eixo" text-anchor="end">{{ v }}</text>{% endfor %}
+    {% for l in dados.periodos %}{% set x = esq + loop.index0 * passo + 4 %}
+    <g><title>{{ l.rotulo }}: {{ l.telefones }} na rede, {{ l.ativos }} com ligação{% if l.pct_ativos is not none %} ({{ l.pct_ativos }}%){% endif %}
+Novos: {{ l.telefones_novos }} telefone{{ 's' if l.telefones_novos != 1 }}, {{ l.familias_novas }} família{{ 's' if l.familias_novas != 1 }}, {{ l.amizades_novas }} amizade{{ 's' if l.amizades_novas != 1 }}</title>
+      <rect x="{{ x }}" y="{{ base - 100 }}" width="{{ passo - 8 }}" height="100" fill="transparent"/>
+      {% set h = (100 * l.telefones / nt.max)|round(1) %}{% if h %}<rect x="{{ x }}" y="{{ base - h }}" width="{{ passo - 8 }}" height="{{ h }}" fill="#b9cfe0"/>{% endif %}
+      {% set h2 = (100 * l.ativos / nt.max)|round(1) %}{% if h2 %}<rect x="{{ x + 4 }}" y="{{ base - h2 }}" width="{{ passo - 16 }}" height="{{ h2 }}" fill="#1d5f8a"/>{% endif %}
+      {% if l.telefones %}<text x="{{ x + (passo - 8) / 2 }}" y="{{ base - h - 4 }}" class="viz-valor" text-anchor="middle">{{ l.telefones }}</text>{% endif %}
+      {% if loop.index0 % salto == (n - 1) % salto %}<text x="{{ x + (passo - 8) / 2 }}" y="{{ base + 14 }}" class="viz-eixo" text-anchor="middle">{{ l.rotulo if g != 'semana' else l.inicio.strftime('%d/%m') }}</text>{% endif %}
+    </g>{% endfor %}
+  </svg>
+</div></div>
+
+{# ---- Tabela: uma linha por período ---- #}
+<div class="card mb-3"><div class="card-body">
+  <h6>Por {{ nomes_periodo_sing[g] }}</h6>
+  <div class="table-responsive"><table class="table table-sm small mb-1 viz-tabela">
+    <thead><tr class="align-bottom"><th rowspan="2">Período</th><th class="text-end" colspan="2">Famílias</th><th class="text-end" colspan="3">Telefones</th><th class="text-end">Amizades</th>
+      {% for chave, nome in dados.tipos %}<th class="text-end" colspan="2" style="border-bottom: 3px solid {{ cores[chave] }}">{{ nome }}</th>{% endfor %}<th class="text-end" colspan="3">Total</th></tr>
+      <tr class="text-muted fw-normal"><th class="text-end fw-normal">novas</th><th class="text-end fw-normal">total</th><th class="text-end fw-normal">novos</th><th class="text-end fw-normal">na rede</th><th class="text-end fw-normal">com ligação</th><th class="text-end fw-normal">novas</th>
+      {% for chave, nome in dados.tipos %}<th class="text-end fw-normal">lig.</th><th class="text-end fw-normal">min</th>{% endfor %}<th class="text-end fw-normal">lig.</th><th class="text-end fw-normal">min</th><th class="text-end fw-normal">sem completar</th></tr></thead>
+    <tbody>{% for l in dados.periodos|reverse %}
+      <tr{% if l.atual %} class="table-light"{% endif %}><td class="text-nowrap">{{ l.rotulo }}{% if l.atual %} <span class="text-muted">(até agora)</span>{% endif %}</td>
+        <td class="text-end">{{ l.familias_novas or '' }}</td><td class="text-end">{{ l.familias }}</td>
+        <td class="text-end">{{ l.telefones_novos or '' }}</td><td class="text-end">{{ l.telefones }}</td><td class="text-end">{{ l.ativos }}{% if l.pct_ativos is not none %} <span class="text-muted">({{ l.pct_ativos }}%)</span>{% endif %}</td>
+        <td class="text-end">{{ l.amizades_novas or '' }}</td>
+        {% for chave, nome in dados.tipos %}<td class="text-end">{{ l.tipos[chave].ligacoes or '' }}</td><td class="text-end">{{ l.tipos[chave].minutos or '' }}</td>{% endfor %}
+        <td class="text-end fw-bold">{{ l.ligacoes }}</td><td class="text-end fw-bold">{{ l.minutos }}</td><td class="text-end text-muted">{{ l.nao_completadas or '' }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  <small class="text-muted">"Com ligação" conta telefones que fizeram ou receberam ao menos uma ligação completada no período. "Sem completar" junta não atendidas, bloqueadas por horário, limite ou número inválido. Ligações com mais de {{ cfg.RETENCAO_CHAMADAS_DIAS }} dias ficam só como total por dia, sem tipo.</small>
+</div></div>
+
+{# ---- Quando as crianças ligam (no intervalo mostrado) ---- #}
+{% macro barras(itens, total, rotulo_largura='5rem') %}
+<table class="viz-barras" style="--rotulo: {{ rotulo_largura }}">{% set mx = (itens|map(attribute=1)|max) or 1 %}
+  {% for nome, v in itens %}<tr><th scope="row">{{ nome }}</th><td><span class="viz-barra" style="width: {{ (100 * v / mx)|round(1) }}%"></span> <span class="viz-n">{{ v or '' }}</span></td></tr>{% endfor %}
+</table>
+{% endmacro %}
+<div class="row g-3 mb-3">
+  <div class="col-md-4"><div class="card h-100"><div class="card-body"><h6>Hora do dia</h6>
+    {% set horas = [] %}{% for v in dados.horas %}{% set _ = horas.append(('%02dh'|format(loop.index0), v)) %}{% endfor %}
+    {{ barras(horas[6:23], dados.total_ligacoes, '3rem') }}
+    {% set fora = dados.horas[:6]|sum + dados.horas[23:]|sum %}<small class="text-muted">Das 23h às 6h: {{ fora }}.</small></div></div></div>
+  <div class="col-md-4"><div class="card h-100"><div class="card-body"><h6>Dia da semana</h6>{{ barras(dados.dias_semana, dados.total_ligacoes, '3rem') }}</div></div></div>
+  <div class="col-md-4"><div class="card h-100"><div class="card-body"><h6>Duração</h6>{{ barras(dados.duracoes, dados.total_ligacoes, '7rem') }}
+    {% if a.media_min %}<small class="text-muted">Média em {{ a.rotulo }}: {{ a.media_min }} min por ligação.</small>{% endif %}</div></div></div>
+</div>
+<p class="small text-muted">Só totais da rede, de ligações completadas no intervalo mostrado. Nada aqui identifica criança, família ou número.</p>
+{% endblock %}

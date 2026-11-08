@@ -442,3 +442,17 @@ button[disabled] .spinner-border { vertical-align: -0.15em; }
   .modelo-card { padding: .5rem .5rem .6rem; }
   .modelo-desc { font-size: .8rem; }
 }
+
+/* ---------- Painel do operador: gráficos ---------- */
+.viz { display: block; width: 100%; height: auto; max-height: 240px; font-family: inherit; }
+.viz-grade { stroke: var(--linha); stroke-width: 1; }
+.viz-eixo { font-size: 10px; fill: var(--cinza); }
+.viz-valor { font-size: 10px; font-weight: 700; fill: var(--tinta-suave); }
+.viz-cor { display: inline-block; width: .8rem; height: .8rem; border-radius: 3px; vertical-align: -2px; }
+.viz-tabela td { white-space: nowrap; }
+.viz-tabela thead th { font-size: .75rem; line-height: 1.15; }
+.viz-barras { width: 100%; border-collapse: collapse; }
+.viz-barras th { font-weight: 400; color: var(--tinta-suave); font-size: .8rem; width: var(--rotulo, 5rem); padding: .1rem .5rem .1rem 0; white-space: nowrap; }
+.viz-barras td { padding: .1rem 0; font-size: .8rem; white-space: nowrap; }
+.viz-barra { display: inline-block; height: .8rem; max-width: calc(100% - 2.5rem); background: var(--mar); border-radius: 0 3px 3px 0; vertical-align: middle; }
+.viz-n { color: var(--tinta-suave); font-variant-numeric: tabular-nums; }

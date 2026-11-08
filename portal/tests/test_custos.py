@@ -230,5 +230,7 @@ def test_quadro_de_uso_da_rede_sem_criancas(client, app):
     client.get('/sair')
     post(client, '/entrar', email='op@x.com', senha='senha12345')
     html = client.get('/ong/').get_data(as_text=True)
-    assert '</span> telefone cadastrado' in html and 'Telefone com telefone' in html and '+1 sem completar' in html
+    assert '</span> telefone cadastrado' in html and '<span class="fs-4 fw-bold">3</span> ligações completadas neste mês' in html
     assert 'ana01' not in html and 'bia02' not in html
+    html = client.get('/ong/uso').get_data(as_text=True)
+    assert 'Telefone com telefone' in html and 'ana01' not in html and 'bia02' not in html

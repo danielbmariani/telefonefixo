@@ -1,24 +1,13 @@
-{% extends "base.html" %}
+{% extends "ong/base.html" %}{% set aba = 'painel' %}
 {% block title %}Painel | Painel{% endblock %}
 {% block content %}
-<div class="d-flex gap-2 mb-3 flex-wrap">
-  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.casos') }}">Casos</a>
-  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.tarefas') }}">Tarefas</a>
-  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.telefones') }}">Telefones</a>
-  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.auditoria_view') }}">Auditoria</a>
-</div>
 <div class="row g-3">
   <div class="col-12"><div class="card"><div class="card-body"><h6>Rede</h6>
-    <p class="mb-3"><span class="fs-4 fw-bold">{{ uso.telefones.cadastrados }}</span> telefone{{ 's' if uso.telefones.cadastrados != 1 }} cadastrado{{ 's' if uso.telefones.cadastrados != 1 }}
+    {% set at = uso.atual %}{% set lig = at.values()|sum(attribute='ligacoes') %}{% set mins = at.values()|sum(attribute='minutos') %}
+    <p class="mb-1"><span class="fs-4 fw-bold">{{ uso.telefones.cadastrados }}</span> telefone{{ 's' if uso.telefones.cadastrados != 1 }} cadastrado{{ 's' if uso.telefones.cadastrados != 1 }}
       <span class="text-muted">· {% if uso.telefones.conectados is not none %}{{ uso.telefones.conectados }} conectado{{ 's' if uso.telefones.conectados != 1 }} agora · {% endif %}{{ uso.telefones.ativos }} já {{ 'fizeram' if uso.telefones.ativos != 1 else 'fez' }} ligação</span></p>
-    <div class="table-responsive"><table class="table table-sm mb-1"><thead><tr><th>Ligações</th><th class="text-end" colspan="2">{{ uso.mes }}</th><th class="text-end d-none d-sm-table-cell" colspan="2">{{ uso.mes_anterior }}</th></tr>
-      <tr class="small text-muted"><th></th><th class="text-end fw-normal">completadas</th><th class="text-end fw-normal">minutos</th><th class="text-end fw-normal d-none d-sm-table-cell">completadas</th><th class="text-end fw-normal d-none d-sm-table-cell">minutos</th></tr></thead>
-      {% for chave, nome in uso.tipos %}{% set a = uso.atual[chave] %}{% set b = uso.anterior[chave] %}
-      <tr><td>{{ nome }}</td><td class="text-end fw-bold">{{ a.ligacoes }}{% if a.nao_completadas %} <span class="text-muted fw-normal small">+{{ a.nao_completadas }} sem completar</span>{% endif %}</td><td class="text-end fw-bold">{{ a.minutos }}</td>
-        <td class="text-end d-none d-sm-table-cell">{{ b.ligacoes }}</td><td class="text-end d-none d-sm-table-cell">{{ b.minutos }}</td></tr>
-      {% endfor %}
-    </table></div>
-    <small class="text-muted">Só totais da rede. O que cada criança ligou fica no histórico da própria família.</small>
+    <p class="mb-1"><span class="fs-4 fw-bold">{{ lig }}</span> ligaç{{ 'ões' if lig != 1 else 'ão' }} completada{{ 's' if lig != 1 }} neste mês <span class="text-muted">· {{ mins }} min</span></p>
+    <a href="{{ url_for('admin.uso') }}">Ver uso por dia, semana, mês e ano</a>
   </div></div></div>
   <div class="col-12"><div class="card {% if celular.pct is not none and celular.pct >= 80 %}border-warning{% endif %}"><div class="card-body"><h6>Celulares em {{ celular.mes }} (estimativa)</h6>
     <p class="mb-2"><span class="fs-4 fw-bold">R$ {{ '%.2f'|format(celular.gasto) }}</span>{% if celular.pct is not none %} de R$ {{ '%.2f'|format(celular.teto_rede) }} <span class="text-muted">({{ celular.pct }}% do orçamento do mês)</span>{% endif %}

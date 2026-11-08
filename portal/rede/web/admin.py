@@ -1,6 +1,6 @@
 """admin.py — painel da ONG: funil, casos, tarefas, telefones, linha do tempo, auditoria (consulta registrada)."""
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, g, current_app, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, g, current_app, abort, Response
 from sqlalchemy import select, update, and_, or_, desc, func
 
 from .. import db, auditoria
@@ -22,6 +22,33 @@ def painel():
     return render_template('ong/painel.html', funil=reconciliacao.funil(c), por_estado=svc_tel.contar_por_estado(c),
                            casos=casos_abertos, tarefas=tarefas_abertas, ultima_rec=ultima_rec,
                            celular=custos.resumo_mes(c, current_app.cfg), uso=svc_uso.resumo(c))
+
+
+NOMES_PERIODO = {'dia': 'dias', 'semana': 'semanas', 'mes': 'meses', 'ano': 'anos'}
+NOMES_PERIODO_SING = {'dia': 'dia', 'semana': 'semana', 'mes': 'mês', 'ano': 'ano'}
+
+
+def _uso_dados():
+    g_ = request.args.get('g', 'mes')
+    if g_ not in svc_uso.GRANULARIDADES:
+        g_ = 'mes'
+    return svc_uso.serie(conn(), g_, request.args.get('n', type=int))
+
+
+@bp.route('/uso')
+@operador_obrigatorio
+def uso():
+    return render_template('ong/uso.html', dados=_uso_dados(), granularidades=svc_uso.GRANULARIDADES,
+                           nomes_periodo=NOMES_PERIODO, nomes_periodo_sing=NOMES_PERIODO_SING)
+
+
+@bp.route('/uso.csv')
+@operador_obrigatorio
+def uso_csv():
+    dados = _uso_dados()
+    nome = f"uso-{dados['granularidade']}-{dados['periodos'][-1]['inicio']:%Y-%m-%d}.csv"
+    return Response(svc_uso.csv(dados), mimetype='text/csv; charset=utf-8',
+                    headers={'Content-Disposition': f'attachment; filename="{nome}"'})
 
 
 @bp.route('/casos', methods=['GET', 'POST'])

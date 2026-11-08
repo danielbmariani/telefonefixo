@@ -27,7 +27,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Cg transform=%22translate%28100 100%29%22%3E%3Ccircle r=%2296%22 fill=%22%23d9480f%22/%3E%3Cg fill=%22%23fff%22%3E%3Ccircle cx=%2216%22 cy=%2259.9%22 r=%229%22/%3E%3Ccircle cx=%22-16%22 cy=%2259.9%22 r=%229%22/%3E%3Ccircle cx=%22-43.8%22 cy=%2243.8%22 r=%229%22/%3E%3Ccircle cx=%22-59.9%22 cy=%2216%22 r=%229%22/%3E%3Ccircle cx=%22-59.9%22 cy=%22-16%22 r=%229%22/%3E%3Ccircle cx=%22-43.8%22 cy=%22-43.8%22 r=%229%22/%3E%3Ccircle cx=%22-16%22 cy=%22-59.9%22 r=%229%22/%3E%3Ccircle cx=%2216%22 cy=%22-59.9%22 r=%229%22/%3E%3Ccircle cx=%2243.8%22 cy=%22-43.8%22 r=%229%22/%3E%3Ccircle cx=%2259.9%22 cy=%22-16%22 r=%229%22/%3E%3Ccircle r=%2224%22/%3E%3C/g%3E%3Cpath d=%22M60 42 L76 53%22 stroke=%22%23fff%22 stroke-width=%229%22 stroke-linecap=%22round%22 fill=%22none%22/%3E%3C/g%3E%3C/svg%3E">
 </head>
 {% set logado = session.get('familia_id') %}
-<body{% if logado and crianca %} class="com-abas"{% endif %}>
+<body{% if logado and (crianca or abas_ong) %} class="com-abas"{% endif %}>
 <noscript><style>.topo.quieto .marca > span:last-child { opacity: 1; transform: none; }</style></noscript>
 <header class="topo{% block topo_class %}{% endblock %}">
   <div class="container">
@@ -70,6 +70,7 @@
   </div>
 </nav>
 {% endif %}
+{% block abas %}{% endblock %}
 
 <main class="{% block main_class %}container mt-3 mb-5{% endblock %}">
   {% with messages = get_flashed_messages(with_categories=true) %}

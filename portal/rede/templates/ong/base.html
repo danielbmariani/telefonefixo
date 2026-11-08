@@ -1,0 +1,17 @@
+{# Paginas do operador: as mesmas abas em todas, como nas paginas da crianca. Cada pagina define {% set aba = '...' %}. #}
+{% extends "base.html" %}
+{% set abas_ong = true %}
+{% block abas %}
+<nav class="abas sticky-top" aria-label="Seções do painel">
+  <div class="container">
+    <ul class="nav nav-fill w-100">
+      <li class="nav-item"><a class="nav-link {% if aba == 'painel' %}active{% endif %}" href="{{ url_for('admin.painel') }}"><i class="bi bi-speedometer2"></i> <span class="rotulo">Painel</span></a></li>
+      <li class="nav-item"><a class="nav-link {% if aba == 'uso' %}active{% endif %}" href="{{ url_for('admin.uso') }}"><i class="bi bi-graph-up"></i> <span class="rotulo">Uso</span></a></li>
+      <li class="nav-item"><a class="nav-link {% if aba == 'casos' %}active{% endif %}" href="{{ url_for('admin.casos') }}"><i class="bi bi-exclamation-circle"></i> <span class="rotulo">Casos</span></a></li>
+      <li class="nav-item"><a class="nav-link {% if aba == 'tarefas' %}active{% endif %}" href="{{ url_for('admin.tarefas') }}"><i class="bi bi-check2-square"></i> <span class="rotulo">Tarefas</span></a></li>
+      <li class="nav-item"><a class="nav-link {% if aba == 'telefones' %}active{% endif %}" href="{{ url_for('admin.telefones') }}"><i class="bi bi-telephone"></i> <span class="rotulo">Telefones</span></a></li>
+      <li class="nav-item"><a class="nav-link {% if aba == 'auditoria' %}active{% endif %}" href="{{ url_for('admin.auditoria_view') }}"><i class="bi bi-journal-text"></i> <span class="rotulo">Auditoria</span></a></li>
+    </ul>
+  </div>
+</nav>
+{% endblock %}
