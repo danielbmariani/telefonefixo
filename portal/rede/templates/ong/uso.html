@@ -78,19 +78,19 @@ Novos: {{ l.telefones_novos }} telefone{{ 's' if l.telefones_novos != 1 }}, {{ l
   <h6>Por {{ nomes_periodo_sing[g] }}</h6>
   <div class="table-responsive"><table class="table table-sm small mb-1 viz-tabela">
     <thead><tr class="align-bottom"><th rowspan="2">Período</th><th class="text-end" colspan="2">Famílias</th><th class="text-end" colspan="3">Telefones</th><th class="text-end">Amizades</th>
-      {% for chave, nome in dados.tipos %}<th class="text-end" colspan="2" style="border-bottom: 3px solid {{ cores[chave] }}">{{ nome }}</th>{% endfor %}<th class="text-end" colspan="3">Total</th></tr>
+      {% for chave, nome in dados.tipos %}<th class="text-end" colspan="2" style="border-bottom: 3px solid {{ cores[chave] }}">{{ nome }}</th>{% endfor %}<th class="text-end" colspan="3">Total</th><th class="text-end" colspan="2">Min. com celular por tronco</th></tr>
       <tr class="text-muted fw-normal"><th class="text-end fw-normal">novas</th><th class="text-end fw-normal">total</th><th class="text-end fw-normal">novos</th><th class="text-end fw-normal">na rede</th><th class="text-end fw-normal">com ligação</th><th class="text-end fw-normal">novas</th>
-      {% for chave, nome in dados.tipos %}<th class="text-end fw-normal">lig.</th><th class="text-end fw-normal">min</th>{% endfor %}<th class="text-end fw-normal">lig.</th><th class="text-end fw-normal">min</th><th class="text-end fw-normal">sem completar</th></tr></thead>
+      {% for chave, nome in dados.tipos %}<th class="text-end fw-normal">lig.</th><th class="text-end fw-normal">min</th>{% endfor %}<th class="text-end fw-normal">lig.</th><th class="text-end fw-normal">min</th><th class="text-end fw-normal">sem completar</th><th class="text-end fw-normal">Vono</th><th class="text-end fw-normal">Nvoip</th></tr></thead>
     <tbody>{% for l in dados.periodos|reverse %}
       <tr{% if l.atual %} class="table-light"{% endif %}><td class="text-nowrap">{{ l.rotulo }}{% if l.atual %} <span class="text-muted">(até agora)</span>{% endif %}</td>
         <td class="text-end">{{ l.familias_novas or '' }}</td><td class="text-end">{{ l.familias }}</td>
         <td class="text-end">{{ l.telefones_novos or '' }}</td><td class="text-end">{{ l.telefones }}</td><td class="text-end">{{ l.ativos }}{% if l.pct_ativos is not none %} <span class="text-muted">({{ l.pct_ativos }}%)</span>{% endif %}</td>
         <td class="text-end">{{ l.amizades_novas or '' }}</td>
         {% for chave, nome in dados.tipos %}<td class="text-end">{{ l.tipos[chave].ligacoes or '' }}</td><td class="text-end">{{ l.tipos[chave].minutos or '' }}</td>{% endfor %}
-        <td class="text-end fw-bold">{{ l.ligacoes }}</td><td class="text-end fw-bold">{{ l.minutos }}</td><td class="text-end text-muted">{{ l.nao_completadas or '' }}</td></tr>
+        <td class="text-end fw-bold">{{ l.ligacoes }}</td><td class="text-end fw-bold">{{ l.minutos }}</td><td class="text-end text-muted">{{ l.nao_completadas or '' }}</td><td class="text-end">{{ l.troncos.vono or '' }}</td><td class="text-end">{{ l.troncos.nvoip or '' }}</td></tr>
     {% endfor %}</tbody>
   </table></div>
-  <small class="text-muted">"Com ligação" conta telefones que fizeram ou receberam ao menos uma ligação completada no período. "Sem completar" junta não atendidas, bloqueadas por horário, limite ou número inválido. Ligações com mais de {{ cfg.RETENCAO_CHAMADAS_DIAS }} dias ficam só como total por dia, sem tipo.</small>
+  <small class="text-muted">"Com ligação" conta telefones que fizeram ou receberam ao menos uma ligação completada no período. "Sem completar" junta não atendidas, bloqueadas por horário, limite ou número inválido. Ligações com mais de {{ cfg.RETENCAO_CHAMADAS_DIAS }} dias ficam só como total por dia, sem tipo. Vono: minutos ilimitados por canal; Nvoip: pagos por minuto (inclui ligações anteriores a 09/11/2026, sem tronco gravado).</small>
 </div></div>
 
 {# ---- Quando as crianças ligam (no intervalo mostrado) ---- #}

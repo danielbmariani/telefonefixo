@@ -15,10 +15,10 @@ def _hoje_15h():
     return em_sp(agora()).replace(hour=15, minute=0, second=0, microsecond=0)
 
 
-def _lig(app, de, para, dur, quando=None, status='ALLOWED'):
+def _lig(app, de, para, dur, quando=None, status='ALLOWED', tronco=None):
     ts = em_sp(quando or agora()).strftime('%Y-%m-%d %H:%M:%S')
     with app.engine.begin() as c:
-        c.execute(insert(db.call_logs).values(caller_ext=de, callee_ext=para, timestamp=ts, status=status, duration_seconds=dur))
+        c.execute(insert(db.call_logs).values(caller_ext=de, callee_ext=para, timestamp=ts, status=status, duration_seconds=dur, tronco=tronco))
 
 
 def _ativar_telefone(app, cid):
@@ -44,7 +44,7 @@ def test_custo_e_teto_por_crianca(client, app):
         assert custos.gasto_crianca_mes(c, cr['id_rede'], cfg) == 0.70
         assert custos.segundos_permitidos(c, cfg, cr['id_rede'], 'saida') == 860
         res, motivo = chamadas.decidir(c, cr['id_rede'], '9' + cr['id_rede'], _hoje_15h())
-        assert res == 'ALLOW' and motivo == 'PJSIP/11987654321@nvoip;limite=860'
+        assert res == 'ALLOW' and motivo == 'PJSIP/11987654321@nvoip;limite=860;vono=0'
     # esgota: 14 ligacoes de 1 min = R$ 4,20 (total 4,90) -> sobra R$ 0,10 = 20 s < 60 s -> bloqueia
     for _ in range(14):
         _lig(app, cr['id_rede'], '9' + cr['id_rede'], 60)
@@ -171,7 +171,7 @@ def test_aviso_do_orcamento_mensal_e_resumo_do_painel(client, app):
     with app.engine.begin() as c:
         r = custos.resumo_mes(c, cfg)
     assert r['gasto'] == 0.70 and r['teto_rede'] == 450.0 and r['pct'] == 0 and r['criancas_com_celular'] == 1
-    assert r['totais'] == {'ligacoes': 2, 'min_saida': 2, 'min_entrada': 2}
+    assert r['totais'] == {'ligacoes': 2, 'min_saida': 2, 'min_entrada': 2, 'min_vono': 0, 'min_nvoip': 4}
     assert r['projecao'] >= r['gasto']
     cfg.TETO_REDE_MES = 0.80
     try:
@@ -234,3 +234,35 @@ def test_quadro_de_uso_da_rede_sem_criancas(client, app):
     assert 'ana01' not in html and 'bia02' not in html
     html = client.get('/ong/uso').get_data(as_text=True)
     assert 'Telefone com telefone' in html and 'ana01' not in html and 'bia02' not in html
+
+
+def test_vono_minutos_nao_custam_e_teto_de_minutos_da_vono(client, app):
+    """B30: pernas pela Vono nao entram no gasto da rede (dinheiro), mas contam no limite de minutos da crianca.
+    Com 1 canal, 80% de 5.000 = 4.000 min; passando disso, a decisao manda para a Nvoip (vono=0)."""
+    cadastrar_e_entrar(client, app)
+    cid = criar_crianca(client, 'ana01'); cr = crianca_row(app, cid)
+    cfg = app.cfg
+    cfg.VONO_CANAIS, cfg.TETO_CRIANCA_MES, cfg.TETO_REDE_MES, cfg.TETO_REDE_DIA = 1, 90.0, 1000.0, 100.0
+    with app.engine.begin() as c:
+        fam.adicionar(c, cr['familia_id'], '11987654321', 'Mãe')
+        assert custos.teto_vono_minutos(cfg) == 4000 and custos.vono_disponivel(c, cfg)
+        assert custos.teto_crianca(c, cfg) == 90.0      # com Vono, o orcamento da rede nao e dividido por crianca
+    _lig(app, cr['id_rede'], '9' + cr['id_rede'], 600, tronco='vono')     # 10 min pela Vono
+    _lig(app, cr['id_rede'], '9' + cr['id_rede'], 120, tronco='nvoip')    # 2 min pela Nvoip: R$ 0,60
+    _lig(app, '11987654321', cr['id_rede'], 60, tronco='vono')            # entrada pela Vono
+    with app.app_context(), app.engine.begin() as c:   # chamadas.decidir le a config do app (fora dele, le o ambiente)
+        assert custos.gasto_rede_mes(c, cfg) == 0.60 and custos.gasto_rede_dia(c, cfg) == 0.60
+        assert custos.gasto_crianca_mes(c, cr['id_rede'], cfg) == round(12 * 0.30 + 1 * 0.05, 2)
+        assert custos.minutos_vono_mes(c) == 11
+        res, motivo = chamadas.decidir(c, cr['id_rede'], '9' + cr['id_rede'], _hoje_15h())
+        assert res == 'ALLOW' and motivo.endswith(';vono=1')
+        r = custos.resumo_mes(c, cfg)
+        assert r['gasto'] == 0.60 and r['vono'] == {'canais': 1, 'teto': 4000, 'minutos': 11, 'pct': 0}
+        assert r['totais']['min_vono'] == 11 and r['totais']['min_nvoip'] == 2
+    # rede encosta no teto da Vono: proxima ligacao vai pela Nvoip
+    _lig(app, '234567', '9234567', 3990 * 60, tronco='vono')
+    with app.app_context(), app.engine.begin() as c:
+        assert not custos.vono_disponivel(c, cfg)
+        res, motivo = chamadas.decidir(c, cr['id_rede'], '9' + cr['id_rede'], _hoje_15h())
+        assert res == 'ALLOW' and motivo.endswith(';vono=0')
+    cfg.VONO_CANAIS = 0

@@ -46,11 +46,16 @@ família. Nenhuma família paga nem configura nada.
 1. ~~Entrada pelo número da Vono~~ resolvido às 13:03 (ver tabela).
 2. ~~Queda para a Nvoip~~ provada às 13:48. Se o "billsec 0" voltar, rastrear com `pjsip set logger on`.
 3. Portal. Feito em 09/11: página Celulares avisa o número que aparece no celular
-   (`REDE_TRONCO_NUMERO_SAIDA`); tetos no `portal.env` subiram para 300 min de saída e 1.800 de
-   entrada por criança (`REDE_TETO_CRIANCA_MES=90.00`, ainda em reais-equivalentes a R$ 0,30 e
-   R$ 0,05 por minuto), rede R$ 1.000 por mês e R$ 100 por dia (`.antes-teto300`). Falta: gravar o
-   tronco de cada ligação (`CALL_TRONCO`) em `call_logs`, contar custo só nas pernas Nvoip e
-   mostrar minutos por tronco na aba Uso; teto da Vono em minutos (80% de 5.000 por canal).
+   (`REDE_TRONCO_NUMERO_SAIDA`); tetos por criança em 300 min de saída e 1.800 de entrada
+   (`REDE_TETO_CRIANCA_MES=90.00`, reais-equivalentes a R$ 0,30 e R$ 0,05 por minuto: é um limite de
+   minutos, não de dinheiro), rede R$ 1.000 por mês e R$ 100 por dia só no que é pago por minuto.
+   Também em 09/11: `call_logs.tronco` ('vono' | 'nvoip', gravado pelo `log_call.py` a partir de
+   `CALL_TRONCO`); `custos.gasto_rede_*` ignoram pernas Vono; teto de minutos da Vono
+   (`REDE_VONO_CANAIS=4` × 5.000 × 0,8 = 16.000 min/mês): `chamadas.decidir_familia` devolve
+   `vono=0` quando encosta e o dialplan vai direto à Nvoip (`FAMILIA_VONO`); aba Uso com minutos
+   com celular por tronco; cartão Celulares do painel com "Vono: X de 16.000 min". Com Vono, o
+   orçamento da rede deixa de ser dividido por criança no `teto_crianca`. Pendente: confirmar com uma
+   ligação real que `tronco` é gravado.
 4. Trocar a senha do tronco no Meu Vono (apareceu em capturas de tela durante a contratação) e
    cancelar o tronco Tarifado se não tiver uso.
 5. Portabilidade do (11) 5108-3530 da Nvoip para a Vono, para voltar a um número só.

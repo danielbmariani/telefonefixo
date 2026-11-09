@@ -32,8 +32,13 @@ def _entrada(row):
     return row['caller_ext'].isdigit() and len(row['caller_ext']) in (10, 11)
 
 
-def custo_chamada(row, cfg):
+def custo_chamada(row, cfg, so_pago=False):
+    """Custo estimado da ligacao. Com so_pago=True, as pernas que sairam pela Vono (minutos ilimitados, B30)
+    valem zero: e o que a rede paga de fato. Sem, toda ligacao com celular vale a tarifa: e a medida em
+    'reais-equivalentes' usada no teto por crianca, que e um limite de minutos, nao de dinheiro."""
     if row['status'] != 'ALLOWED' or not row['duration_seconds']:
+        return 0.0
+    if so_pago and row.get('tronco') == 'vono':
         return 0.0
     minutos = math.ceil(row['duration_seconds'] / 60)
     if _saida(row):
@@ -44,7 +49,7 @@ def custo_chamada(row, cfg):
 
 
 def _rows(conn, cond, params):
-    return conn.execute(text("SELECT caller_ext, callee_ext, status, duration_seconds FROM call_logs WHERE " + cond), params).mappings().all()
+    return conn.execute(text("SELECT caller_ext, callee_ext, status, duration_seconds, tronco FROM call_logs WHERE " + cond), params).mappings().all()
 
 
 def gasto_crianca_mes(conn, id_rede, cfg, ref=None):
@@ -80,13 +85,30 @@ def franquia_minutos(conn, cfg):
 def gasto_rede_dia(conn, cfg, ref=None):
     dia = em_sp(ref or agora()).strftime('%Y-%m-%d')
     rows = _rows(conn, "timestamp LIKE :d", {'d': dia + '%'})
-    return round(sum(custo_chamada(r, cfg) for r in rows), 2)
+    return round(sum(custo_chamada(r, cfg, so_pago=True) for r in rows), 2)
 
 
 def gasto_rede_mes(conn, cfg, ref=None):
     mes = em_sp(ref or agora()).strftime('%Y-%m')
     rows = _rows(conn, "timestamp LIKE :m", {'m': mes + '%'})
-    return round(sum(custo_chamada(r, cfg) for r in rows), 2)
+    return round(sum(custo_chamada(r, cfg, so_pago=True) for r in rows), 2)
+
+
+def teto_vono_minutos(cfg):
+    """Minutos da Vono que a rede usa por mes antes de desviar para a Nvoip (0 = sem Vono)."""
+    return int(cfg.VONO_FRACAO * cfg.VONO_CANAIS * cfg.VONO_MIN_CANAL_MES) if cfg.VONO_CANAIS > 0 else 0
+
+
+def minutos_vono_mes(conn, ref=None):
+    mes = em_sp(ref or agora()).strftime('%Y-%m')
+    rows = _rows(conn, "timestamp LIKE :m AND tronco = 'vono'", {'m': mes + '%'})
+    return sum(math.ceil(r['duration_seconds'] / 60) for r in rows if r['status'] == 'ALLOWED' and r['duration_seconds'])
+
+
+def vono_disponivel(conn, cfg, ref=None):
+    """A proxima ligacao pode sair pela Vono? Nao se nao ha Vono ou se o mes ja encostou no teto de minutos."""
+    teto = teto_vono_minutos(cfg)
+    return teto > 0 and minutos_vono_mes(conn, ref) < teto
 
 
 def criancas_com_celular(conn):
@@ -102,7 +124,9 @@ def teto_crianca(conn, cfg):
     tetos = []
     if cfg.TETO_CRIANCA_MES > 0:
         tetos.append(cfg.TETO_CRIANCA_MES)
-    if cfg.TETO_REDE_MES > 0:
+    # Sem Vono, o orcamento da rede e dividido entre as criancas; com Vono os minutos nao custam por
+    # ligacao, e a divisao bloquearia a toa (o orcamento segue protegido pelos tetos da rede, so Nvoip).
+    if cfg.TETO_REDE_MES > 0 and cfg.VONO_CANAIS == 0:
         n = criancas_com_celular(conn)
         if n:
             tetos.append(math.floor(cfg.TETO_REDE_MES / n * 100) / 100)
@@ -222,8 +246,13 @@ def resumo_mes(conn, cfg, ref=None):
             if (_saida(r) or _entrada(r)) and r['status'] == 'ALLOWED' and r['duration_seconds']]
     totais = {'ligacoes': len(rows),
               'min_saida': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if _saida(r)),
-              'min_entrada': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if _entrada(r))}
-    return {'mes': mes, 'gasto': gasto, 'teto_rede': cfg.TETO_REDE_MES,
+              'min_entrada': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if _entrada(r)),
+              'min_vono': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if r['tronco'] == 'vono'),
+              'min_nvoip': sum(math.ceil(r['duration_seconds'] / 60) for r in rows if r['tronco'] != 'vono')}
+    teto_vono = teto_vono_minutos(cfg)
+    vono = {'canais': cfg.VONO_CANAIS, 'teto': teto_vono, 'minutos': totais['min_vono'],
+            'pct': int(round(totais['min_vono'] / teto_vono * 100)) if teto_vono else None}
+    return {'mes': mes, 'gasto': gasto, 'teto_rede': cfg.TETO_REDE_MES, 'vono': vono,
             'pct': int(round(gasto / cfg.TETO_REDE_MES * 100)) if cfg.TETO_REDE_MES > 0 else None,
             'projecao': round(gasto / hoje.day * dias_no_mes, 2), 'teto_crianca': teto_crianca(conn, cfg),
             'criancas_com_celular': criancas_com_celular(conn), 'totais': totais,

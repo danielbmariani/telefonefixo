@@ -75,4 +75,5 @@ def decidir_familia(conn, caller, destino, alvo, agora_sp):
     if segundos <= 0:
         registrar_bloqueio(conn, caller, destino, 'TETO')
         return 'BLOCK_TETO', 'TETO'
-    return 'ALLOW', f'{svc_fam.dial_saida(numero)};limite={segundos}'
+    vono = 1 if custos.vono_disponivel(conn, _cfg(), agora_sp) else 0
+    return 'ALLOW', f'{svc_fam.dial_saida(numero)};limite={segundos};vono={vono}'

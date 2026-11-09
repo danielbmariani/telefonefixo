@@ -9,11 +9,12 @@
     <p class="mb-1"><span class="fs-4 fw-bold">{{ lig }}</span> ligaç{{ 'ões' if lig != 1 else 'ão' }} completada{{ 's' if lig != 1 }} neste mês <span class="text-muted">· {{ mins }} min</span></p>
     <a href="{{ url_for('admin.uso') }}">Ver uso por dia, semana, mês e ano</a>
   </div></div></div>
-  <div class="col-12"><div class="card {% if celular.pct is not none and celular.pct >= 80 %}border-warning{% endif %}"><div class="card-body"><h6>Celulares em {{ celular.mes }} (estimativa)</h6>
+  <div class="col-12"><div class="card {% if celular.pct is not none and celular.pct >= 80 %}border-warning{% endif %}"><div class="card-body"><h6>Celulares em {{ celular.mes }} (estimativa, só o que é pago por minuto)</h6>
     <p class="mb-2"><span class="fs-4 fw-bold">R$ {{ '%.2f'|format(celular.gasto) }}</span>{% if celular.pct is not none %} de R$ {{ '%.2f'|format(celular.teto_rede) }} <span class="text-muted">({{ celular.pct }}% do orçamento do mês)</span>{% endif %}
       <span class="text-muted">· projeção até o fim do mês: R$ {{ '%.2f'|format(celular.projecao) }}</span></p>
     {% if celular.pct is not none %}<div class="progress mb-2" role="progressbar" aria-label="Orçamento do mês usado" aria-valuenow="{{ celular.pct }}" aria-valuemin="0" aria-valuemax="100" style="height: 8px"><div class="progress-bar {% if celular.pct >= 80 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ [celular.pct, 100]|min }}%"></div></div>{% endif %}
     <p class="small text-muted mb-2">{{ celular.criancas_com_celular }} criança{{ 's' if celular.criancas_com_celular != 1 }} com celular cadastrado · teto por criança neste mês: R$ {{ '%.2f'|format(celular.teto_crianca) }} · tarifas usadas na conta: R$ {{ '%.2f'|format(celular.tarifa_saida) }}/min para o celular e R$ {{ '%.2f'|format(celular.tarifa_entrada) }}/min do celular. O valor real é o que a operadora debita.</p>
+    {% if celular.vono.teto %}<p class="mb-2"><span class="fw-bold">Vono:</span> {{ celular.vono.minutos }} de {{ celular.vono.teto }} min do mês ({{ celular.vono.pct }}%), {{ celular.vono.canais }} cana{{ 'is' if celular.vono.canais != 1 else 'l' }}. <span class="text-muted">Acima disso as ligações saem pela Nvoip. Nvoip neste mês: {{ celular.totais.min_nvoip }} min.</span></p>{% endif %}
     {% if celular.totais.ligacoes %}<span class="small">{{ celular.totais.ligacoes }} ligaç{{ 'ões' if celular.totais.ligacoes != 1 else 'ão' }} com celular: {{ celular.totais.min_saida }} min para o celular, {{ celular.totais.min_entrada }} min do celular.</span>
     {% else %}<span class="text-muted small">Nenhuma ligação com celular atendida neste mês.</span>{% endif %}
   </div></div></div>

@@ -27,9 +27,12 @@ def main():
     A.agi_verbose(f'check_call: {resultado} {motivo or ""}')
     A.agi_set_variable('CALL_RESULT', resultado)
     if resultado == 'ALLOW' and motivo and motivo.startswith('PJSIP/'):
-        dial, _, limite = motivo.partition(';limite=')   # 9/8+ID: celular da familia pelo tronco, com teto
+        # 9/8+ID: celular da familia pelo tronco, com teto; 'vono=0' manda direto para a Nvoip (B30)
+        dial, *opcoes = motivo.split(';')
+        o = dict(x.split('=', 1) for x in opcoes if '=' in x)
         A.agi_set_variable('FAMILIA_DIAL', dial)
-        A.agi_set_variable('FAMILIA_LIMITE_MS', str(int(limite or 1800) * 1000))
+        A.agi_set_variable('FAMILIA_LIMITE_MS', str(int(o.get('limite') or 1800) * 1000))
+        A.agi_set_variable('FAMILIA_VONO', o.get('vono', '1'))
 
 
 if __name__ == '__main__':

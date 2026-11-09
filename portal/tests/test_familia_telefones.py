@@ -80,10 +80,10 @@ def test_nove_mais_id_decide(client, app):
         assert chamadas.decidir(c, cr['id_rede'], '9' + cr['id_rede'], t) == ('BLOCK_PARENT', 'FAMILIA_NAO_CONFIGURADA')
         fam.adicionar(c, cr['familia_id'], '11987654321', 'Mãe')
         # so o celular 1: 9 funciona, 8 ainda nao
-        assert chamadas.decidir(c, cr['id_rede'], '9' + cr['id_rede'], t) == ('ALLOW', 'PJSIP/11987654321@nvoip;limite=1000')
+        assert chamadas.decidir(c, cr['id_rede'], '9' + cr['id_rede'], t) == ('ALLOW', 'PJSIP/11987654321@nvoip;limite=1000;vono=0')
         assert chamadas.decidir(c, cr['id_rede'], '8' + cr['id_rede'], t) == ('BLOCK_PARENT', 'FAMILIA_NAO_CONFIGURADA')
         fam.adicionar(c, cr['familia_id'], '11911111111', 'Pai')
-        assert chamadas.decidir(c, cr['id_rede'], '8' + cr['id_rede'], t) == ('ALLOW', 'PJSIP/11911111111@nvoip;limite=1000')
+        assert chamadas.decidir(c, cr['id_rede'], '8' + cr['id_rede'], t) == ('ALLOW', 'PJSIP/11911111111@nvoip;limite=1000;vono=0')
         # 9 + ID de outra crianca (mesmo da mesma familia) nao vale
         assert chamadas.decidir(c, cr['id_rede'], '9' + outra['id_rede'], t)[0] == 'BLOCK_PERMISSION'
         # crianca desconhecida

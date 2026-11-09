@@ -17,9 +17,9 @@ def _operador(client, app):
     post(client, '/entrar', email='op@ong.org', senha='senha12345')
 
 
-def _lig(app, de, para, dur, quando, status='ALLOWED'):
+def _lig(app, de, para, dur, quando, status='ALLOWED', tronco=None):
     with app.engine.begin() as c:
-        c.execute(insert(db.call_logs).values(caller_ext=de, callee_ext=para, status=status, duration_seconds=dur,
+        c.execute(insert(db.call_logs).values(caller_ext=de, callee_ext=para, status=status, duration_seconds=dur, tronco=tronco,
                                               timestamp=em_sp(quando).strftime('%Y-%m-%d %H:%M:%S')))
 
 
@@ -38,7 +38,7 @@ def test_serie_por_mes_e_por_dia(client, app):
                                               admin_senha='x', informado_em=hoje - timedelta(days=40), desativado_em=hoje - timedelta(days=10)))
     meio_dia = em_sp(hoje).replace(hour=15, minute=0, second=0, microsecond=0)
     _lig(app, a['id_rede'], b['id_rede'], 120, meio_dia)                       # telefone com telefone, hoje
-    _lig(app, a['id_rede'], '9' + a['id_rede'], 61, meio_dia)                  # telefone para celular, hoje: 2 min
+    _lig(app, a['id_rede'], '9' + a['id_rede'], 61, meio_dia, tronco='vono')   # telefone para celular, hoje: 2 min pela Vono
     _lig(app, '11987654321', b['id_rede'], 30, meio_dia - timedelta(days=45))  # celular para telefone, 45 dias atras
     _lig(app, a['id_rede'], b['id_rede'], 0, meio_dia, status='BLOCKED')
     with app.engine.begin() as c:
@@ -50,9 +50,11 @@ def test_serie_por_mes_e_por_dia(client, app):
     assert at['ativos'] == 2 and at['telefones'] == 2 and at['familias'] == 1
     assert at['telefones_novos'] == 1 and at['familias_novas'] == 1
     assert at['pct_ativos'] == 100 and at['media_min'] == 1.5
+    assert at['troncos'] == {'vono': 2, 'nvoip': 0}
     # ha 45 dias: 1 ligacao do celular; dois telefones na rede (o removido ainda estava)
     antigo = next(l for l in d['periodos'] if l['tipos']['celular_crianca']['ligacoes'] == 1)
     assert antigo['ligacoes'] == 1 and antigo['ativos'] == 1 and antigo['telefones'] == 2
+    assert antigo['troncos'] == {'vono': 0, 'nvoip': 1}   # sem tronco gravado conta como Nvoip
     assert d['horas'][15] == 3 and sum(v for _, v in d['dias_semana']) == 3
     assert dict(d['duracoes'])['até 1 min'] == 1 and dict(d['duracoes'])['1 a 3 min'] == 2
     assert sum(l['ligacoes'] for l in d['periodos']) == 3
@@ -81,7 +83,7 @@ def test_pagina_uso_csv_e_abas(client, app):
     r = client.get('/ong/uso.csv?g=mes&n=2')
     assert r.status_code == 200 and r.mimetype == 'text/csv'
     linhas = r.get_data(as_text=True).strip().split('\n')
-    assert len(linhas) == 3 and linhas[0].startswith('periodo;inicio;fim;familias_novas') and linhas[-1].endswith(';0;0;0')
+    assert len(linhas) == 3 and linhas[0].startswith('periodo;inicio;fim;familias_novas') and linhas[0].endswith(';min_celular_vono;min_celular_nvoip') and linhas[-1].endswith(';0;0;0;0;0')
     # as abas do operador aparecem em todas as paginas, com a atual marcada
     for url, aba in [('/ong/', 'Painel'), ('/ong/uso', 'Uso'), ('/ong/casos', 'Casos'), ('/ong/tarefas', 'Tarefas'),
                      ('/ong/telefones', 'Telefones'), ('/ong/auditoria', 'Auditoria')]:

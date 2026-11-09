@@ -41,7 +41,8 @@ def main():
         from rede.tempo import agora_sp_texto
         with A.engine().begin() as conn:
             conn.execute(db.call_logs.insert().values(caller_ext=caller, callee_ext=destino, timestamp=agora_sp_texto(),
-                                                      status=status, duration_seconds=duracao))
+                                                      status=status, duration_seconds=duracao,
+                                                      tronco=A.agi_get_variable('CALL_TRONCO') or None))
     except Exception as e:  # noqa: BLE001
         A.agi_verbose(f'log_call: ERRO {e}')
 

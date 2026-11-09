@@ -113,6 +113,11 @@ class Config:
         self.TARIFA_SAIDA_MIN = float(g('REDE_TARIFA_SAIDA_MIN', '0.30'))       # estimativa R$/min crianca -> celular
         self.TARIFA_ENTRADA_MIN = float(g('REDE_TARIFA_ENTRADA_MIN', '0.05'))   # estimativa R$/min celular -> crianca
         self.ALERTA_EMAIL = g('REDE_ALERTA_EMAIL', '') or self.CONTATO_EMAIL     # quem recebe os avisos de teto
+        # Tronco Vono (B30): canais com minutos ilimitados, teto contratual de 5.000 min por canal por mes.
+        # Acima de VONO_FRACAO desse teto, a ligacao sai pela Nvoip (por minuto). 0 canais = sem Vono.
+        self.VONO_CANAIS = int(g('REDE_VONO_CANAIS', '0'))
+        self.VONO_MIN_CANAL_MES = int(g('REDE_VONO_MIN_CANAL_MES', '5000'))
+        self.VONO_FRACAO = float(g('REDE_VONO_FRACAO', '0.8'))
         self.ALERTA_FRACAO = float(g('REDE_ALERTA_FRACAO', '0.8'))              # avisa ao passar de 80% do teto
         # Copia do banco fora do servidor (deploy/copia-externa.sh): arquivo que o rede-backup-db atualiza a cada
         # envio que deu certo. Vazio = sem conferencia. O job diario avisa se ficar mais de COPIA_EXTERNA_MAX_H horas parado.

@@ -126,6 +126,7 @@ def _linha_vazia(p):
     return {**p, 'familias_novas': 0, 'telefones_novos': 0, 'amizades_novas': 0,
             'familias': 0, 'telefones': 0, 'ativos': 0,
             'tipos': {t: {'ligacoes': 0, 'minutos': 0, 'segundos': 0, 'nao_completadas': 0} for t, _ in TIPOS},
+            'troncos': {'vono': 0, 'nvoip': 0},
             'ligacoes': 0, 'minutos': 0, 'segundos': 0, 'nao_completadas': 0, 'antigas': 0}
 
 
@@ -144,7 +145,7 @@ def serie(conn, gran='mes', n=None, ref=None):
     horas, dias_semana, duracoes = Counter(), Counter(), Counter()
 
     # Ligações do período (call_logs tem a hora local em texto)
-    rows = conn.execute(text("SELECT caller_ext, callee_ext, timestamp, status, duration_seconds FROM call_logs "
+    rows = conn.execute(text("SELECT caller_ext, callee_ext, timestamp, status, duration_seconds, tronco FROM call_logs "
                              "WHERE timestamp >= :d"), {'d': f'{desde:%Y-%m-%d} 00:00:00'}).mappings().all()
     for r in rows:
         try:
@@ -159,6 +160,8 @@ def serie(conn, gran='mes', n=None, ref=None):
         if r['status'] == 'ALLOWED' and r['duration_seconds']:
             lt['ligacoes'] += 1
             lt['segundos'] += r['duration_seconds']
+            if t != 'crianca_crianca':   # minutos com celular por tronco; antigas sem tronco contam como Nvoip
+                linhas[i]['troncos']['vono' if r['tronco'] == 'vono' else 'nvoip'] += math.ceil(r['duration_seconds'] / 60)
             for ext in (r['caller_ext'], r['callee_ext']):
                 if len(ext) == 6:
                     ativos[i].add(ext)
@@ -235,14 +238,14 @@ def serie(conn, gran='mes', n=None, ref=None):
 def csv(dados):
     cab = ['periodo', 'inicio', 'fim', 'familias_novas', 'familias', 'telefones_novos', 'telefones', 'telefones_ativos',
            'amizades_novas'] + [f'{t}_{m}' for t, _ in TIPOS for m in ('ligacoes', 'minutos', 'nao_completadas')] + \
-          ['ligacoes', 'minutos', 'nao_completadas']
+          ['ligacoes', 'minutos', 'nao_completadas', 'min_celular_vono', 'min_celular_nvoip']
     out = [';'.join(cab)]
     for l in dados['periodos']:
         vals = [l['rotulo'], l['inicio'].isoformat(), (l['fim'] - timedelta(days=1)).isoformat(), l['familias_novas'], l['familias'],
                 l['telefones_novos'], l['telefones'], l['ativos'], l['amizades_novas']]
         for t, _ in TIPOS:
             vals += [l['tipos'][t]['ligacoes'], l['tipos'][t]['minutos'], l['tipos'][t]['nao_completadas']]
-        vals += [l['ligacoes'], l['minutos'], l['nao_completadas']]
+        vals += [l['ligacoes'], l['minutos'], l['nao_completadas'], l['troncos']['vono'], l['troncos']['nvoip']]
         out.append(';'.join(str(v) for v in vals))
     return '\n'.join(out) + '\n'
 

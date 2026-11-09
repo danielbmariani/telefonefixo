@@ -258,6 +258,7 @@ call_logs = Table('call_logs', metadata,
     Column('status', Text, nullable=False),
     Column('duration_seconds', Integer),
     Column('block_reason', Text),
+    Column('tronco', Text),                                   # 'vono' | 'nvoip' (B30); NULL nas antigas e entre criancas
 )
 Index('call_logs_caller', call_logs.c.caller_ext)
 Index('call_logs_callee', call_logs.c.callee_ext)
