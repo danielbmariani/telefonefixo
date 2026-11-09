@@ -393,25 +393,36 @@ def init_db(engine, com_ps_contacts=False):
     migrar(engine)
 
 
+def colunas_faltando(engine_ou_conn):
+    """Colunas que existem no modelo e faltam no banco: [(tabela, coluna, tipo_sql)]. Levanta RuntimeError se
+    alguma e NOT NULL sem default (precisa de migracao manual). Aceita engine ou conexao; migrar() passa a
+    propria conexao do ALTER, porque no SQLite outra conexao do pool pode ter o esquema antigo em memoria."""
+    from sqlalchemy import inspect
+    insp = inspect(engine_ou_conn)
+    faltam = []
+    for tabela in metadata.sorted_tables:
+        if not insp.has_table(tabela.name):
+            continue
+        existentes = {c['name'] for c in insp.get_columns(tabela.name)}
+        for col in tabela.columns:
+            if col.name in existentes:
+                continue
+            if not col.nullable and col.default is None and col.server_default is None:
+                raise RuntimeError(f'{tabela.name}.{col.name}: coluna NOT NULL nova precisa de migracao manual')
+            faltam.append((tabela.name, col.name, col.type.compile(dialect=engine_ou_conn.dialect)))
+    return faltam
+
+
 def migrar(engine):
     """Acrescenta colunas que existem no modelo e faltam no banco (ADD COLUMN, so colunas anulaveis).
-    Suficiente para a evolucao do portal; nunca apaga nem muda tipo. Retorna [(tabela, coluna)]."""
-    from sqlalchemy import inspect
-    insp = inspect(engine)
+    Suficiente para a evolucao do portal; nunca apaga nem muda tipo. Retorna [(tabela, coluna)].
+    Em producao as tabelas pertencem ao postgres, nao ao usuario portal: deploy/codigo.sh gera os mesmos
+    ALTERs com colunas_faltando() e roda como postgres antes de reiniciar o portal."""
     feitas = []
     with engine.begin() as conn:
-        for tabela in metadata.sorted_tables:
-            if not insp.has_table(tabela.name):
-                continue
-            existentes = {c['name'] for c in insp.get_columns(tabela.name)}
-            for col in tabela.columns:
-                if col.name in existentes:
-                    continue
-                if not col.nullable and col.default is None and col.server_default is None:
-                    raise RuntimeError(f'{tabela.name}.{col.name}: coluna NOT NULL nova precisa de migracao manual')
-                tipo = col.type.compile(dialect=engine.dialect)
-                conn.execute(text(f'ALTER TABLE {tabela.name} ADD COLUMN {col.name} {tipo}'))
-                feitas.append((tabela.name, col.name))
+        for tabela, coluna, tipo in colunas_faltando(conn):
+            conn.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {coluna} {tipo}'))
+            feitas.append((tabela, coluna))
     return feitas
 
 
