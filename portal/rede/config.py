@@ -38,6 +38,8 @@ class Config:
         self.CODIGO_URL = g('REDE_CODIGO_URL', 'https://github.com/danielbmariani/telefonefixo').rstrip('/')
         # Tronco da operadora (B23): numero fixo da rede que a familia liga para alcancar a crianca. So digitos.
         self.TRONCO_NUMERO = g('REDE_TRONCO_NUMERO', '')
+        # Numero que aparece no celular quando a crianca liga (B30: numero da Vono). Vazio = o mesmo TRONCO_NUMERO.
+        self.TRONCO_NUMERO_SAIDA = g('REDE_TRONCO_NUMERO_SAIDA', '') or self.TRONCO_NUMERO
         # Voz sintetica (doc 16): frases fixas, apelidos e nomes de grupo em wav para o Asterisk.
         # VOZ_BACKEND: auto (piper se houver, senao espeak-ng), piper, espeak, nenhum (testes).
         self.VOZ_BACKEND = g('REDE_VOZ_BACKEND', 'nenhum')

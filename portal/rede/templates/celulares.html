@@ -12,7 +12,8 @@
 
 {% if numeros %}
 <h2 class="h5 mb-2">De {{ crianca.apelido }} para os celulares</h2>
-{% for t in numeros %}
+{% if numero_saida %}<p class="mb-3">Quando {{ crianca.apelido }} liga, aparece no celular o número <span class="mono fw-bold text-nowrap">{{ numero_saida }}</span>. Salve esse número nos contatos{% if numero_saida != numero_rede %}, além do {{ numero_rede }}{% endif %}: celular costuma silenciar número desconhecido.</p>
+{% endif %}{% for t in numeros %}
 <div class="card mb-2"><div class="card-body py-3">
   <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
     <h3 class="h5 fw-bold mb-0"><span class="badge text-bg-light border me-2 align-middle">Celular {{ t.posicao }}</span>{% if t.apelido %}{{ t.apelido }} <span class="mono text-muted fw-normal">{{ formatar(t.numero) }}</span>{% else %}<span class="mono">{{ formatar(t.numero) }}</span>{% endif %}</h3>

@@ -151,3 +151,17 @@ def test_entrada_pelo_tronco(client, app):
         tid = fam.listar(c, cr['familia_id'])[0]['id']
         fam.remover(c, cr['familia_id'], tid)
         assert fam.decidir_entrada(c, '11987654321', t)[0] == 'BLOCK_UNKNOWN'
+
+
+def test_pagina_mostra_numero_que_aparece_no_celular(client, app):
+    """B30: a criança liga pela Vono e o celular mostra outro número; a página pede para salvar os dois."""
+    cadastrar_e_entrar(client, app)
+    cid = criar_crianca(client, 'ana01')
+    post(client, f'/crianca/{cid}/celulares', numero='11987654321', apelido='Mãe')
+    app.cfg.TRONCO_NUMERO, app.cfg.TRONCO_NUMERO_SAIDA = '1151083530', '1154441774'
+    html = client.get(f'/crianca/{cid}/celulares').get_data(as_text=True)
+    assert 'aparece no celular o número <span class="mono fw-bold text-nowrap">(11) 5444-1774</span>' in html
+    assert 'além do (11) 5108-3530' in html and 'disque <span class="mono discar-caixa">(11) 5108-3530</span>' in html
+    app.cfg.TRONCO_NUMERO_SAIDA = '1151083530'
+    html = client.get(f'/crianca/{cid}/celulares').get_data(as_text=True)
+    assert 'além do' not in html and '(11) 5108-3530</span>. Salve esse número' in html

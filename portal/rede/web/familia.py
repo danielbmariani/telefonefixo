@@ -503,7 +503,8 @@ def celulares(crianca_id):
     return render_template('celulares.html', crianca=c, active_tab='celulares', numeros=svc_fam.listar(conn(), fid), criancas=cs, usos=usos,
                            franquia=custos.franquia_minutos(conn(), _cfg()),
                            maximo=svc_fam.MAX_POR_FAMILIA, formatar=svc_fam.formatar, prefixos=svc_fam.PREFIXOS,
-                           numero_rede=svc_fam.formatar(_cfg().TRONCO_NUMERO) or 'o número da rede')
+                           numero_rede=svc_fam.formatar(_cfg().TRONCO_NUMERO) or 'o número da rede',
+                           numero_saida=svc_fam.formatar(_cfg().TRONCO_NUMERO_SAIDA) or '')
 
 
 @bp.route('/meus-dados.json')
