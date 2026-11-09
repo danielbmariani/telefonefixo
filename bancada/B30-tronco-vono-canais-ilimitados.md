@@ -38,14 +38,13 @@ família. Nenhuma família paga nem configura nada.
 | 12:49 | **9+ID pela Vono funcionou**: 22 s, 16 s de conversa, celular mostrou (11) 5444-1774 |
 | 12:5x | celular → (11) 5444-1774: "número não existe". Primeira leitura errada ("não chegou à central"): o rastreamento SIP mostrou que o INVITE chegou de 190.89.248.47 e a central respondeu **404**. Duas causas: (a) `identify` só por `vono2.me`, que no reload nem resolveu; (b) a Vono manda no destino o nosso usuário do tronco (`sip:ldem...@central;line=...`), não o número, e `[tronco-entrada]` só tinha `_X.`, `_+X.` e `s` |
 | 12:56 | correções: `match=190.89.248.0/24` no identify e `exten => _[a-zA-Z].` em `[tronco-entrada]`. Teste pela própria central (`channel originate` Nvoip → número da Vono): INVITE da Vono aceito, 200 OK, `check_entrada` bloqueou como esperado (chamador era o número da Nvoip) |
+| 13:48 | **queda para a Nvoip provada**: com `dialplan set global VONO_ENDPOINT vono-x` a perna Vono falha na hora ("endpoint not found"), a central disca pela Nvoip, celular mostra (11) 5108-3530, 21 s de conversa, áudio normal. O "billsec 0" das 12:28 não se repetiu; fica como ocorrência isolada. `VONO_ENDPOINT` devolvido para `vono` |
 | 13:03 | **celular → (11) 5444-1774 funcionou**: 5 s, atendida, chamador identificado (a Vono manda `"55DDDnúmero"`, o 55 já era tratado), áudio nos dois sentidos ("perfeição") |
 
 ## Em aberto
 
 1. ~~Entrada pelo número da Vono~~ resolvido às 13:03 (ver tabela).
-2. Queda para a Nvoip: na ligação das 12:28 a perna Nvoip foi atendida e encerrou no mesmo segundo.
-   Reproduzir com `dialplan set global VONO_ENDPOINT vono-x` (força CHANUNAVAIL) e rastreamento
-   SIP ligado (`b30-debug.log`, `pjsip set logger on`); depois voltar com `VONO_ENDPOINT vono`.
+2. ~~Queda para a Nvoip~~ provada às 13:48. Se o "billsec 0" voltar, rastrear com `pjsip set logger on`.
 3. Portal: página Celulares e e-mail de boas-vindas mostrando os dois números para salvar; teto
    por criança em minutos quando a saída é pela Vono; aba Uso com minutos por tronco
    (`CALL_TRONCO` ainda não é gravado em `call_logs`).
