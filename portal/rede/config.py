@@ -33,7 +33,10 @@ class Config:
         self.SIP_CERT_NOME = g('REDE_SIP_CERT_NOME', '')
         self.SIP_CERT_LINHAS = g('REDE_SIP_CERT_LINHAS', '')
         self.SIP_CERT_DIAS_MIN = int(g('REDE_SIP_CERT_DIAS_MIN', '15'))
-        self.TIMEZONE = g('REDE_TIMEZONE', 'America/Sao_Paulo')
+        self.TIMEZONE = g('REDE_TIMEZONE', 'America/Sao_Paulo')   # padrao do fuso da familia (familias.fuso)
+        # Base GeoLite2-City (MaxMind) baixada pelo geoipupdate (deploy/geoip.sh). So conferencia do fuso da
+        # familia contra o IP do telefone (caso 'fuso_divergente' no painel). Arquivo ausente = desligado.
+        self.GEOIP_DB = g('REDE_GEOIP_DB', '/var/lib/GeoIP/GeoLite2-City.mmdb')
         # Repositorio publico do codigo (AGPL-3.0): link na pagina inicial, no rodape e em /por-dentro
         self.CODIGO_URL = g('REDE_CODIGO_URL', 'https://github.com/danielbmariani/telefonefixo').rstrip('/')
         # Tronco da operadora (B23): numero fixo da rede que a familia liga para alcancar a crianca. So digitos.

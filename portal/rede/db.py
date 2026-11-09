@@ -104,6 +104,7 @@ telefones = Table('telefones', metadata,
     _ts('ultimo_prov_em'),
     Column('ultimo_prov_ip', Text),
     Column('ultimo_prov_ua', Text),
+    Column('ultimo_prov_fuso', Text),   # fuso provavel do IP do ultimo provisionamento (rede/geoip.py); NULL = sem base ou IP privado
     _ts('ultimo_sip_em'),
     Column('ultimo_sip_ip', Text),
     Column('ultimo_sip_ua', Text),

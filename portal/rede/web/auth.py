@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from ..servicos import contas
 from ..servicos.contas import ErroUsuario
 from .comum import conn, erro
-from .. import db, fusos
+from .. import db, fusos, geoip
 
 bp = Blueprint('auth', __name__)
 
@@ -48,7 +48,8 @@ def cadastrar():
             flash(str(e), 'danger')
             return render_template('cadastrar.html', form=request.form)
         session['cadastro_email'] = email
-        session['cadastro_fuso'] = fusos.validar(request.form.get('fuso'))   # sugerido pelo navegador (rede/fusos.py)
+        # sugerido pelo navegador (rede/fusos.py); sem JavaScript, o IP de quem cadastra, se houver base GeoIP
+        session['cadastro_fuso'] = fusos.validar(request.form.get('fuso')) or geoip.fuso_do_ip(g.ip, current_app.cfg)
         flash(f'Enviamos um código de 6 dígitos para {email}.', 'success')
         return redirect(url_for('auth.verificar_email'))
     return render_template('cadastrar.html', form={})

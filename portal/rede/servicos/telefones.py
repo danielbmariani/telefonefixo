@@ -338,6 +338,7 @@ def entregar_config(conn, token, mac_pedido, ip, user_agent, cfg):
     primeira = telefone['config_entregue_em'] is None
     conn.execute(update(db.telefones).where(db.telefones.c.id == telefone['id'])
                  .values(ultimo_prov_em=agora(), ultimo_prov_ip=ip, ultimo_prov_ua=(user_agent or '')[:300]))
+    conferir_fuso(conn, telefone, ip, cfg)
     if estados.pode(telefone['estado'], 'config_entregue'):
         estados.transicionar(conn, telefone['id'], 'config_entregue', 'telefone', mac_n,
                              detalhes={'ip': ip, 'user_agent': (user_agent or '')[:120], 'xml_versao': telefone['xml_versao']})
@@ -352,6 +353,36 @@ def entregar_config(conn, token, mac_pedido, ip, user_agent, cfg):
                     f'Telefone {telefone["id"]} buscou config de {ip} e de {telefone["ultimo_prov_ip"]} em menos de 24h.',
                     {'ip_novo': ip, 'ip_anterior': telefone['ultimo_prov_ip']}, unico=True)
     return xml, 'entregue'
+
+
+def conferir_fuso(conn, telefone, ip, cfg):
+    """O IP de onde o telefone busca a configuracao parece estar em outro fuso que o da familia? Abre o caso
+    'fuso_divergente' (baixa) uma vez por telefone, para o operador confirmar com a familia; se numa busca
+    seguinte voltar a bater (a familia corrigiu em /fuso), o caso se resolve sozinho. Sem base GeoIP: nada."""
+    from .. import geoip, fusos
+    fuso_ip = geoip.fuso_do_ip(ip, cfg)
+    if not fuso_ip:
+        return None
+    conn.execute(update(db.telefones).where(db.telefones.c.id == telefone['id']).values(ultimo_prov_fuso=fuso_ip))
+    crianca = svc_cri.por_id(conn, telefone['crianca_id'])
+    fuso_fam = svc_cri.fuso_da_crianca(conn, crianca) or fusos.PADRAO
+    aberto = conn.execute(select(db.casos.c.id).where(and_(db.casos.c.tipo == 'fuso_divergente', db.casos.c.estado == 'aberto',
+                                                           db.casos.c.telefone_id == telefone['id']))).scalar()
+    if geoip.divergente(fuso_fam, fuso_ip):
+        if not aberto:
+            _abrir_caso(conn, 'fuso_divergente', 'baixa', telefone,
+                        f'O telefone busca a configuração de um endereço que parece estar em {fusos.descrever(fuso_ip)}, '
+                        f'mas a família está com {fusos.descrever(fuso_fam)}. Relógio e horários podem estar fora. '
+                        f'Confirmar com a família; ela troca em /fuso. Pode ser só a operadora (CGNAT, 4G).',
+                        {'ip': ip, 'fuso_ip': fuso_ip, 'fuso_familia': fuso_fam}, unico=True)
+            auditoria.registrar(conn, 'alerta_fuso_divergente', 'sistema', None, 'telefone', telefone['id'],
+                                detalhes={'fuso_ip': fuso_ip, 'fuso_familia': fuso_fam}, ip=ip)
+        return 'divergente'
+    if aberto:
+        conn.execute(update(db.casos).where(db.casos.c.id == aberto).values(
+            estado='resolvido', resolvido_em=agora(), resolvido_por='sistema', motivo=f'fuso da família ({fuso_fam}) voltou a bater com o IP'))
+        auditoria.registrar(conn, 'caso_resolvido', 'sistema', None, 'caso', aberto, detalhes={'motivo': 'fuso voltou a bater'})
+    return 'ok'
 
 
 def _abrir_caso(conn, tipo, gravidade, telefone, descricao, detalhes=None, unico=False):

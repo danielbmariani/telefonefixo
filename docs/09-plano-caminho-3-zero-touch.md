@@ -314,6 +314,9 @@ seguintes. Toda requisição recusada é registrada e conta para rate limit.
   token revogado, família avisada.
 - Mesmo MAC vindo de dois IPs públicos muito distantes no mesmo dia: alerta
   (telefone clonado? dados vazados?), sem bloquear automaticamente.
+- IP do telefone num fuso diferente do fuso da família (base GeoLite2 local,
+  `rede/geoip.py`): caso `fuso_divergente` de gravidade baixa, uma vez por
+  telefone, resolvido sozinho se a família corrigir em `/fuso` (09/11/2026).
 - User-agent com firmware desconhecido: registrar para a tabela de
   compatibilidade.
 - Nunca entregar XML para MAC em estado `desativado` ou `erro_*`.

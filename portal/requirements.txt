@@ -2,5 +2,6 @@ Flask==3.1.*
 SQLAlchemy==2.0.*
 psycopg2-binary
 pytz
+maxminddb            # leitura da base GeoLite2 (rede/geoip.py); a base vem do geoipupdate (deploy/geoip.sh)
 qrcode[pil]
 websockets>=12,<15   # servico rede-grupo (ARI)

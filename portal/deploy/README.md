@@ -37,4 +37,11 @@ Servidor Ubuntu 22.04/24.04 (Oracle Ampere A1). Portas: TCP 22, 80, 443, 5060; U
    `REDE_SIP_CERT_LINHAS` (`todas` ou IDs do piloto) no `portal.env`, reiniciar o portal e reenviar a linha
    (`flask sip-cifragem <ID|todas> exigida`). Teste e cuidados: `bancada/B27-conferencia-do-certificado.md`.
 
+8. **Fuso horário e GeoIP**: cada família tem o seu fuso (`familias.fuso`, sugerido pelo navegador no cadastro,
+   trocável em `/fuso`); vale para o relógio do GRP, os horários permitidos, a hora certa e as datas do site.
+   `deploy/geoip.sh` instala o `geoipupdate` com uma conta gratuita GeoLite2 (MaxMind) e a base de cidades em
+   `/var/lib/GeoIP`, lida no próprio servidor: quando o IP de onde o telefone busca a configuração parece estar em
+   outro fuso, abre o caso `fuso_divergente` (baixa) no painel, que se resolve sozinho se a família corrigir.
+   Nenhum IP sai para terceiros. Sem a base, a conferência fica desligada e o resto funciona igual.
+
 Verificação de auditoria pós-deploy: como `portal`, `UPDATE audit_log SET acao='x' WHERE id=1` deve falhar.

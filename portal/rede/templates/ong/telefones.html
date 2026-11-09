@@ -5,6 +5,6 @@
 <p class="small text-muted mb-3">{% if removidos %}Mostrando também os removidos. <a href="{{ url_for('admin.telefones') }}">Só os da rede</a>{% elif n_removidos and not q %}{{ n_removidos }} removido{{ 's' if n_removidos != 1 }} fora da lista. <a href="{{ url_for('admin.telefones', removidos=1) }}">Mostrar</a>{% endif %}</p>
 <table class="table table-sm"><thead><tr><th>#</th><th>MAC</th><th>ID</th><th>Apelido</th><th>Estado</th><th>Informado</th><th>Último prov.</th><th>Último SIP</th><th></th></tr></thead><tbody>
 {% for r in rows %}<tr><td>{{ r.id }}</td><td class="font-monospace">{{ r.mac|mac }}</td><td class="font-monospace">{{ r.id_rede }}</td><td>{{ r.apelido }}</td><td>{% if r.estado in ('desativado', 'cancelado') %}<span class="badge bg-danger">removido</span>{% else %}<span class="badge bg-secondary">{{ r.estado }}</span>{% endif %}</td>
-<td>{{ r.informado_em|datahora }}</td><td>{{ r.ultimo_prov_em|datahora }} {{ r.ultimo_prov_ip or '' }}</td><td>{{ r.ultimo_sip_em|datahora }} {{ r.ultimo_sip_ip or '' }}</td>
+<td>{{ r.informado_em|datahora }}</td><td>{{ r.ultimo_prov_em|datahora }} {{ r.ultimo_prov_ip or '' }}{% if r.ultimo_prov_fuso %} <span class="text-muted small" title="fuso provável do IP (GeoIP)">{{ r.ultimo_prov_fuso }}</span>{% endif %}</td><td>{{ r.ultimo_sip_em|datahora }} {{ r.ultimo_sip_ip or '' }}</td>
 <td><a href="{{ url_for('admin.linha_tempo', telefone_id=r.id) }}">linha do tempo</a></td></tr>{% endfor %}</tbody></table>
 {% endblock %}

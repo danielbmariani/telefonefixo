@@ -80,4 +80,5 @@ aparelhos recebem na busca diária de configuração. O Daniel conferiu o visor 
 09/11/2026: o fuso deixou de ser global. Cada família tem o seu (`familias.fuso`, sugerido pelo navegador no
 cadastro e trocável em /fuso); `pvalues_relogio` gera o texto POSIX também para fuso com horário de verão
 (famílias fora do Brasil). Mudança de fuso vai ao aparelho pelo GDMS (etapa `relogio` da fila); `REDE_TIMEZONE`
-ficou só como padrão.
+ficou só como padrão. Conferência pelo IP de onde o telefone busca a configuração (base GeoLite2 no servidor,
+`deploy/geoip.sh`): divergência abre o caso `fuso_divergente` no painel.
