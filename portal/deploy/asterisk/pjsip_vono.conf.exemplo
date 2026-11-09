@@ -47,4 +47,7 @@ language=pt_BR
 [vono]
 type=identify
 endpoint=vono
+; A Vono entrega as ligacoes de mais de um IP (vono2.me resolve para .47, as chamadas chegaram de .48):
+; sem a faixa, o INVITE cai como anonimo e a central responde 404 (bancada B30).
 match=__SERVIDOR__
+match=190.89.248.0/24
