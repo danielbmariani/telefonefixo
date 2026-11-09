@@ -75,3 +75,9 @@ No fuso automático o GRP2601 aplica ao Brasil a regra antiga de horário de ver
 novembro a fevereiro. A configuração passou a mandar fuso fixo (`grandstream_xml.pvalues_relogio`: P64=customize,
 P246=`UTC+3`, P143=0), calculado de `REDE_TIMEZONE`. Enviado à linha de teste pelo GDMS em 06/11; os outros
 aparelhos recebem na busca diária de configuração. O Daniel conferiu o visor da linha de teste: hora certa.
+
+
+09/11/2026: o fuso deixou de ser global. Cada família tem o seu (`familias.fuso`, sugerido pelo navegador no
+cadastro e trocável em /fuso); `pvalues_relogio` gera o texto POSIX também para fuso com horário de verão
+(famílias fora do Brasil). Mudança de fuso vai ao aparelho pelo GDMS (etapa `relogio` da fila); `REDE_TIMEZONE`
+ficou só como padrão.

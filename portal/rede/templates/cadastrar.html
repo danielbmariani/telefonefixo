@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Criar conta | {{ nome_rede }}{% endblock %}
+{% block scripts %}
+<script>
+// Fuso horario da casa: o navegador sabe o fuso do celular ou computador do responsavel. Vai como sugestao;
+// a familia pode trocar depois em Horarios. Sem JavaScript, fica o padrao (Brasilia).
+try { var f = document.getElementById('fuso'); if (f && !f.value) f.value = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+</script>
+{% endblock %}
 {% block content %}
 <div class="auth-card">
   {% set passo_atual = 1 %}{% include "_passos.html" %}
@@ -8,6 +15,7 @@
   <div class="card"><div class="card-body">
     <form method="post">
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="fuso" id="fuso" value="{{ form.get('fuso','') }}">
       <div class="mb-3"><label class="form-label" for="nome">Seu nome</label><input class="form-control form-control-lg" id="nome" name="nome" value="{{ form.get('nome','') }}" maxlength="80" autocomplete="name" placeholder="Como quer ser chamado"></div>
       <div class="mb-3"><label class="form-label" for="email">Seu e-mail</label><input class="form-control form-control-lg" type="email" id="email" name="email" value="{{ form.get('email','') }}" required autocomplete="email">
         <div class="form-text">Enviamos um código para confirmar que é seu.</div></div>

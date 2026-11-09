@@ -34,6 +34,7 @@ familias = Table('familias', metadata,
     _ts('verificado_em'),
     _ts('criado_em', nullable=False),
     Column('suspensa', Boolean, nullable=False, default=False),
+    Column('fuso', Text),                                       # IANA (rede/fusos.py); NULL = America/Sao_Paulo
 )
 
 verificacoes_email = Table('verificacoes_email', metadata,

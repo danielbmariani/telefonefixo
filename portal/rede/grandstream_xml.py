@@ -166,23 +166,78 @@ def senha_usuario_aparelho(senha_admin):
     return hashlib.sha256(('user:' + senha_admin).encode('utf-8')).hexdigest()[:16]
 
 
+def _posix_deslocamento(delta):
+    """utcoffset -> deslocamento POSIX (sinal invertido): UTC-3 vira '+3', UTC+5:30 vira '-5:30'."""
+    minutos = -int(delta.total_seconds() // 60)
+    horas, resto = divmod(abs(minutos), 60)
+    return f"{'+' if minutos >= 0 else '-'}{horas}" + (f':{resto:02d}' if resto else '')
+
+
+def _posix_regra(zona, dia, ano):
+    """Regra POSIX 'Mm.w.d[/h[:mm]]' da transicao que acontece entre o meio-dia da vespera e o meio-dia de `dia`:
+    m = mes, w = semana do mes (5 = ultima), d = dia da semana (0 = domingo), hora no horario que valia antes."""
+    from datetime import datetime, timedelta, timezone
+    from calendar import monthrange
+    ini = datetime(ano, dia.month, dia.day, 12, tzinfo=timezone.utc) - timedelta(days=1)
+    fim = ini + timedelta(days=1)
+    antes = ini.astimezone(zona).utcoffset()
+    while (fim - ini) > timedelta(minutes=1):
+        meio = ini + (fim - ini) / 2
+        if meio.astimezone(zona).utcoffset() == antes:
+            ini = meio
+        else:
+            fim = meio
+    # fim e o primeiro minuto com o deslocamento novo; a hora da regra e a local no deslocamento antigo
+    local = (fim.astimezone(timezone.utc) + antes).replace(tzinfo=None)
+    semana = (local.day - 1) // 7 + 1
+    if local.day + 7 > monthrange(ano, local.month)[1]:
+        semana = 5
+    d = (local.weekday() + 1) % 7
+    hora = f'{local.hour}' + (f':{local.minute:02d}' if local.minute else '')
+    return f'M{local.month}.{semana}.{d}' + ('' if hora == '2' else f'/{hora}')
+
+
+def posix_tz(fuso='America/Sao_Paulo'):
+    """Texto POSIX do fuso para o P246, calculado da base IANA do sistema (zoneinfo).
+    Sem horario de verao: 'UTC+3' (UTC-3; o sinal e invertido). Com horario de verao: nome, deslocamento,
+    nome do verao, deslocamento do verao e as duas regras de transicao do ano corrente, como
+    'EST5EDT4,M3.2.0,M11.1.0' ou 'GMT0BST-1,M3.5.0/1,M10.5.0'. Nomes so com letras (o aparelho aceita
+    qualquer coisa alfabetica; '-03' nao serve), por isso as abreviaturas numericas viram STD/DST."""
+    import re
+    from datetime import datetime, date, timedelta
+    from zoneinfo import ZoneInfo
+    zona, ano = ZoneInfo(fuso), datetime.now().year
+    meio_dias = [datetime(ano, 1, 1, 12, tzinfo=zona) + timedelta(days=i) for i in range(366)]
+    meio_dias = [d for d in meio_dias if d.year == ano]
+    deslocamentos = {d.utcoffset() for d in meio_dias}
+    if len(deslocamentos) == 1:
+        return 'UTC' + _posix_deslocamento(deslocamentos.pop())
+    padrao = next(d for d in meio_dias if not d.dst())
+    verao = next(d for d in meio_dias if d.dst())
+
+    def nome(d, reserva):
+        n = d.tzname() or ''
+        return n if re.fullmatch(r'[A-Za-z]{3,}', n) else reserva
+
+    transicoes = [d for d, ant in zip(meio_dias[1:], meio_dias) if d.utcoffset() != ant.utcoffset()]
+    if len(transicoes) != 2:
+        return 'UTC' + _posix_deslocamento(padrao.utcoffset())   # fuso exotico: fica no horario padrao
+    inicio = next(t for t in transicoes if t.dst())
+    fim = next(t for t in transicoes if not t.dst())
+    return (f'{nome(padrao, "STD")}{_posix_deslocamento(padrao.utcoffset())}'
+            f'{nome(verao, "DST")}{_posix_deslocamento(verao.utcoffset())},'
+            f'{_posix_regra(zona, date(ano, inicio.month, inicio.day), ano)},'
+            f'{_posix_regra(zona, date(ano, fim.month, fim.day), ano)}')
+
+
 def pvalues_relogio(fuso='America/Sao_Paulo'):
     """Fuso do relogio do visor (GRP260x). No automatico, o aparelho aplica ao Brasil a regra antiga de horario
     de verao (BRST+3BRDT+2,M11.1.0,M2.3.0) e fica uma hora adiantado de novembro a fevereiro (visto em 06/11/2026).
       P64   Time Zone: 'customize' = usa o P246
-      P246  Self Defined Time Zone, formato POSIX: 'UTC+3' e UTC-3 sem horario de verao (o sinal e invertido)
+      P246  Self Defined Time Zone, formato POSIX (posix_tz): 'UTC+3' e UTC-3 sem horario de verao
       P143  Allow DHCP Option 2 to Override Time Zone: 0 (o roteador da casa nao muda o fuso)
-    So para fuso sem horario de verao; com horario de verao devolve {} e o aparelho segue no automatico."""
-    from datetime import datetime
-    from zoneinfo import ZoneInfo
-    zona, ano = ZoneInfo(fuso), datetime.now().year
-    deslocamentos = {datetime(ano, mes, 1, 12, tzinfo=zona).utcoffset() for mes in (1, 7)}
-    if len(deslocamentos) != 1:
-        return {}
-    minutos = -int(deslocamentos.pop().total_seconds() // 60)
-    horas, resto = divmod(abs(minutos), 60)
-    return {'P64': 'customize', 'P246': f"UTC{'+' if minutos >= 0 else '-'}{horas}" + (f':{resto:02d}' if resto else ''),
-            'P143': '0'}
+    O fuso e o da familia (familias.fuso, rede/fusos.py); fora do Brasil, com horario de verao, vao as regras."""
+    return {'P64': 'customize', 'P246': posix_tz(fuso), 'P143': '0'}
 
 
 def pvalues_travas(senha_admin, modelo='grp'):

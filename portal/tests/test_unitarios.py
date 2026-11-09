@@ -111,6 +111,11 @@ def test_pvalues_relogio_sem_horario_de_verao():
     assert gx.pvalues_relogio('America/Sao_Paulo') == {'P64': 'customize', 'P246': 'UTC+3', 'P143': '0'}
     assert gx.pvalues_relogio('America/Manaus')['P246'] == 'UTC+4'
     assert gx.pvalues_relogio('Asia/Kolkata')['P246'] == 'UTC-5:30'
-    assert gx.pvalues_relogio('Europe/Lisbon') == {}          # com horario de verao, o aparelho segue no automatico
+    # com horario de verao vao as regras POSIX das duas transicoes (sinal invertido; hora omitida = 2h)
+    assert gx.pvalues_relogio('Europe/Lisbon')['P246'] == 'WET+0WEST-1,M3.5.0/1,M10.5.0'
+    assert gx.posix_tz('America/New_York') == 'EST+5EDT+4,M3.2.0,M11.1.0'
+    assert gx.posix_tz('Europe/Berlin') == 'CET-1CEST-2,M3.5.0,M10.5.0/3'
+    assert gx.posix_tz('Australia/Sydney') == 'AEST-10AEDT-11,M10.1.0,M4.1.0/3'
+    assert gx.posix_tz('America/Santiago').startswith('STD+4DST+3,')   # abreviatura numerica ('-04') vira STD/DST
     fab = gx.pvalues_fabrica('grp')
     assert fab['P64'] == 'auto' and 'P64' not in gx.pvalues_fabrica('ht')

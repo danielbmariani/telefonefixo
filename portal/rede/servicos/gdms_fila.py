@@ -72,6 +72,19 @@ def atualizar_linha(conn, crianca_id):
     return True
 
 
+def atualizar_relogio(conn, crianca_id):
+    """Fuso da casa mudou: manda ao aparelho, pelo GDMS, so o fuso do relogio (P64/P246/P143), como as teclas.
+    Sem GDMS, o aparelho pega na conferencia diaria do XML ou ao ser religado."""
+    tel = svc_tel.atual_da_crianca(conn, crianca_id)
+    if not tel or tel['estado'] not in ESTADOS_REENVIO:
+        return False
+    conn.execute(update(db.gdms_fila).where(and_(db.gdms_fila.c.telefone_id == tel['id'], db.gdms_fila.c.estado == 'pendente',
+                                                 db.gdms_fila.c.etapa == 'relogio')).values(estado='cancelada', atualizado_em=agora()))
+    conn.execute(insert(db.gdms_fila).values(telefone_id=tel['id'], estado='pendente', etapa='relogio', tentativas=0,
+                                             proxima_em=agora(), criado_em=agora()))
+    return True
+
+
 def reenviar_config(conn, telefone_id):
     """Enfileira so o envio da configuracao (device/config/xml) para um telefone que ja esta no GDMS.
     Uso: mudou o conteudo do XML ponteiro (ex.: travas) e nao da para esperar o recheck do P193."""
@@ -144,7 +157,7 @@ def processar(conn, cfg, http=None, ref=None, cliente=None):
     for item in pendentes(conn, ref):
         n += 1
         tel = svc_tel.por_id(conn, item['telefone_id'])
-        if item['etapa'] in ('teclas', 'linha'):
+        if item['etapa'] in ('teclas', 'linha', 'relogio'):
             linha = item['etapa'] == 'linha'
             if not tel or tel['estado'] not in ESTADOS_REENVIO or cfg.GDMS_MODO != 'real' or tel['modelo'] == 'ht':
                 conn.execute(update(db.gdms_fila).where(db.gdms_fila.c.id == item['id'])
@@ -159,6 +172,8 @@ def processar(conn, cfg, http=None, ref=None, cliente=None):
                 if linha:
                     pv = grandstream_xml.pvalues_linha(cfg.SIP_HOST, svc_cri.cifragem(conn, cr['id_rede']), cfg.SIP_TLS_PORTA,
                                                        svc_cri.nome_certificado(cfg, cr['id_rede']))
+                elif item['etapa'] == 'relogio':
+                    pv = grandstream_xml.pvalues_relogio(svc_cri.fuso_da_crianca(conn, cr) or cfg.TIMEZONE)
                 else:
                     pv = grandstream_xml.pvalues_teclas(svc_tel.amigos_para_teclas(conn, cr), 'grp')
                 xml = grandstream_xml.gerar_xml(tel['mac'], pv, tel['xml_versao'])
@@ -168,7 +183,7 @@ def processar(conn, cfg, http=None, ref=None, cliente=None):
                 ok, rc, msg = False, None, f'excecao: {type(e).__name__}: {e}'[:300]
             conn.execute(update(db.gdms_fila).where(db.gdms_fila.c.id == item['id'])
                          .values(estado='ok' if ok else 'erro', ultimo_ret_code=rc, ultima_msg=(msg or '')[:300], atualizado_em=ref))
-            nome = 'gdms_linha' if linha else 'gdms_teclas'
+            nome = {'linha': 'gdms_linha', 'relogio': 'gdms_relogio'}.get(item['etapa'], 'gdms_teclas')
             auditoria.registrar(conn, f'{nome}_enviadas' if ok else f'{nome}_falhou', 'sistema', 'gdms_fila',
                                 'telefone', tel['id'], detalhes={'ret_code': rc, 'msg': (msg or '')[:120]})
             continue

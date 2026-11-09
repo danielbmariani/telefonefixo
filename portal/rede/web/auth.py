@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from ..servicos import contas
 from ..servicos.contas import ErroUsuario
 from .comum import conn, erro
-from .. import db
+from .. import db, fusos
 
 bp = Blueprint('auth', __name__)
 
@@ -48,6 +48,7 @@ def cadastrar():
             flash(str(e), 'danger')
             return render_template('cadastrar.html', form=request.form)
         session['cadastro_email'] = email
+        session['cadastro_fuso'] = fusos.validar(request.form.get('fuso'))   # sugerido pelo navegador (rede/fusos.py)
         flash(f'Enviamos um código de 6 dígitos para {email}.', 'success')
         return redirect(url_for('auth.verificar_email'))
     return render_template('cadastrar.html', form={})
@@ -60,7 +61,7 @@ def verificar_email():
         return redirect(url_for('auth.cadastrar'))
     if request.method == 'POST':
         try:
-            f = contas.confirmar_codigo(conn(), email, request.form.get('codigo'), g.ip)
+            f = contas.confirmar_codigo(conn(), email, request.form.get('codigo'), g.ip, fuso=session.get('cadastro_fuso'))
         except ErroUsuario as e:
             flash(str(e), 'danger')
             return render_template('verificar_email.html', email=email)

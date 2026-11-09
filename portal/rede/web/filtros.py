@@ -2,7 +2,9 @@
 
 from datetime import datetime
 
-from ..tempo import em_sp
+from flask import g
+
+from ..tempo import em_fuso, TZ_SP
 from .. import ids
 
 MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
@@ -11,12 +13,16 @@ MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', '
 def registrar(app):
     @app.template_filter('datahora')
     def datahora(v):
-        """'2026-03-05 16:20:55' (texto SP) ou datetime -> '5 mar 16:20'."""
+        """'2026-03-05 16:20:55' (texto SP, como o Asterisk grava) ou datetime -> '5 mar 16:20', no fuso da
+        familia logada (familias.fuso); sem familia (ONG), Sao Paulo."""
         try:
-            if isinstance(v, datetime):
-                d = em_sp(v)
-            else:
-                d = datetime.strptime(v, '%Y-%m-%d %H:%M:%S')
+            try:
+                fuso = g.familia['fuso'] if getattr(g, 'familia', None) else None
+            except RuntimeError:   # fora de requisicao
+                fuso = None
+            if not isinstance(v, datetime):
+                v = TZ_SP.localize(datetime.strptime(v, '%Y-%m-%d %H:%M:%S'))
+            d = em_fuso(v, fuso)
             return f'{d.day} {MESES[d.month - 1]} {d.hour:02d}:{d.minute:02d}'
         except (ValueError, TypeError, AttributeError):
             return v or ''

@@ -57,7 +57,7 @@ rede/
     reconciliacao.py jobs diários + export CSV com SHA-256 + funil
   web/               blueprints: auth, familia, prov (/p/<token>/cfg<mac>.xml), admin (/ong)
   templates/, static/, textos/ (termos, privacidade, consentimento: RASCUNHOS para o jurídico)
-agi/                 check_call.py, check_group.py, log_call.py (usam rede.servicos), conf_leave.py, hora_certa.py
+agi/                 check_call.py, check_entrada.py, log_call.py, hora_certa.py (usam rede.servicos; a hora certa fala no fuso da família)
 deploy/              extensions.conf (6 dígitos), realtime (extconfig/sorcery/odbc), systemd, nginx, grants.sql
 tests/               82 testes: fluxo HTTP, provisionamento, estados/jobs, amizades/chamadas, celulares, custos, LGPD, segurança
 ```

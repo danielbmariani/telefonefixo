@@ -4,8 +4,8 @@ import json
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, g, current_app, jsonify, abort
 
-from ..tempo import texto_sp
-from .. import ids, auditoria
+from ..tempo import texto_sp, texto_em
+from .. import ids, auditoria, fusos
 from ..servicos import retencao as svc_ret, familia_telefones as svc_fam, turmas as svc_tur, grupos as svc_gru, contas, criancas as svc_cri, telefones as svc_tel, amizades as svc_ami, horarios as svc_hor, \
     historico as svc_hist, textos, gdms_fila
 from ..servicos.contas import ErroUsuario
@@ -407,7 +407,7 @@ def horarios(crianca_id):
         try:
             if request.form.get('acao') == 'silenciar':
                 ate = svc_hor.silenciar(conn(), c['id'], request.form.get('duracao'), g.familia['id'])
-                flash(f'Telefone silenciado até {texto_sp(ate, "%d/%m às %H:%M")}.', 'success')
+                flash(f'Telefone silenciado até {texto_em(ate, g.familia["fuso"], "%d/%m às %H:%M")}.', 'success')
             else:
                 svc_hor.reativar(conn(), c['id'], g.familia['id'])
                 flash('Telefone reativado.', 'success')
@@ -436,7 +436,32 @@ def horarios(crianca_id):
     pats = svc_hor.agrupar(svc_hor.listar(conn(), c['id']))
     silencio = svc_hor.silencio_ativo(c)
     return render_template('horarios.html', crianca=c, patterns_json=json.dumps(pats), tem=bool(pats), active_tab='horarios',
-                           silencio_ate=texto_sp(silencio, '%d/%m às %H:%M') if silencio else None, duracoes=svc_hor.DURACOES_SILENCIO)
+                           silencio_ate=texto_em(silencio, g.familia['fuso'], '%d/%m às %H:%M') if silencio else None,
+                           duracoes=svc_hor.DURACOES_SILENCIO, fuso_texto=fusos.descrever(g.familia['fuso']))
+
+
+# --- Fuso horario da casa ---
+
+@bp.route('/fuso', methods=['GET', 'POST'])
+@login_obrigatorio
+@consentimento_obrigatorio
+def fuso():
+    """Fuso da familia: relogio do telefone, horarios permitidos, 'ate amanha as 8h', hora certa e datas do site.
+    No cadastro vem sugerido pelo navegador; aqui a familia confirma ou troca (ex.: mudou de estado ou de pais)."""
+    voltar = request.args.get('crianca_id', type=int)
+    destino = url_for('familia.horarios', crianca_id=voltar) if voltar else url_for('familia.inicio')
+    if request.method == 'POST':
+        try:
+            nome = contas.definir_fuso(conn(), g.familia['id'], request.form.get('fuso'))
+            avisados = sum(1 for cr in svc_cri.listar(conn(), g.familia['id']) if gdms_fila.atualizar_relogio(conn(), cr['id']))
+            msg = f'Fuso horário: {fusos.descrever(nome)}.'
+            if avisados:
+                msg += ' O relógio do telefone acerta em alguns minutos, se ele estiver ligado; senão, quando for ligado.'
+            flash(msg, 'success')
+            return redirect(destino)
+        except ErroUsuario as e:
+            flash(str(e), 'danger')
+    return render_template('fuso.html', atual=g.familia['fuso'] or fusos.PADRAO, grupos=fusos.opcoes(), voltar=destino)
 
 
 # --- Historico ---
@@ -518,7 +543,7 @@ def meus_dados():
     c = conn()
     fam = contas.por_id(c, fid)
     out = {'gerado_em': texto_sp(svc_ret.agora(), '%d/%m/%Y %H:%M'), 'versao': 1,
-           'responsavel': {'nome': fam['nome'], 'email': fam['email'], 'criado_em': texto_sp(fam['criado_em']),
+           'responsavel': {'nome': fam['nome'], 'email': fam['email'], 'fuso': fam['fuso'] or fusos.PADRAO, 'criado_em': texto_sp(fam['criado_em']),
                            'verificado_em': texto_sp(fam['verificado_em']) if fam['verificado_em'] else None},
            'consentimentos': [{'tipo': r['tipo'], 'versao': r['versao'], 'quando': texto_sp(r['ts'])}
                               for r in c.execute(select(db.consentimentos).where(db.consentimentos.c.familia_id == fid)).mappings()],

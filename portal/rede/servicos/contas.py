@@ -125,7 +125,9 @@ def reenviar_codigo(conn, email, ip, cfg=None, mailer=None):
 
 # --- E1 passo 2: confirmar codigo ---
 
-def confirmar_codigo(conn, email, codigo, ip):
+def confirmar_codigo(conn, email, codigo, ip, fuso=None):
+    """fuso: nome IANA sugerido pelo navegador no cadastro (rede/fusos.py); invalido ou vazio = padrao."""
+    from .. import fusos
     email = validar_email(email)
     codigo = (codigo or '').strip()
     pend = conn.execute(select(db.verificacoes_email).where(and_(
@@ -146,13 +148,26 @@ def confirmar_codigo(conn, email, codigo, ip):
         raise ErroUsuario('Este e-mail já tem conta. Faça login.')
     r = conn.execute(insert(db.familias).values(
         email=email, senha_hash=pend['senha_hash'], nome=pend['nome'], papel='familia',
-        verificado_em=agora(), criado_em=agora()))
+        verificado_em=agora(), criado_em=agora(), fuso=fusos.validar(fuso)))
     fid = r.inserted_primary_key[0]
     conn.execute(update(db.verificacoes_email).where(db.verificacoes_email.c.id == pend['id']).values(usado=True))
     auditoria.registrar(conn, 'conta_criada', 'familia', fid, 'familia', fid, ip=ip)
     auditoria.registrar(conn, 'email_verificado', 'familia', fid, 'familia', fid,
                         detalhes={'tentativas': pend['tentativas'] + 1})
     return por_id(conn, fid)
+
+
+def definir_fuso(conn, familia_id, fuso):
+    """Fuso da casa escolhido pela familia (pagina /fuso). Retorna o nome validado."""
+    from .. import fusos
+    nome = fusos.validar(fuso)
+    if not nome:
+        raise ErroUsuario('Escolha um fuso horário da lista.')
+    antes = por_id(conn, familia_id)['fuso']
+    conn.execute(update(db.familias).where(db.familias.c.id == familia_id).values(fuso=nome))
+    auditoria.registrar(conn, 'fuso_alterado', 'familia', familia_id, 'familia', familia_id,
+                        detalhes={'de': antes or fusos.PADRAO, 'para': nome})
+    return nome
 
 
 def db_utc(dt):

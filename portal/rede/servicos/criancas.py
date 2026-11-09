@@ -147,3 +147,10 @@ def ramal_consistente(conn, crianca):
     a = conn.execute(select(db.ps_auths.c.id).where(db.ps_auths.c.id == idr)).first()
     o = conn.execute(select(db.ps_aors.c.id).where(db.ps_aors.c.id == idr)).first()
     return bool(e and a and o)
+
+
+def fuso_da_crianca(conn, crianca):
+    """Fuso da casa (familias.fuso, nome IANA) ou None = padrao. Vale para o relogio do telefone e os horarios."""
+    if not crianca:
+        return None
+    return conn.execute(select(db.familias.c.fuso).where(db.familias.c.id == crianca['familia_id'])).scalar()

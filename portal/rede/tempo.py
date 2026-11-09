@@ -1,4 +1,4 @@
-"""tempo.py — Datas sempre em UTC no banco; exibicao em America/Sao_Paulo."""
+"""tempo.py — Datas sempre em UTC no banco; exibicao em America/Sao_Paulo (ONG) ou no fuso da familia (em_fuso)."""
 
 from datetime import datetime, timezone
 
@@ -39,3 +39,17 @@ def texto_sp(dt, fmt='%d/%m %H:%M'):
 
 def agora_sp_texto():
     return datetime.now(TZ_SP).strftime('%Y-%m-%d %H:%M:%S')
+
+
+# --- Fuso da familia (rede/fusos.py) ---------------------------------------
+
+def em_fuso(dt, fuso=None):
+    """Como em_sp, mas no fuso da casa (nome IANA; None ou invalido = Sao Paulo)."""
+    from .fusos import zona
+    dt = utc(dt)
+    return dt.astimezone(zona(fuso)) if dt else None
+
+
+def texto_em(dt, fuso=None, fmt='%d/%m %H:%M'):
+    d = em_fuso(dt, fuso)
+    return d.strftime(fmt) if d else ''

@@ -7,8 +7,8 @@ from datetime import timedelta
 from sqlalchemy import select, insert, delete, update, and_
 
 from .. import db, auditoria
-from ..tempo import agora, utc, em_sp, TZ_SP
-from .contas import ErroUsuario
+from ..tempo import agora, utc, em_fuso
+from .contas import ErroUsuario, por_id as familia_por_id
 
 TIME_RE = re.compile(r'^([01]\d|2[0-3]):[0-5]\d$')
 
@@ -48,9 +48,10 @@ def silenciar(conn, crianca_id, duracao, familia_id):
         raise ErroUsuario('Duração inválida.')
     ref = agora()
     if duracao == 'manha':
-        sp = em_sp(ref)
-        proxima = (sp + timedelta(days=1)).replace(hour=8, minute=0, second=0, microsecond=0)
-        ate = proxima
+        # 8h da manha no fuso da casa (familias.fuso), nao no da central
+        local = em_fuso(ref, familia_por_id(conn, familia_id)['fuso'])
+        # guardado em UTC: no SQLite a coluna nao converte sozinha o fuso do datetime
+        ate = utc((local + timedelta(days=1)).replace(hour=8, minute=0, second=0, microsecond=0))
     else:
         ate = ref + timedelta(hours=int(duracao[:-1]))
     conn.execute(update(db.criancas).where(db.criancas.c.id == crianca_id).values(nao_perturbe_ate=ate))
@@ -72,15 +73,19 @@ def silencio_ativo(crianca, ref=None):
     return None
 
 
-def dentro_do_horario(conn, id_rede, agora_sp):
-    """Para o AGI. Sem horario no dia = liberado. 'Nao perturbe' vale antes de tudo."""
-    c = conn.execute(select(db.criancas.c.id, db.criancas.c.nao_perturbe_ate).where(db.criancas.c.id_rede == id_rede)).mappings().first()
+def dentro_do_horario(conn, id_rede, instante):
+    """Para o AGI. Sem horario no dia = liberado. 'Nao perturbe' vale antes de tudo.
+    `instante` e um datetime com fuso (qualquer um): dia e hora sao conferidos no fuso da casa da crianca."""
+    c = conn.execute(select(db.criancas.c.id, db.criancas.c.nao_perturbe_ate, db.familias.c.fuso)
+                     .select_from(db.criancas.join(db.familias, db.criancas.c.familia_id == db.familias.c.id))
+                     .where(db.criancas.c.id_rede == id_rede)).mappings().first()
     if not c:
         return False
-    if silencio_ativo(c, utc(agora_sp)):
+    if silencio_ativo(c, utc(instante)):
         return False
-    dia = agora_sp.weekday()
-    hhmm = agora_sp.strftime('%H:%M')
+    local = em_fuso(instante, c['fuso'])
+    dia = local.weekday()
+    hhmm = local.strftime('%H:%M')
     rows = conn.execute(select(db.horarios).where(and_(db.horarios.c.crianca_id == c['id'],
                                                        db.horarios.c.dia_semana == dia))).mappings().all()
     if not rows:
