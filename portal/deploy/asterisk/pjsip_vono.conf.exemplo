@@ -1,0 +1,50 @@
+; pjsip_vono.conf — segundo tronco: Vono "SIP Trunk Ilimitado" (bancada B30). Gerado por deploy/tronco-vono.sh
+; a partir de VONO_* em ~/.config/rede-aberta/bancada.env; o arquivo real fica so no servidor (640 asterisk).
+; Saida: o dialplan prefere este tronco enquanto GROUP_COUNT(vono) < VONO_CANAIS; depois cai na Nvoip.
+; Entrada: ligacoes para o numero da Vono chegam aqui e caem no mesmo [tronco-entrada] da Nvoip.
+[vono-reg]
+type=registration
+outbound_auth=vono-auth
+server_uri=sip:__SERVIDOR__
+client_uri=sip:__USUARIO__@__SERVIDOR__
+contact_user=__USUARIO__
+retry_interval=60
+forbidden_retry_interval=600
+max_retries=10000
+expiration=300
+line=yes
+endpoint=vono
+transport=transport-udp
+
+[vono-auth]
+type=auth
+auth_type=userpass
+username=__USUARIO__
+password=__SENHA__
+
+[vono]
+type=aor
+contact=sip:__SERVIDOR__:5060
+qualify_frequency=60
+
+[vono]
+type=endpoint
+context=tronco-entrada
+disallow=all
+allow=alaw,ulaw
+outbound_auth=vono-auth
+aors=vono
+from_user=__USUARIO__
+from_domain=__SERVIDOR__
+direct_media=no
+rtp_symmetric=yes
+force_rport=yes
+rewrite_contact=yes
+transport=transport-udp
+dtmf_mode=rfc4733
+language=pt_BR
+
+[vono]
+type=identify
+endpoint=vono
+match=__SERVIDOR__
