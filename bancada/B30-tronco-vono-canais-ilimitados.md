@@ -54,8 +54,8 @@ família. Nenhuma família paga nem configura nada.
    (`REDE_VONO_CANAIS=4` × 5.000 × 0,8 = 16.000 min/mês): `chamadas.decidir_familia` devolve
    `vono=0` quando encosta e o dialplan vai direto à Nvoip (`FAMILIA_VONO`); aba Uso com minutos
    com celular por tronco; cartão Celulares do painel com "Vono: X de 16.000 min". Com Vono, o
-   orçamento da rede deixa de ser dividido por criança no `teto_crianca`. Pendente: confirmar com uma
-   ligação real que `tronco` é gravado.
+   orçamento da rede deixa de ser dividido por criança no `teto_crianca`. Confirmado às 14:33 com ligação real: 9 s,
+   `tronco = 'vono'` em `call_logs`.
 4. Trocar a senha do tronco no Meu Vono (apareceu em capturas de tela durante a contratação) e
    cancelar o tronco Tarifado se não tiver uso.
 5. Portabilidade do (11) 5108-3530 da Nvoip para a Vono, para voltar a um número só.
