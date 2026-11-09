@@ -130,6 +130,14 @@ fase 1. Para cada uma há uma recomendação; basta confirmar ou mudar.
    telesintese.com.br/anatel-fez-mais-de-200-fiscalizacoes-contra-provedores-sem-outorga,
    infomoney.com.br (regras de segurança do Pix Automático), woovi.com/planos-e-precos,
    twilio.com/pt-br/sip-trunking/pricing/br.
+
+   **Pesquisa de 07/11/2026 (metas novas do Daniel: pai paga nada ou até R$ 5, ao menos 5 h por
+   mês, mil crianças, projeto gasta até R$ 1.000 por mês).** Está em `docs/17-celular-a-custo-zero.md`.
+   Conclusão: por minuto não fecha em nenhuma operadora; cabem no orçamento (a) retorno automático
+   (toque no celular + pai retorna para o número da rede, entrada grátis na Nvoip, custo zero),
+   (b) canais ilimitados da Vono (R$ 40 a 50 por canal, 5.000 min/canal, CPF, sem fidelidade) e
+   (c) WhatsApp Calling por SIP (pai liga grátis; exige limite de 2.000 mensagens, CNPJ ou volume).
+   Recomendação: A agora, B após medir o uso do piloto, C quando houver CNPJ. Decisão do Daniel em 07/11: A descartado (pai teria de retornar a ligação); seguir com B e depois C. Provas B29 a B31 (B26 a B28 já eram TLS, certificado e jitterbuffer na bancada).
 7. **Faixa etária.** A rede é para crianças sem celular (grosso modo 6 a 12).
    Adolescentes podem usar, mas o ECA Digital trata adolescentes diferente.
    Recomendação: não perguntar idade exata; perguntar faixa só para
