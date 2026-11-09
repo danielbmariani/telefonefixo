@@ -236,8 +236,10 @@ def pvalues_relogio(fuso='America/Sao_Paulo'):
       P64   Time Zone: 'customize' = usa o P246
       P246  Self Defined Time Zone, formato POSIX (posix_tz): 'UTC+3' e UTC-3 sem horario de verao
       P143  Allow DHCP Option 2 to Override Time Zone: 0 (o roteador da casa nao muda o fuso)
+      P122  Time Display Format: 1 = 24 horas (de fabrica vem 12 horas, com AM/PM)
+      P102  Date Display Format: 2 = dd-mm-aaaa
     O fuso e o da familia (familias.fuso, rede/fusos.py); fora do Brasil, com horario de verao, vao as regras."""
-    return {'P64': 'customize', 'P246': posix_tz(fuso), 'P143': '0'}
+    return {'P64': 'customize', 'P246': posix_tz(fuso), 'P143': '0', 'P122': '1', 'P102': '2'}
 
 
 def pvalues_travas(senha_admin, modelo='grp'):

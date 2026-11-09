@@ -108,7 +108,7 @@ def test_pvalues_linha_e_cifragem():
 
 def test_pvalues_relogio_sem_horario_de_verao():
     # o sinal do formato POSIX e invertido: UTC-3 vira 'UTC+3'
-    assert gx.pvalues_relogio('America/Sao_Paulo') == {'P64': 'customize', 'P246': 'UTC+3', 'P143': '0'}
+    assert gx.pvalues_relogio('America/Sao_Paulo') == {'P64': 'customize', 'P246': 'UTC+3', 'P143': '0', 'P122': '1', 'P102': '2'}
     assert gx.pvalues_relogio('America/Manaus')['P246'] == 'UTC+4'
     assert gx.pvalues_relogio('Asia/Kolkata')['P246'] == 'UTC-5:30'
     # com horario de verao vao as regras POSIX das duas transicoes (sinal invertido; hora omitida = 2h)

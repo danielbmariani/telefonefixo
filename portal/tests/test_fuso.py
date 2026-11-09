@@ -82,6 +82,7 @@ def test_xml_do_telefone_usa_fuso_da_familia(client, app):
         contas.definir_fuso(conn, c['familia_id'], 'Europe/Lisbon')
         xml_pt = svc_tel.gerar_xml(conn, tel, app.cfg)
     assert '<P246>UTC+3</P246>' in xml_sp and '<P64>customize</P64>' in xml_sp and '<P143>0</P143>' in xml_sp
+    assert '<P122>1</P122>' in xml_sp and '<P102>2</P102>' in xml_sp   # 24 horas, dd-mm-aaaa
     assert '<P246>UTC+4</P246>' in xml_am
     assert '<P246>WET+0WEST-1,M3.5.0/1,M10.5.0</P246>' in xml_pt
 
