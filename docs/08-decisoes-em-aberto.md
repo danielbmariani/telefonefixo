@@ -137,7 +137,7 @@ fase 1. Para cada uma há uma recomendação; basta confirmar ou mudar.
    (toque no celular + pai retorna para o número da rede, entrada grátis na Nvoip, custo zero),
    (b) canais ilimitados da Vono (R$ 40 a 50 por canal, 5.000 min/canal, CPF, sem fidelidade) e
    (c) WhatsApp Calling por SIP (pai liga grátis; exige limite de 2.000 mensagens, CNPJ ou volume).
-   Recomendação: A agora, B após medir o uso do piloto, C quando houver CNPJ. Decisão do Daniel em 07/11: A descartado (pai teria de retornar a ligação); seguir com B e depois C. Provas B29 a B31 (B26 a B28 já eram TLS, certificado e jitterbuffer na bancada).
+   Recomendação: A agora, B após medir o uso do piloto, C quando houver CNPJ. Decisão do Daniel em 07/11: A descartado (pai teria de retornar a ligação); seguir com B e depois C. **Feito em 09/11/2026 (bancada B30):** Vono contratada com 4 canais e número (11) 5444-1774, segundo tronco na central com queda para a Nvoip, saída, entrada e queda provadas com ligação real. Teto por criança subiu para 300 min de saída e 1.800 de entrada por mês (segurança, não custo). Provas B29 a B31 (B26 a B28 já eram TLS, certificado e jitterbuffer na bancada).
 7. **Faixa etária.** A rede é para crianças sem celular (grosso modo 6 a 12).
    Adolescentes podem usar, mas o ECA Digital trata adolescentes diferente.
    Recomendação: não perguntar idade exata; perguntar faixa só para

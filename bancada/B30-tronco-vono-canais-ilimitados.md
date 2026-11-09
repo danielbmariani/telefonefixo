@@ -45,9 +45,12 @@ família. Nenhuma família paga nem configura nada.
 
 1. ~~Entrada pelo número da Vono~~ resolvido às 13:03 (ver tabela).
 2. ~~Queda para a Nvoip~~ provada às 13:48. Se o "billsec 0" voltar, rastrear com `pjsip set logger on`.
-3. Portal: página Celulares e e-mail de boas-vindas mostrando os dois números para salvar; teto
-   por criança em minutos quando a saída é pela Vono; aba Uso com minutos por tronco
-   (`CALL_TRONCO` ainda não é gravado em `call_logs`).
+3. Portal. Feito em 09/11: página Celulares avisa o número que aparece no celular
+   (`REDE_TRONCO_NUMERO_SAIDA`); tetos no `portal.env` subiram para 300 min de saída e 1.800 de
+   entrada por criança (`REDE_TETO_CRIANCA_MES=90.00`, ainda em reais-equivalentes a R$ 0,30 e
+   R$ 0,05 por minuto), rede R$ 1.000 por mês e R$ 100 por dia (`.antes-teto300`). Falta: gravar o
+   tronco de cada ligação (`CALL_TRONCO`) em `call_logs`, contar custo só nas pernas Nvoip e
+   mostrar minutos por tronco na aba Uso; teto da Vono em minutos (80% de 5.000 por canal).
 4. Trocar a senha do tronco no Meu Vono (apareceu em capturas de tela durante a contratação) e
    cancelar o tronco Tarifado se não tiver uso.
 5. Portabilidade do (11) 5108-3530 da Nvoip para a Vono, para voltar a um número só.
