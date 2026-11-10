@@ -120,8 +120,33 @@ def test_timeouts_boot_e_registro(client, app):
         r = sip.observar(conn, app.cfg, ref=agora() + timedelta(minutes=app.cfg.PRAZO_SEM_REGISTRO_MIN + 1))
     assert r['timeout_registro'] == 1 and telefone_row(app, cid)['estado'] == 'sem_registro'
     with app.engine.begin() as conn:
-        tipos = [r[0] for r in conn.execute(text('SELECT tipo FROM casos')).all()]
-    assert 'sem_boot' in tipos and 'sem_registro' in tipos
+        casos = dict(conn.execute(text('SELECT tipo, estado FROM casos')).all())
+    # buscar a configuracao fechou o caso de boot sozinho; o de registro segue aberto
+    assert casos == {'sem_boot': 'resolvido', 'sem_registro': 'aberto'}
+
+
+def test_casos_de_timeout_fecham_quando_telefone_avanca(client, app):
+    cid, t, c = _prep(client, app)
+    post(client, f'/crianca/{cid}/telefone', acao='liguei')
+    with app.engine.begin() as conn:
+        sip.observar(conn, app.cfg, ref=agora() + timedelta(minutes=app.cfg.PRAZO_SEM_BOOT_MIN + 1))
+        tok = conn.execute(text('SELECT token FROM prov_tokens WHERE telefone_id=:t'), {'t': t['id']}).scalar()
+    assert client.get(f'/p/{tok}/cfgc074ad010203.xml').status_code == 200
+    with app.engine.begin() as conn:
+        sip.observar(conn, app.cfg, ref=agora() + timedelta(minutes=app.cfg.PRAZO_SEM_REGISTRO_MIN + 1))
+    assert telefone_row(app, cid)['estado'] == 'sem_registro'
+    # o telefone registra no SIP (do mesmo IP do provisionamento, para nao abrir 'ip_divergente_sip'):
+    # o caso de registro fecha com motivo e auditoria, sem operador
+    _registrar_contato(app, c['id_rede'], ip=telefone_row(app, cid)['ultimo_prov_ip'])
+    with app.engine.begin() as conn:
+        sip.observar(conn, app.cfg)
+        casos = conn.execute(text('SELECT tipo, estado, resolvido_por, motivo FROM casos ORDER BY id')).all()
+    assert telefone_row(app, cid)['estado'] == 'registrado'
+    assert [(r[0], r[1], r[2]) for r in casos] == [('sem_boot', 'resolvido', 'sistema'), ('sem_registro', 'resolvido', 'sistema')]
+    assert 'config_entregue' in casos[0][3] and 'sip_registrado' in casos[1][3]
+    with app.engine.begin() as conn:
+        n = conn.execute(text("SELECT count(*) FROM audit_log WHERE acao='caso_resolvido' AND ator_tipo='sistema'")).scalar()
+    assert n == 2
 
 
 def test_vinculo_expira(client, app):

@@ -445,6 +445,9 @@ onde as famílias travam e o que melhorar no texto do site.
 `alerta_mac_duplicado`, `token_compartilhado`, tarefas manuais de RPS. Cada
 caso abre com a linha do tempo completa (todas as tabelas filtradas pelo
 `request_id`/`device_id`). Operador resolve com motivo; tudo registrado.
+Casos `sem_boot` e `sem_registro` fecham sozinhos (`resolvido_por = sistema`, motivo
+e auditoria) quando o telefone avança: buscar a configuração fecha o primeiro,
+registrar no SIP fecha os dois (09/11/2026, depois do caso #8 ficar aberto 3 dias).
 
 **Reconciliações automáticas** (jobs com resultado registrado em `audit_log`
 como `reconciliacao_executada`, com contagens e divergências):

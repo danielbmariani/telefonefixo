@@ -5,7 +5,7 @@ Toda mudanca de estado passa por transicionar(), que grava device_state_history
 e audit_log na mesma transacao. Nenhum outro codigo escreve telefones.estado.
 """
 
-from sqlalchemy import select, update
+from sqlalchemy import and_, select, update
 
 from . import db, auditoria
 from .tempo import agora
@@ -50,6 +50,12 @@ CARIMBOS = {
     'config_entregue': 'config_entregue_em', 'sip_registrado': 'registrado_em',
     'primeira_chamada': 'ativo_em',
 }
+# Casos de timeout que o proprio telefone resolve ao avancar: buscar a configuracao prova que o boot
+# aconteceu; registrar no SIP prova as duas coisas. O operador nao precisa fechar a mao (caso #8, 06/11/2026).
+CASOS_RESOLVIDOS_POR_EVENTO = {
+    'config_entregue': ('sem_boot',),
+    'sip_registrado': ('sem_boot', 'sem_registro'),
+}
 
 
 class TransicaoInvalida(Exception):
@@ -84,7 +90,21 @@ def transicionar(conn, telefone_id, evento, ator_tipo='sistema', ator_id=None, d
     conn.execute(db.device_state_history.insert().values(
         ts=agora(), telefone_id=telefone_id, de=atual, para=novo, evento=evento,
         ator_tipo=ator_tipo, ator_id=None if ator_id is None else str(ator_id), audit_id=aid))
+    if evento in CASOS_RESOLVIDOS_POR_EVENTO:
+        _resolver_casos(conn, telefone_id, CASOS_RESOLVIDOS_POR_EVENTO[evento],
+                        f'telefone avançou sozinho: {evento} ({atual} -> {novo})')
     return novo
+
+
+def _resolver_casos(conn, telefone_id, tipos, motivo):
+    """Fecha como 'sistema' os casos abertos destes tipos para o telefone, com motivo no caso e na auditoria."""
+    abertos = conn.execute(select(db.casos.c.id, db.casos.c.tipo).where(and_(
+        db.casos.c.telefone_id == telefone_id, db.casos.c.estado == 'aberto', db.casos.c.tipo.in_(tipos)))).all()
+    for cid, tipo in abertos:
+        conn.execute(update(db.casos).where(db.casos.c.id == cid).values(
+            estado='resolvido', resolvido_em=agora(), resolvido_por='sistema', motivo=motivo))
+        auditoria.registrar(conn, 'caso_resolvido', 'sistema', None, 'caso', cid,
+                            detalhes={'motivo': motivo, 'tipo': tipo, 'telefone_id': telefone_id})
 
 
 def pode(atual, evento):
