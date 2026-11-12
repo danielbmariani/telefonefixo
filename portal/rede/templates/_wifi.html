@@ -3,8 +3,9 @@
    12/11/2026, que confirmou a numeracao das telas: Menu > 2.Settings > 6.Wi-Fi Settings > 1.Wi-Fi (ja vem Enabled)
    > 3.Wi-Fi Network > rede > tela com "1.Security type" e "2.Wi-Fi strength" e a tecla com icone de corrente
    (Connect, segunda da esquerda), com "2.Wi-Fi strength" marcada. Ate a corrente, OK e o botao do meio da roda, nao uma tecla do visor (Daniel, 12/11). Nao existe "System". O guia diz que a conexao pelo visor pede a senha de
-   administrador (firmware 1.0.5.25+): no aparelho novo e a da linha "Password" da etiqueta. Ainda por confirmar no
-   aparelho: a tela de senha depois da corrente e em que momento pede a senha de administrador. #}
+   administrador (firmware 1.0.5.25+): no aparelho novo e a da linha "Password" da etiqueta. Depois da corrente (fotos de 12/11 20:36): tela "1.Security Type / WPA/PSK", seta para baixo leva a
+   "2.Wi-Fi Password" com Ab2 na segunda tecla e o certo (confirmar) na quarta. Nao apareceu pedido de senha de
+   administrador ate ai; a nota fica como "se pedir". #}
 {% macro tela(titulo, linhas, destaque=0, icones=['', '', '', ''], aperta=0, legenda='') %}
 <svg class="tela" viewBox="0 0 300 150" role="img" aria-label="{{ legenda }}">
   <rect x="0" y="0" width="240" height="112" rx="4" fill="#cfe3d6"/>
@@ -29,9 +30,9 @@
   {% endfor %}
   <g class="roda">
     <circle cx="272" cy="130" r="15" fill="none" stroke="#aab" stroke-width="3"/>
-    <g fill="#aab" font-size="7" text-anchor="middle"><text x="272" y="121">▲</text><text x="272" y="144">▼</text></g>
+    <path d="M269 121l3-4 3 4z" fill="#aab"/><path d="M269 139l3 4 3-4z" fill="{{ '#e8542c' if aperta == 'baixo' else '#aab' }}"/>
     <circle cx="272" cy="130" r="6" fill="{{ '#e8542c' if aperta == 'roda' else '#aab' }}"/>
-    {% if aperta == 'roda' %}<text x="272" y="106" text-anchor="middle" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible, sans-serif" fill="#e8542c">aperte</text>{% endif %}
+    {% if aperta in ('roda', 'baixo') %}<text x="272" y="106" text-anchor="middle" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible, sans-serif" fill="#e8542c">aperte</text>{% endif %}
   </g>
 </svg>
 {% endmacro %}
@@ -53,9 +54,11 @@
       {{ tela('Wi-Fi Network', ['1.Wi-Fi do vizinho', '2.NOME DO SEU WI-FI', '3.Outra rede'], 2, ['voltar', 'outra', 'outra', 'outra'], 'roda', 'Wi-Fi Network: marque o nome do Wi-Fi da sua casa e aperte OK') }}</li>
     <li>Abre uma tela com <strong>1.Security type</strong> e <strong>2.Wi-Fi strength</strong>. Desça até <strong>2.Wi-Fi strength</strong> ficar marcada e aí aperte a <strong>segunda tecla da esquerda</strong> abaixo do visor, a do símbolo de <strong>corrente</strong> (Connect, conectar).
       {{ tela('NOME DO SEU WI-FI', ['1.Security type: WPA/PSK', '2.Wi-Fi strength: Excellent'], 2, ['voltar', 'corrente', 'outra', 'outra'], 2, 'Detalhes da rede: com 2.Wi-Fi strength marcada, aperte a segunda tecla, abaixo do símbolo de corrente, para conectar') }}</li>
-    <li>Digite a <strong>senha do Wi-Fi</strong> no teclado numérico: cada tecla tem letras, aperte várias vezes até chegar na letra certa. O modo <strong>Ab2</strong> aceita maiúsculas, minúsculas e números; a tecla abaixo de <strong>Ab2</strong> troca para <strong>abc</strong>, <strong>ABC</strong> ou <strong>123</strong>. Confira a senha no visor e aperte <strong>OK</strong>.
-      {{ tela('Password', ['', 'senha do seu wi-fi_'], 0, ['voltar', 'ab2', 'outra', 'outra'], 'roda', 'Password: digite a senha do Wi-Fi e aperte OK') }}
-      <span class="small text-muted d-block">Se antes disso o telefone pedir uma senha de administrador (<strong>Admin Password</strong>), é a da linha <strong>Password</strong> da etiqueta embaixo do aparelho, não a do Wi-Fi.</span></li>
+    <li>Abre a tela <strong>1.Security Type</strong>, com <strong>WPA/PSK</strong> embaixo. Não mexa nela: aperte a <strong>seta para baixo</strong> da roda.
+      {{ tela('', ['1.Security Type', 'WPA/PSK'], 1, ['voltar', 'outra', 'outra', 'ok'], 'baixo', 'Tela 1.Security Type com WPA/PSK: aperte a seta para baixo da roda') }}</li>
+    <li>Aparece <strong>2.Wi-Fi Password</strong>. Digite a <strong>senha do Wi-Fi</strong> no teclado numérico: cada tecla tem letras, aperte várias vezes até chegar na letra certa. O modo <strong>Ab2</strong> aceita maiúsculas, minúsculas e números; a tecla abaixo de <strong>Ab2</strong> troca para <strong>abc</strong>, <strong>ABC</strong> ou <strong>123</strong>. Confira a senha no visor e aperte a tecla abaixo do <strong>✓</strong>, a última à direita.
+      {{ tela('', ['2.Wi-Fi Password', 'senha do seu wi-fi_'], 1, ['voltar', 'ab2', 'outra', 'ok'], 4, 'Tela 2.Wi-Fi Password: digite a senha do Wi-Fi e aperte a última tecla, abaixo do sinal de certo') }}
+      <span class="small text-muted d-block">Se em algum momento o telefone pedir uma senha de administrador (<strong>Admin Password</strong>), é a da linha <strong>Password</strong> da etiqueta embaixo do aparelho, não a do Wi-Fi.</span></li>
     <li>Quando conectar, aparece o símbolo de Wi-Fi no alto do visor. Se aparecer "Cannot connect", a senha está errada: volte ao passo 5.</li>
   </ol>
   <p class="small text-muted mb-0 mt-2">Depois disso, não mexa em mais nada no telefone. Se um dia a senha do Wi-Fi da casa mudar, refaça estes passos.</p>
