@@ -2,11 +2,11 @@
    Fontes: GRP260x User Guide e QIG do GRP2602W (documentation.grandstream.com) e o aparelho na mao do Daniel em
    12/11/2026, que confirmou a numeracao das telas: Menu > 2.Settings > 6.Wi-Fi Settings > 1.Wi-Fi (ja vem Enabled)
    > 3.Wi-Fi Network > rede > tela com "1.Security type" e "2.Wi-Fi strength" e a tecla com icone de corrente
-   (Connect, segunda da esquerda). Nao existe "System". O guia diz que a conexao pelo visor pede a senha de
+   (Connect, segunda da esquerda). Ate a corrente, OK e o botao do meio da roda, nao uma tecla do visor (Daniel, 12/11). Nao existe "System". O guia diz que a conexao pelo visor pede a senha de
    administrador (firmware 1.0.5.25+): no aparelho novo e a da linha "Password" da etiqueta. Ainda por confirmar no
    aparelho: a tela de senha depois da corrente e em que momento pede a senha de administrador. #}
 {% macro tela(titulo, linhas, destaque=0, icones=['', '', '', ''], aperta=0, legenda='') %}
-<svg class="tela" viewBox="0 0 240 150" role="img" aria-label="{{ legenda }}">
+<svg class="tela" viewBox="0 0 300 150" role="img" aria-label="{{ legenda }}">
   <rect x="0" y="0" width="240" height="112" rx="4" fill="#cfe3d6"/>
   <text x="120" y="14" text-anchor="middle" font-size="10" font-weight="700" font-family="JetBrains Mono, monospace" fill="#1d2a22">{{ titulo }}</text>
   {% for l in linhas %}{% set y = 22 + loop.index0 * 14 %}
@@ -27,28 +27,34 @@
   <rect x="{{ cx-19 }}" y="124" width="38" height="12" rx="4" fill="{{ '#e8542c' if loop.index == aperta else '#aab' }}"/>
   {% if loop.index == aperta %}<text x="{{ cx }}" y="148" text-anchor="middle" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible, sans-serif" fill="#e8542c">aperte</text>{% endif %}
   {% endfor %}
+  <g class="roda">
+    <circle cx="272" cy="130" r="15" fill="none" stroke="#aab" stroke-width="3"/>
+    <g fill="#aab" font-size="7" text-anchor="middle"><text x="272" y="121">▲</text><text x="272" y="144">▼</text></g>
+    <circle cx="272" cy="130" r="6" fill="{{ '#e8542c' if aperta == 'roda' else '#aab' }}"/>
+    {% if aperta == 'roda' %}<text x="272" y="106" text-anchor="middle" font-size="9" font-weight="700" font-family="Atkinson Hyperlegible, sans-serif" fill="#e8542c">aperte</text>{% endif %}
+  </g>
 </svg>
 {% endmacro %}
 <div class="card mb-3 wifi"><div class="card-body">
   <h2 class="h6 mb-2">Conectar ao Wi-Fi</h2>
-  <p class="small text-muted mb-2">O telefone sai da caixa em inglês. Os nomes mudam para português depois que ele se conecta. Nos desenhos, a linha escura é a que está marcada no visor e a tecla laranja é a que você aperta. As quatro teclas ficam logo abaixo do visor; o símbolo de cada uma aparece na última linha do visor.</p>
+  <p class="small text-muted mb-2">O telefone sai da caixa em inglês. Os nomes mudam para português depois que ele se conecta. Nos desenhos, a linha escura é a que está marcada no visor e o que está em laranja é o que você aperta. Para descer e subir na lista, use as setas da roda; para confirmar (<strong>OK</strong>), o botão redondo do meio da roda. As quatro teclas logo abaixo do visor têm o símbolo na última linha do visor; só a da corrente é usada aqui.</p>
   <ol class="cabos-lista mb-0">
-    <li>Com o telefone ligado, aperte a tecla abaixo do símbolo <strong>☰</strong> para abrir o menu.
-      {{ tela('', ['', '  (tela inicial)'], 0, ['menu', 'outra', 'outra', 'outra'], 1, 'Tela inicial: aperte a primeira tecla, abaixo do símbolo de menu') }}
+    <li>Com o telefone ligado, aperte o <strong>botão redondo do meio</strong> (dentro da roda das setas) para abrir o menu.
+      {{ tela('', ['', '  (tela inicial)'], 0, ['outra', 'outra', 'outra', 'outra'], 'roda', 'Tela inicial: aperte o botão redondo do meio para abrir o menu') }}
       <span class="small text-muted d-block">Atalho: se o visor estiver avisando que está sem rede e mostrar o símbolo de Wi-Fi na última linha, a tecla abaixo dele leva direto ao passo 5.</span></li>
     <li>Desça até <strong>2.Settings</strong> (Configurações) e aperte <strong>OK</strong>.
-      {{ tela('Menu', ['1.Status', '2.Settings', '3.Messages', '4.Call History', '5.Contacts'], 2, ['voltar', 'outra', 'outra', 'ok'], 4, 'Menu: marque 2.Settings e aperte OK') }}</li>
+      {{ tela('Menu', ['1.Status', '2.Settings', '3.Messages', '4.Call History', '5.Contacts'], 2, ['voltar', 'outra', 'outra', 'outra'], 'roda', 'Menu: marque 2.Settings e aperte OK') }}</li>
     <li>Desça até <strong>6.Wi-Fi Settings</strong> e aperte <strong>OK</strong>.
-      {{ tela('Settings', ['2.Call Settings', '3.Basic Settings', '4.Advanced Settings', '5.Ethernet Settings', '6.Wi-Fi Settings'], 5, ['voltar', 'outra', 'outra', 'ok'], 4, 'Settings: marque 6.Wi-Fi Settings e aperte OK') }}</li>
+      {{ tela('Settings', ['2.Call Settings', '3.Basic Settings', '4.Advanced Settings', '5.Ethernet Settings', '6.Wi-Fi Settings'], 5, ['voltar', 'outra', 'outra', 'outra'], 'roda', 'Settings: marque 6.Wi-Fi Settings e aperte OK') }}</li>
     <li>Confira se <strong>1.Wi-Fi</strong> está <strong>Enabled</strong> (ligado); de fábrica já vem. Depois desça até <strong>3.Wi-Fi Network</strong> e aperte <strong>OK</strong>.
-      {{ tela('Wi-Fi Settings', ['1.Wi-Fi: Enabled', '2.Wi-Fi Band', '3.Wi-Fi Network'], 3, ['voltar', 'outra', 'outra', 'ok'], 4, 'Wi-Fi Settings: 1.Wi-Fi deve estar Enabled; marque 3.Wi-Fi Network e aperte OK') }}
+      {{ tela('Wi-Fi Settings', ['1.Wi-Fi: Enabled', '2.Wi-Fi Band', '3.Wi-Fi Network'], 3, ['voltar', 'outra', 'outra', 'outra'], 'roda', 'Wi-Fi Settings: 1.Wi-Fi deve estar Enabled; marque 3.Wi-Fi Network e aperte OK') }}
       <span class="small text-muted d-block">Se estiver Disabled: marque 1.Wi-Fi, aperte OK, escolha Enabled e salve.</span></li>
     <li>O telefone busca as redes sozinho. Desça até o <strong>nome do Wi-Fi da sua casa</strong> e aperte <strong>OK</strong>.
-      {{ tela('Wi-Fi Network', ['1.Wi-Fi do vizinho', '2.NOME DO SEU WI-FI', '3.Outra rede'], 2, ['voltar', 'outra', 'outra', 'ok'], 4, 'Wi-Fi Network: marque o nome do Wi-Fi da sua casa e aperte OK') }}</li>
+      {{ tela('Wi-Fi Network', ['1.Wi-Fi do vizinho', '2.NOME DO SEU WI-FI', '3.Outra rede'], 2, ['voltar', 'outra', 'outra', 'outra'], 'roda', 'Wi-Fi Network: marque o nome do Wi-Fi da sua casa e aperte OK') }}</li>
     <li>Abre uma tela com <strong>1.Security type</strong> e <strong>2.Wi-Fi strength</strong>. Não precisa mexer nelas: aperte a <strong>segunda tecla da esquerda</strong>, a do símbolo de <strong>corrente</strong> (Connect, conectar).
       {{ tela('NOME DO SEU WI-FI', ['1.Security type: WPA/PSK', '2.Wi-Fi strength: Excellent'], 0, ['voltar', 'corrente', 'outra', 'outra'], 2, 'Detalhes da rede: aperte a segunda tecla, abaixo do símbolo de corrente, para conectar') }}</li>
     <li>Digite a <strong>senha do Wi-Fi</strong> no teclado numérico: cada tecla tem letras, aperte várias vezes até chegar na letra certa. O modo <strong>Ab2</strong> aceita maiúsculas, minúsculas e números; a tecla abaixo de <strong>Ab2</strong> troca para <strong>abc</strong>, <strong>ABC</strong> ou <strong>123</strong>. Confira a senha no visor e aperte <strong>OK</strong>.
-      {{ tela('Password', ['', 'senha do seu wi-fi_'], 0, ['voltar', 'ab2', 'outra', 'ok'], 4, 'Password: digite a senha do Wi-Fi e aperte OK') }}
+      {{ tela('Password', ['', 'senha do seu wi-fi_'], 0, ['voltar', 'ab2', 'outra', 'outra'], 'roda', 'Password: digite a senha do Wi-Fi e aperte OK') }}
       <span class="small text-muted d-block">Se antes disso o telefone pedir uma senha de administrador (<strong>Admin Password</strong>), é a da linha <strong>Password</strong> da etiqueta embaixo do aparelho, não a do Wi-Fi.</span></li>
     <li>Quando conectar, aparece o símbolo de Wi-Fi no alto do visor. Se aparecer "Cannot connect", a senha está errada: volte ao passo 5.</li>
   </ol>
