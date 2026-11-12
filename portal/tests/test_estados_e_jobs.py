@@ -286,3 +286,27 @@ def test_aviso_do_certificado_da_central(app):
         novos = app.mailer.enviados[n_ok:]
         assert len(novos) == 2 and all('alerta@exemplo.org' in str(m) and 'certificado' in str(m) for m in novos)
         assert 'vence em' in str(novos[0]) and 'não passou na conferência' in str(novos[1])
+
+
+def test_wifi_prazo_de_boot_so_corre_depois_do_ja_conectei(client, app):
+    """GRP2602W: conectar o Wi-Fi pelo visor leva mais que o prazo de boot (12/11/2026: 40 min). Antes do
+    "Ja conectei o Wi-Fi" o telefone fica em aguardando_boot, com o passo a passo na tela; depois o prazo corre."""
+    cadastrar_e_entrar(client, app)
+    cid = criar_crianca(client)
+    post(client, f'/crianca/{cid}/telefone', acao='informar', mac=MAC, serial=SN, modelo='grpw')
+    assert telefone_row(app, cid)['modelo'] == 'grpw'
+    futuro = agora() + timedelta(minutes=app.cfg.PRAZO_SEM_BOOT_MIN + 5)
+    with app.engine.begin() as conn:
+        r = sip.observar(conn, app.cfg, ref=futuro)
+    assert r['timeout_boot'] == 0 and telefone_row(app, cid)['estado'] == 'aguardando_boot'
+    html = client.get(f'/crianca/{cid}/telefone').get_data(as_text=True)
+    assert 'Já conectei o Wi-Fi' in html and 'No LAN cable' in html
+    post(client, f'/crianca/{cid}/telefone', acao='liguei')
+    with app.engine.begin() as conn:
+        r = sip.observar(conn, app.cfg, ref=agora() + timedelta(minutes=5))
+    assert r['timeout_boot'] == 0            # acabou de clicar: prazo ainda nao venceu
+    html = client.get(f'/crianca/{cid}/telefone').get_data(as_text=True)
+    assert 'No LAN cable' in html and 'Quando o visor mostrar o ID' in html
+    with app.engine.begin() as conn:
+        r = sip.observar(conn, app.cfg, ref=agora() + timedelta(minutes=app.cfg.PRAZO_SEM_BOOT_MIN + 1))
+    assert r['timeout_boot'] == 1 and telefone_row(app, cid)['estado'] == 'sem_boot'

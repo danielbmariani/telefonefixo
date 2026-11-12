@@ -13,6 +13,7 @@ from .. import db, auditoria, seguranca, estados, grandstream_xml, gdms_client
 from ..tempo import agora, utc
 from .contas import ErroUsuario
 from . import criancas as svc_cri
+from ..ids import formatar_id
 
 SERIAL_RE = re.compile(r'^[A-Z0-9]{8,32}$')
 
@@ -455,6 +456,11 @@ def status(conn, telefone, cfg):
     t = telefone
     ligou = t['familia_ligou_em'] is not None or t['config_entregue_em'] is not None   # buscar config prova que ligou
     wifi = t['modelo'] == 'grpw'
+    cr = svc_cri.por_id(conn, t['crianca_id'])
+    id_visor = formatar_id(cr['id_rede']) if cr else 'da criança'
+    # No GRP2602W sem cabo de rede o aparelho apita e mostra "No LAN cable" (visto em 12/11); sem aviso, parece defeito.
+    aviso_lan = ('Ele pode apitar, mostrar "No LAN cable" e reiniciar uma ou duas vezes: é normal, ele está sem '
+                 'cabo de rede. ' if wifi else '')
 
     def p(chave, dono, titulo, feito_em=None, feito=None, **kw):
         ok = feito if feito is not None else (feito_em is not None)
@@ -492,7 +498,7 @@ def status(conn, telefone, cfg):
     elif e == 'aguardando_boot':
         if not ligou and wifi:
             atual('ligar', 'agora', 'Agora é com você. Ligue o fone e a energia como no desenho, conecte o telefone ao Wi-Fi '
-                  'seguindo o passo a passo abaixo e depois clique em "Já liguei". Fora do Wi-Fi, não mexa em mais nada.')
+                  'seguindo o passo a passo abaixo e depois clique em "Já conectei o Wi-Fi". Fora do Wi-Fi, não mexa em mais nada.')
         elif not ligou:
             atual('ligar', 'agora', 'Agora é com você. Ligue os três cabos como no desenho e depois clique em "Já liguei". '
                   'Não mexa no teclado do telefone.')
@@ -509,7 +515,8 @@ def status(conn, telefone, cfg):
                       'espere 10 segundos e ligue de novo. Não mexa no teclado.', f'Esperando há {int(m)} min.')
             else:
                 atual('config', 'esperando', 'O telefone está ligando, falando com a Grandstream e buscando a configuração. '
-                      'Nada a fazer: esta página atualiza sozinha.', 'Costuma levar de 1 a 3 minutos.')
+                      + aviso_lan + f'Quando o visor mostrar o ID {id_visor}, a configuração chegou. '
+                      'Nada a fazer: esta página atualiza sozinha.', 'Costuma levar de 2 a 5 minutos.' if wifi else 'Costuma levar de 1 a 3 minutos.')
     elif e == 'sem_boot':
         if wifi:
             # Conectar o Wi-Fi pelo visor leva mais que os 30 min do prazo (12/11: Daniel levou 40 min no primeiro
@@ -521,7 +528,8 @@ def status(conn, telefone, cfg):
             atual('config', 'erro', 'O telefone não buscou a configuração em 30 minutos. Já avisamos a equipe. Enquanto isso, '
                   'confira o cabo de rede e, se puder, faça o reset de fábrica pelo menu do telefone.')
     elif e == 'config_entregue':
-        atual('sip', 'esperando', 'O telefone recebeu a configuração e está reiniciando. Nada a fazer.',
+        atual('sip', 'esperando', 'O telefone recebeu a configuração e está reiniciando. '
+              + ('O aviso "No LAN cable" pode aparecer de novo; ignore. ' if wifi else '') + 'Nada a fazer.',
               'Costuma levar de 1 a 2 minutos.')
     elif e == 'sem_registro':
         atual('sip', 'erro', 'O telefone recebeu a configuração mas não conseguiu se conectar. Desligue e ligue o roteador '

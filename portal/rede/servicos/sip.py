@@ -92,7 +92,9 @@ def observar(conn, cfg, ref=None):
 
         # Timeouts
         if tel['estado'] == 'aguardando_boot':
-            inicio = tel['familia_ligou_em'] or tel['config_enviada_em']
+            # No Wi-Fi a familia ainda tem de conectar pelo visor, o que leva tempo (12/11: 40 min no primeiro
+            # GRP2602W): o prazo so corre depois do "Ja conectei o Wi-Fi". No cabo, corre desde o envio da config.
+            inicio = tel['familia_ligou_em'] or (None if tel['modelo'] == 'grpw' else tel['config_enviada_em'])
             if inicio and utc(inicio) < ref - timedelta(minutes=cfg.PRAZO_SEM_BOOT_MIN):
                 estados.transicionar(conn, tel['id'], 'timeout_boot', 'sistema', 'sip_observer')
                 _caso(conn, tel, cr, 'sem_boot', 'media',

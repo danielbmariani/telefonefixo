@@ -82,7 +82,7 @@
         {% with wifi=st.wifi %}{% include '_cabos.html' %}{% endwith %}
         {% if st.wifi %}{% include '_wifi.html' %}{% endif %}
         <form method="post" class="mb-1" data-enviando="Anotado…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="liguei">
-          <button class="btn btn-primary btn-lg w-100">Já liguei o telefone</button></form>
+          <button class="btn btn-primary btn-lg w-100">{% if st.wifi %}Já conectei o Wi-Fi{% else %}Já liguei o telefone{% endif %}</button></form>
       {% endif %}
 
       {% if d.chave == 'config' and d.estado == 'erro' and st.estado == 'sem_boot' and st.wifi %}
