@@ -20,6 +20,10 @@ def test_normalizar_e_formatar():
     for ruim in ('987654321', '10987654321', '11887654321', '', 'abc'):
         with pytest.raises(ErroUsuario):
             fam.normalizar(ruim)
+    # Numero de outro pais: mensagem propria (o tronco so disca numero nacional)
+    for estrangeiro in ('+351 912 345 678', '+1 212 555 0123', '00351912345678'):
+        with pytest.raises(ErroUsuario, match='outro país'):
+            fam.normalizar(estrangeiro)
 
 
 def _ativar_telefone(app, crianca_id):

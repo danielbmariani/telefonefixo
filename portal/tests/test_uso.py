@@ -30,12 +30,13 @@ def test_serie_por_mes_e_por_dia(client, app):
     hoje = agora()
     with app.engine.begin() as c:
         c.execute(insert(db.telefones).values(crianca_id=a['id'], mac='C074AD010203', serial='S1', modelo='grp', estado='ativo',
-                                              admin_senha='x', informado_em=hoje - timedelta(days=40)))
+                                              admin_senha='x', informado_em=hoje - timedelta(days=45)))
         c.execute(insert(db.telefones).values(crianca_id=b['id'], mac='C074AD010204', serial='S2', modelo='grp', estado='ativo',
                                               admin_senha='x', informado_em=hoje))
         # um terceiro telefone removido ha 10 dias: contou "na rede" nos periodos antigos, nao no atual
+        # (telefones antigos entram na mesma data da ligacao antiga, 45 dias, para cairem no mesmo mes)
         c.execute(insert(db.telefones).values(crianca_id=a['id'], mac='C074AD010205', serial='S3', modelo='grp', estado='desativado',
-                                              admin_senha='x', informado_em=hoje - timedelta(days=40), desativado_em=hoje - timedelta(days=10)))
+                                              admin_senha='x', informado_em=hoje - timedelta(days=45), desativado_em=hoje - timedelta(days=10)))
     meio_dia = em_sp(hoje).replace(hour=15, minute=0, second=0, microsecond=0)
     _lig(app, a['id_rede'], b['id_rede'], 120, meio_dia)                       # telefone com telefone, hoje
     _lig(app, a['id_rede'], '9' + a['id_rede'], 61, meio_dia, tronco='vono')   # telefone para celular, hoje: 2 min pela Vono

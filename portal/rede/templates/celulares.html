@@ -44,7 +44,8 @@
   <form method="post" data-enviando="Salvando…" class="row g-2 align-items-end">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <div class="col-sm-5"><label class="form-label" for="numero">Número com DDD</label>
-      <input class="form-control form-control-lg mono" id="numero" name="numero" inputmode="tel" autocomplete="tel-national" placeholder="11 98765 4321" required></div>
+      <input class="form-control form-control-lg mono" id="numero" name="numero" inputmode="tel" autocomplete="tel-national" placeholder="11 98765 4321" required>
+      <div class="form-text">Só celular brasileiro. Número de outro país não pode ser cadastrado.</div></div>
     <div class="col-sm-4"><label class="form-label" for="apelido">Como a criança vê</label>
       <input class="form-control form-control-lg" id="apelido" name="apelido" maxlength="20" placeholder="Mãe, Pai, Vó, Vô"></div>
     <div class="col-sm-3"><button class="btn btn-primary btn-lg w-100">Cadastrar</button></div>
@@ -52,7 +53,8 @@
 </div></div>
 {% endif %}
 
+<p class="mt-4 small text-muted">Fora do Brasil, o celular brasileiro continua recebendo as ligações de {{ crianca.apelido }}, mas a operadora dele pode cobrar roaming. Ligar do exterior para o número da rede é ligação internacional.</p>
 {% if criancas %}
-<p class="mt-4 small text-muted">Os celulares valem para todas as crianças da família. Cada uma disca com o próprio ID{% if criancas|length > 1 %}: {% for c in criancas %}{{ c.apelido }} disca <span class="mono">9{{ c.id_rede }}#</span>{{ ' e ' if not loop.last }}{% endfor %}{% endif %}. O cartão impresso traz esses números.</p>
+<p class="small text-muted">Os celulares valem para todas as crianças da família. Cada uma disca com o próprio ID{% if criancas|length > 1 %}: {% for c in criancas %}{{ c.apelido }} disca <span class="mono">9{{ c.id_rede }}#</span>{{ ' e ' if not loop.last }}{% endfor %}{% endif %}. O cartão impresso traz esses números.</p>
 {% endif %}
 {% endblock %}

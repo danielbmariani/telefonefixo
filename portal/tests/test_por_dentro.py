@@ -44,9 +44,10 @@ def test_pagina_inicial_e_rodape_levam_ao_codigo_e_a_pagina_tecnica(client, app)
     assert f'href="{GH}"' in aberto                       # link do codigo onde a pagina fala de codigo aberto
     final = html[html.index('Perguntas comuns'):html.index('<footer')]
     assert 'href="/por-dentro"' in final and f'href="{GH}"' in final   # secao no fim, para quem quer entender
-    assert 'a não ser os celulares da própria família' in html
+    assert 'Só toca para quem você conhece' in html and 'Por que não um telefone fixo comum?' in html
+    assert 'rede é fechada' not in html and 'acesso externo' not in html and 'aprovou' not in html
     # a pergunta sobre celular nao pode contradizer a aba Celulares (fase de teste)
-    assert 'Só para os celulares que a própria família cadastrar' in final
+    assert 'Só para os celulares que a família cadastrar' in final
     rodape = client.get('/entrar').get_data(as_text=True)
     rodape = rodape[rodape.index('<footer'):]
     assert 'href="/por-dentro"' in rodape and f'href="{GH}"' in rodape

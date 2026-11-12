@@ -57,5 +57,38 @@ família. Nenhuma família paga nem configura nada.
    orçamento da rede deixa de ser dividido por criança no `teto_crianca`. Confirmado às 14:33 com ligação real: 9 s,
    `tronco = 'vono'` em `call_logs`.
 4. Trocar a senha do tronco no Meu Vono (apareceu em capturas de tela durante a contratação) e
-   cancelar o tronco Tarifado se não tiver uso.
-5. Portabilidade do (11) 5108-3530 da Nvoip para a Vono, para voltar a um número só.
+   cancelar o tronco Tarifado se não tiver uso (a Vono confirmou em 09/11 que não afeta o Ilimitado;
+   cuidado para excluir o Tarifado e não o Ilimitado).
+5. Portabilidade do (11) 5108-3530 da Nvoip para a Vono, para voltar a um número só. Passo a passo
+   da Vono (09/11): pôr R$ 32,90 de saldo no painel, pedir a portabilidade e avisar o Alan, que
+   acompanha e manda a documentação necessária. Decisão só em 23/11, depois de duas semanas de
+   Vono em uso: cron no servidor manda e-mail "Lembrete: portabilidade do (11) 5108-3530 para a
+   Vono" às 9h desse dia, com o passo a passo e os itens 4 e 5; apaga-se sozinho depois de rodar.
+6. ~~E-mail no cadastro~~: a proposta nº 01234 saiu com `gmail.om`; o cadastro estava errado mesmo e
+   a Vono corrigiu do lado dela em 09/11. Login e Minha Conta já mostram `gmail.com`.
+
+## Resposta da Vono (09/11/2026)
+
+A proposta nº 01234 (válida até 24/11) chegou por WhatsApp às 16:59 e só formaliza o contratado:
+4 canais × R$ 50 + número R$ 32,90 = R$ 232,90/mês, adesão zero, pré-pago com recarga mínima de
+R$ 25. Contato comercial: Alan Costa, gerente de contas, alan.costa@grupovono.com.br,
++55 31 92004-7088. Suporte técnico 24×7 por trás dele.
+
+Perguntas do doc 17 §5 (item 1 do B30) feitas pelo WhatsApp e respondidas em três áudios às
+17:26, 17:28 e 17:29 (transcrição automática, revisada; áudios guardados no WhatsApp do Daniel):
+
+- **O uso cabe nas condições gerais?** Sim, "fica tranquilo": central de uma rede de telefones
+  fixos de crianças ligando para os celulares cadastrados da família cabe no SIP Trunk Ilimitado,
+  desde que não exceda a minutagem da cláusula 20.7 e **não use discador** (rajadas de muitas
+  ligações por minuto). Sem discador, "o serviço vai funcionar normalmente".
+- **Os 5.000 minutos são por canal?** Sim, cada canal dá direito a 5.000 minutos (4 canais =
+  20.000). O teto do portal (`REDE_VONO_CANAIS` × 5.000 × 0,8 = 16.000) está coerente.
+- **Custo extra, entrada?** Nenhum. O valor é fixo; com o SIP Ilimitado o número "se torna
+  ilimitado", só a mensalidade. Sem fidelidade; livre para portar o número para fora.
+- **Portabilidade do (11) 5108-3530 da Nvoip?** Possível. Ver item 5 acima.
+- **Cancelar o tronco Tarifado?** Pode. Ele vem por padrão com a compra do número e não impacta o
+  Ilimitado se for excluído, ou pode ficar no painel.
+
+Risco contratual do doc 17 (cláusulas 20.2, 20.5, 20.6) tratado: há confirmação do gerente de
+contas, em áudio, de que o uso cabe. Os áudios ficam guardados no WhatsApp do Daniel; não se
+pede confirmação em texto (decisão de 09/11).

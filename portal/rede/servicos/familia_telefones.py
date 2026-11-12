@@ -27,9 +27,13 @@ APELIDO_MAX = 20
 
 def normalizar(numero):
     """'+55 (11) 98765-4321' -> '11987654321'. Levanta ErroUsuario se nao for um numero brasileiro valido."""
-    d = re.sub(r'\D', '', numero or '')
+    bruto = (numero or '').strip()
+    d = re.sub(r'\D', '', bruto)
     if d.startswith('55') and len(d) in (12, 13):
         d = d[2:]
+    elif bruto.startswith('+') or d.startswith('00'):
+        # Codigo de outro pais: o tronco so disca numero nacional (doc 17: pai no exterior e caso do WhatsApp)
+        raise ErroUsuario('Só celular brasileiro, com DDD. Número de outro país não pode ser cadastrado.')
     if d.startswith('0') and len(d) in (11, 12):
         d = d[1:]
     if len(d) not in (10, 11):

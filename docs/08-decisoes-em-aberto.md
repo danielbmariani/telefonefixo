@@ -200,3 +200,17 @@ pendentes advogado, ONG como controladora, cobrança de minutos (Anatel/CDC).
    celular ou 300 recebendo, por mês); depois se pensa melhor. Os e-mails de 80% e 100% por linha passaram a
    falar só em minutos, com "celular" no título; dinheiro fica só nos avisos do
    orçamento da rede e no painel.
+
+## Adoção (10/11/2026, a partir da conversa com a Rita; análise e pesquisa em `docs/18-fixo-comum-vs-rede.md`)
+
+21. **Texto do site sem "rede fechada" nem "controle".** A primeira mãe do piloto, que gostou do
+    telefone, leu a rede como cerca e tarefa a mais. Decisão do Daniel (10/11): reposicionar como "um
+    telefone fixo que só toca para quem a família conhece"; a proteção é consequência. Opções de frases
+    no doc 18, seção 4.1. Pendente: aplicar nas páginas inicial e "Por dentro" e nos textos legais.
+22. **Números fixos de amigos e parentes cadastrados pela família.** Descartado pelo Daniel
+    (10/11): a rede segue só com os celulares da própria família. Raciocínio no doc 18, 4.2.
+23. **Turma com amizade automática.** Opção da turma, escolhida por quem administra; a família
+    consente ao entrar vendo a lista; bloqueio sempre vence. Pendente: Daniel decidir; revisão com
+    advogado (item 13) antes de virar padrão. Doc 18, 4.3.
+24. **Teste da Rita com fixo comum como braço do piloto.** Perguntas combinadas para 10/12/2026 no doc
+    18, 4.4. O piloto do Felipe é o outro braço.
