@@ -2,7 +2,7 @@
    Fontes: GRP260x User Guide e QIG do GRP2602W (documentation.grandstream.com) e o aparelho na mao do Daniel em
    12/11/2026, que confirmou a numeracao das telas: Menu > 2.Settings > 6.Wi-Fi Settings > 1.Wi-Fi (ja vem Enabled)
    > 3.Wi-Fi Network > rede > tela com "1.Security type" e "2.Wi-Fi strength" e a tecla com icone de corrente
-   (Connect, segunda da esquerda). Ate a corrente, OK e o botao do meio da roda, nao uma tecla do visor (Daniel, 12/11). Nao existe "System". O guia diz que a conexao pelo visor pede a senha de
+   (Connect, segunda da esquerda), com "2.Wi-Fi strength" marcada. Ate a corrente, OK e o botao do meio da roda, nao uma tecla do visor (Daniel, 12/11). Nao existe "System". O guia diz que a conexao pelo visor pede a senha de
    administrador (firmware 1.0.5.25+): no aparelho novo e a da linha "Password" da etiqueta. Ainda por confirmar no
    aparelho: a tela de senha depois da corrente e em que momento pede a senha de administrador. #}
 {% macro tela(titulo, linhas, destaque=0, icones=['', '', '', ''], aperta=0, legenda='') %}
@@ -51,8 +51,8 @@
       <span class="small text-muted d-block">Se estiver Disabled: marque 1.Wi-Fi, aperte OK, escolha Enabled e salve.</span></li>
     <li>O telefone busca as redes sozinho. Desça até o <strong>nome do Wi-Fi da sua casa</strong> e aperte <strong>OK</strong>.
       {{ tela('Wi-Fi Network', ['1.Wi-Fi do vizinho', '2.NOME DO SEU WI-FI', '3.Outra rede'], 2, ['voltar', 'outra', 'outra', 'outra'], 'roda', 'Wi-Fi Network: marque o nome do Wi-Fi da sua casa e aperte OK') }}</li>
-    <li>Abre uma tela com <strong>1.Security type</strong> e <strong>2.Wi-Fi strength</strong>. Não precisa mexer nelas: aperte a <strong>segunda tecla da esquerda</strong>, a do símbolo de <strong>corrente</strong> (Connect, conectar).
-      {{ tela('NOME DO SEU WI-FI', ['1.Security type: WPA/PSK', '2.Wi-Fi strength: Excellent'], 0, ['voltar', 'corrente', 'outra', 'outra'], 2, 'Detalhes da rede: aperte a segunda tecla, abaixo do símbolo de corrente, para conectar') }}</li>
+    <li>Abre uma tela com <strong>1.Security type</strong> e <strong>2.Wi-Fi strength</strong>. Desça até <strong>2.Wi-Fi strength</strong> ficar marcada e aí aperte a <strong>segunda tecla da esquerda</strong> abaixo do visor, a do símbolo de <strong>corrente</strong> (Connect, conectar).
+      {{ tela('NOME DO SEU WI-FI', ['1.Security type: WPA/PSK', '2.Wi-Fi strength: Excellent'], 2, ['voltar', 'corrente', 'outra', 'outra'], 2, 'Detalhes da rede: com 2.Wi-Fi strength marcada, aperte a segunda tecla, abaixo do símbolo de corrente, para conectar') }}</li>
     <li>Digite a <strong>senha do Wi-Fi</strong> no teclado numérico: cada tecla tem letras, aperte várias vezes até chegar na letra certa. O modo <strong>Ab2</strong> aceita maiúsculas, minúsculas e números; a tecla abaixo de <strong>Ab2</strong> troca para <strong>abc</strong>, <strong>ABC</strong> ou <strong>123</strong>. Confira a senha no visor e aperte <strong>OK</strong>.
       {{ tela('Password', ['', 'senha do seu wi-fi_'], 0, ['voltar', 'ab2', 'outra', 'outra'], 'roda', 'Password: digite a senha do Wi-Fi e aperte OK') }}
       <span class="small text-muted d-block">Se antes disso o telefone pedir uma senha de administrador (<strong>Admin Password</strong>), é a da linha <strong>Password</strong> da etiqueta embaixo do aparelho, não a do Wi-Fi.</span></li>
