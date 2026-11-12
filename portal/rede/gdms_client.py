@@ -65,8 +65,10 @@ BASE_URL_EU = 'https://eu.gdms.cloud'
 API_PREFIX = '/oapi/v1.0.0/'
 
 MAC_RE = re.compile(r'^[0-9A-F]{12}$')
-# Prefixos (OUI) da Grandstream vistos em campo; ampliar conforme a bancada
-OUIS_GRANDSTREAM = {'000B82', 'C074AD', 'EC74D7'}
+# Prefixos (OUI) da Grandstream: os quatro registrados no IEEE (standards-oui.ieee.org, conferido em 12/11/2026).
+# 144CFF e o dos GRP2602W de 2026 (etiqueta 144CFF04361A rejeitada em 12/11). Se um aparelho novo cair na
+# mensagem 'nao parece ser Grandstream', conferir o prefixo la antes de ampliar.
+OUIS_GRANDSTREAM = {'000B82', '144CFF', 'C074AD', 'EC74D7'}
 
 
 # --- Funcoes puras (testaveis sem rede) ---
