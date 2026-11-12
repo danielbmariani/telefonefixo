@@ -362,6 +362,9 @@ body.com-abas .topo { position: static; box-shadow: none; }
 .cabos-lista { padding-left: 0; list-style: none; counter-reset: cabo; }
 .cabos-lista li { position: relative; padding: .35rem 0 .35rem 2.4rem; counter-increment: cabo; }
 .cabos-lista li::before { content: counter(cabo); position: absolute; left: 0; top: .3rem; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--fio); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+/* Desenhos do visor no passo a passo do Wi-Fi (_wifi.html) */
+.wifi .tela { display: block; width: 100%; max-width: 250px; height: auto; margin: .5rem 0 .2rem; }
+.wifi .tela text { text-anchor: inherit; }
 
 /* feedback de envio de formulario (base.html) */
 .enviando-aviso { margin: .75rem 0 0; padding: .6rem .9rem; border-radius: .6rem; background: #fff3cd; color: #5c4400; font-weight: 600; }
