@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Nova senha | {{ nome_rede }}{% endblock %}
+{% block avisos %}{% endblock %}
 {% block content %}
 <div class="auth-card"><h1 class="h2 mb-4">Nova senha</h1>
+{% include "_avisos.html" %}
 <div class="card"><div class="card-body">
 <form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
   <div class="mb-3"><label class="form-label" for="senha">Nova senha</label><input class="form-control form-control-lg" type="password" id="senha" name="senha" minlength="8" required autocomplete="new-password"></div>

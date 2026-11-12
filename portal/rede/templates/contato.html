@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Contato e denúncias | {{ nome_rede }}{% endblock %}
+{% block avisos %}{% endblock %}
 {% block content %}
 <div class="row justify-content-center"><div class="col-lg-8">
 <h1 class="h2 mt-2">Contato e denúncias</h1>
 <p class="text-muted">Este é o canal público do serviço. Ele existe por exigência do Estatuto Digital da Criança e do Adolescente e da LGPD, e também porque queremos saber quando algo deu errado.</p>
 
+{% include "_avisos.html" %}
 <div class="card mb-3"><div class="card-body">
   <h2 class="h5">Escreva para nós</h2>
   <p class="text-muted">Dúvida, problema com o telefone ou denúncia: tudo entra aqui e chega à equipe na hora. Respondemos pelo e-mail que você informar.</p>

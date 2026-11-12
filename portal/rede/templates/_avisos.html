@@ -1,0 +1,12 @@
+{# Avisos (flash). O base.html renderiza no topo do <main>; paginas com formulario em coluna estreita
+   esvaziam o bloco "avisos" e incluem este parcial logo acima do formulario, onde o olho esta. #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}<div class="avisos{% if avisos_classe %} {{ avisos_classe }}{% endif %}">
+{% for category, message in messages %}
+  <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+  </div>
+{% endfor %}</div>
+{% endif %}
+{% endwith %}

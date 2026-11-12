@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Entrar | {{ nome_rede }}{% endblock %}
+{% block avisos %}{% endblock %}
 {% block content %}
 <div class="auth-card">
   <h1 class="h2 mb-1">Entrar</h1>
   <p class="text-muted mb-4">Conta do responsável.</p>
+  {% include "_avisos.html" %}
   <div class="card"><div class="card-body">
     <form method="post">{% if request.args.get('proximo') %}<input type="hidden" name="proximo" value="{{ request.args.get('proximo') }}">{% endif %}
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">

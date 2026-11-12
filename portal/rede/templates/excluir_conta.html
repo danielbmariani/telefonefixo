@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Excluir conta{% endblock %}
+{% block avisos %}{% endblock %}
 {% block content %}
 <div class="row justify-content-center"><div class="col-12 col-md-8 col-lg-6">
 <h1 class="h2 mb-3 mt-2">Excluir minha conta</h1>
+{% include "_avisos.html" %}
 <div class="card border-danger"><div class="card-body">
 <p class="text-danger fw-bold">Esta ação é irreversível.</p>
 <p>Serão removidos: login, horários, amizades, histórico e os telefones:</p>

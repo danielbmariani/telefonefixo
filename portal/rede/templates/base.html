@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <title>{% block title %}{{ nome_rede }}{% endblock %}</title>
-  <meta name="description" content="{% block descricao %}Quer adiar o celular sem isolar suas crianças? Um telefone sem tela, sem aplicativo e sem acesso externo, que só liga para quem as famílias autorizam.{% endblock %}">
+  <meta name="description" content="{% block descricao %}Quer adiar o celular sem isolar suas crianças? Um telefone sem tela, sem aplicativo e sem telemarketing, que só liga para quem a família conhece.{% endblock %}">
   {# Previa ao compartilhar o link (WhatsApp, Telegram, redes): imagem 1200x630 em static/og.png #}
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="{{ nome_rede }}">
@@ -35,7 +35,7 @@
       <span class="selo" aria-hidden="true"><svg viewBox="0 0 200 200"><g transform="translate(100 100)"><circle r="96" fill="#d9480f"/><g fill="#fff"><circle cx="16" cy="59.9" r="9"/><circle cx="-16" cy="59.9" r="9"/><circle cx="-43.8" cy="43.8" r="9"/><circle cx="-59.9" cy="16" r="9"/><circle cx="-59.9" cy="-16" r="9"/><circle cx="-43.8" cy="-43.8" r="9"/><circle cx="-16" cy="-59.9" r="9"/><circle cx="16" cy="-59.9" r="9"/><circle cx="43.8" cy="-43.8" r="9"/><circle cx="59.9" cy="-16" r="9"/><circle r="24"/></g><path d="M60 42 L76 53" stroke="#fff" stroke-width="9" stroke-linecap="round" fill="none"/></g></svg></span>
       <span>
         <span class="nome">{{ nome_rede }}</span>
-        <span class="sub">sem tela, sem aplicativo, sem acesso externo</span>
+        <span class="sub">sem tela, sem aplicativo, sem telemarketing</span>
       </span>
     </a>
     <nav class="topo-acoes" aria-label="Conta">
@@ -73,16 +73,7 @@
 {% block abas %}{% endblock %}
 
 <main class="{% block main_class %}container mt-3 mb-5{% endblock %}">
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}<div class="{% block flash_class %}{% endblock %}">
-  {% for category, message in messages %}
-    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-    </div>
-  {% endfor %}</div>
-  {% endif %}
-  {% endwith %}
+  {% block avisos %}{% include "_avisos.html" %}{% endblock %}
   {% block content %}{% endblock %}
 </main>
 

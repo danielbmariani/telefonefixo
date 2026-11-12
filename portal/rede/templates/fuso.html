@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Fuso horário | {{ nome_rede }}{% endblock %}
+{% block avisos %}{% endblock %}
 {% block content %}
 <div class="auth-card">
   <h1 class="h2 mb-1 mt-2">Fuso horário da casa</h1>
   <p class="text-muted mb-4">Vale para o relógio do telefone, os horários permitidos, o "silenciar até amanhã às 8h", a hora certa (100) e as datas que você vê aqui. Foi sugerido pelo seu navegador quando você criou a conta.</p>
+  {% include "_avisos.html" %}
   <div class="card"><div class="card-body">
     <form method="post" data-enviando="Salvando…">
       <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">

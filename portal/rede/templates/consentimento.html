@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Autorização | {{ nome_rede }}{% endblock %}
+{% block avisos %}{% endblock %}
 {% block content %}
 <div class="row justify-content-center"><div class="col-lg-8">
 {% set passo_atual = 3 %}{% include "_passos.html" %}
 <h1 class="h2 mb-1">Antes de cadastrar a criança</h1>
 <p class="text-muted mb-4">A lei pede que o responsável autorize, de forma específica, o uso dos dados da criança. Leia e marque cada item. Guardamos a versão exata do texto que você aceitou.</p>
+{% include "_avisos.html" %}
 <form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 {% for t in pendentes %}
 <div class="card mb-3 {% if t == 'crianca' %}border-primary{% endif %}"><div class="card-body">

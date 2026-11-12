@@ -2,7 +2,7 @@
 {% block title %}{{ nome_rede }}: adiar o celular sem isolar as crianças{% endblock %}
 {% block main_class %}{% endblock %}
 {% block topo_class %} quieto{% endblock %}
-{% block flash_class %}container mt-3{% endblock %}
+{% block avisos %}{% set avisos_classe = 'container mt-3' %}{% include "_avisos.html" %}{% endblock %}
 {% block content %}
 <section class="heroi">
   <div class="container">
@@ -11,7 +11,7 @@
         <h1 class="nome-projeto" id="titulo-principal">{{ nome_rede }}</h1>
         <p class="sub-nome">Projeto sem fins lucrativos, com código aberto, sem mensalidade.</p>
         <p class="pergunta mt-4">Quer adiar o celular sem isolar suas crianças? Você precisa… de um telefone fixo.</p>
-        <p class="chamada">Sem tela, sem aplicativo, sem acesso externo. A criança disca o número do amigo e conversa.
+        <p class="chamada">Sem tela, sem aplicativo, sem telemarketing. A criança disca o número do amigo e conversa.
           Quem pode ligar para quem, e em que horário, é decidido pelas famílias.</p>
         <a class="btn btn-outline-secondary mt-2" href="#como-funciona">Como funciona</a>
       </div>
@@ -25,7 +25,7 @@
       <div class="col-md-4"><div class="vantagem"><div class="icone icone-fio"><i class="bi bi-telephone"></i></div>
         <h3>Só voz</h3><p>Sem tela, sem jogo, sem rede social. O telefone faz e recebe ligações.</p></div></div>
       <div class="col-md-4"><div class="vantagem"><div class="icone icone-mar"><i class="bi bi-people"></i></div>
-        <h3>Só quem a família aprovou</h3><p>Cada amizade precisa do sim das famílias. Ninguém de fora consegue ligar para a criança, nem ela para fora, a não ser os celulares da própria família.</p></div></div>
+        <h3>Só toca para quem você conhece</h3><p>Os amigos da rede e os celulares da família. Telemarketing e desconhecidos não chegam.</p></div></div>
       <div class="col-md-4"><div class="vantagem"><div class="icone icone-sol"><i class="bi bi-clock"></i></div>
         <h3>No horário da casa</h3><p>Você define quando o telefone funciona. Fora do horário, uma mensagem avisa.</p></div></div>
     </div>
@@ -72,7 +72,8 @@
       <h2>Perguntas comuns</h2>
       <div class="faq mt-3">
         <details><summary>Precisa de internet?</summary><p>Sim. O GRP2601 liga no roteador por cabo de rede; o GRP2602W usa o Wi-Fi da casa. As ligações passam pela internet, sem custo por minuto.</p></details>
-        <details><summary>Dá para ligar para celular ou telefone comum?</summary><p>Só para os celulares que a própria família cadastrar, em fase de teste. Fora isso, a rede é fechada.</p></details>
+        <details><summary>Dá para ligar para celular ou telefone comum?</summary><p>Só para os celulares que a família cadastrar. Qualquer outro número, de fora ou para fora, não completa.</p></details>
+          <details><summary>Por que não um telefone fixo comum?</summary><p>Pode ser uma boa escolha. A diferença: o fixo comum custa de R$ 25 a 80 por mês na operadora, com fidelidade, e toca para qualquer número, inclusive telemarketing. Aqui não há mensalidade e só liga quem a família conhece.</p></details>
         <details><summary>Quanto custa?</summary><p>Só o aparelho, comprado por você em qualquer loja. A rede não cobra nada.</p></details>
         <details><summary>A criança usa o site?</summary><p>Não. O site é do responsável. A criança usa só o telefone e o cartão com os números.</p></details>
         <details><summary>E se mudarmos de ideia?</summary><p>Você exclui a conta pelo site. O telefone deixa de funcionar na rede e os dados são apagados, como descrito na política de privacidade.</p></details>

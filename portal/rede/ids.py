@@ -46,12 +46,12 @@ def validar_nick(nick):
     usuario."""
     n = (nick or '').strip().lower()
     if not NICK_RE.match(n):
-        raise ValueError('Apelido deve ter de 3 a 20 caracteres, comecar com letra '
-                         'e usar so letras minusculas, numeros e _')
+        raise ValueError('Apelido deve ter de 3 a 20 caracteres, começar com letra '
+                         'e usar só letras minúsculas, números e _')
     if n in NICKS_PROIBIDOS:
-        raise ValueError('Esse apelido nao pode ser usado')
+        raise ValueError('Esse apelido não pode ser usado')
     if re.search(r'\d{4,}', n):
-        raise ValueError('Evite sequencias longas de numeros (parecem data ou telefone)')
+        raise ValueError('Evite sequências longas de números (parecem data ou telefone)')
     return n
 
 

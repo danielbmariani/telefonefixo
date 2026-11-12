@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Apelido do telefone | {{ nome_rede }}{% endblock %}
+{% block avisos %}{% endblock %}
 {% block content %}
 <div class="auth-card">
   {% set passo_atual = 4 %}{% include "_passos.html" %}
   <h1 class="h2 mb-1">Apelido do telefone</h1>
   <p class="text-muted">É o nome que aparece no visor de quem recebe a ligação deste telefone. Em geral é o apelido da criança. Se mais de uma criança vai usar o telefone, escolha um apelido para todas, por exemplo <span class="mono">ana_e_bia</span>. De propósito, não pedimos o nome completo nem a data de nascimento.</p>
+  {% include "_avisos.html" %}
   <div class="card"><div class="card-body">
   <form method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <div class="mb-3"><label class="form-label" for="apelido">Apelido</label>

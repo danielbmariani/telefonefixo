@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Telefone de {{ crianca.apelido }}{% endblock %}
+{% block avisos %}{% endblock %}
 {% block content %}
 <div class="row justify-content-center"><div class="col-lg-8">
 {% if not tel or st.estado not in ('registrado', 'ativo') %}{% set passo_atual = 5 %}{% include "_passos.html" %}{% endif %}
 
+{% include "_avisos.html" %}
 <div class="d-flex justify-content-end align-items-center mb-3 gap-2 flex-wrap">
   <a class="btn btn-outline-secondary btn-sm" target="_blank" href="{{ url_for('familia.cartao', crianca_id=crianca.id) }}"><i class="bi bi-printer"></i> Imprimir cartão</a>
 </div>
