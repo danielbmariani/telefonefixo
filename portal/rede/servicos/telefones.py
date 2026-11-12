@@ -511,9 +511,15 @@ def status(conn, telefone, cfg):
                 atual('config', 'esperando', 'O telefone está ligando, falando com a Grandstream e buscando a configuração. '
                       'Nada a fazer: esta página atualiza sozinha.', 'Costuma levar de 1 a 3 minutos.')
     elif e == 'sem_boot':
-        atual('config', 'erro', 'O telefone não buscou a configuração em 30 minutos. Já avisamos a equipe. Enquanto isso, '
-              + ('confira o Wi-Fi no visor' if wifi else 'confira o cabo de rede')
-              + ' e, se puder, faça o reset de fábrica pelo menu do telefone.')
+        if wifi:
+            # Conectar o Wi-Fi pelo visor leva mais que os 30 min do prazo (12/11: Daniel levou 40 min no primeiro
+            # GRP2602W). O passo a passo volta a aparecer aqui; assim que o telefone conectar, ele busca sozinho.
+            atual('config', 'erro', 'O telefone ainda não buscou a configuração. Se o Wi-Fi ainda não está conectado, '
+                  'siga o passo a passo abaixo: assim que conectar, o telefone busca sozinho e esta página avança. '
+                  'Já avisamos a equipe, caso precise de ajuda.')
+        else:
+            atual('config', 'erro', 'O telefone não buscou a configuração em 30 minutos. Já avisamos a equipe. Enquanto isso, '
+                  'confira o cabo de rede e, se puder, faça o reset de fábrica pelo menu do telefone.')
     elif e == 'config_entregue':
         atual('sip', 'esperando', 'O telefone recebeu a configuração e está reiniciando. Nada a fazer.',
               'Costuma levar de 1 a 2 minutos.')
