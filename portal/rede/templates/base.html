@@ -54,7 +54,7 @@
 {% if logado and crianca %}
 {# O ID e o que a familia mais procura (para passar a outra familia): fica no alto de todas as paginas da crianca. #}
 <div class="crianca-id"><div class="container">
-  {{ etiqueta('ID de ' ~ crianca.apelido, crianca.id_rede|idfmt, crianca.id_rede, 'o ID de ' ~ crianca.apelido) }}
+  {{ etiqueta('ID de ' ~ exibicao(crianca), crianca.id_rede|idfmt, crianca.id_rede, 'o ID de ' ~ crianca.apelido) }}
   {% if tem_outras_criancas() %}<a class="trocar-crianca" href="{{ url_for('familia.criancas') }}"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Trocar de criança</a>{% endif %}
 </div></div>
 <nav class="abas sticky-top" aria-label="Seções de {{ crianca.apelido }}">
@@ -64,7 +64,7 @@
       <li class="nav-item"><a class="nav-link {% if active_tab == 'turmas' %}active{% endif %}" href="{{ url_for('familia.turmas', crianca_id=crianca.id) }}"><i class="bi bi-people-fill"></i> <span class="rotulo">Turmas</span></a></li>
       <li class="nav-item"><a class="nav-link {% if active_tab == 'horarios' %}active{% endif %}" href="{{ url_for('familia.horarios', crianca_id=crianca.id) }}"><i class="bi bi-clock"></i> <span class="rotulo">Horários</span></a></li>
       <li class="nav-item"><a class="nav-link {% if active_tab == 'historico' %}active{% endif %}" href="{{ url_for('familia.historico', crianca_id=crianca.id) }}"><i class="bi bi-journal-text"></i> <span class="rotulo">Ligações</span></a></li>
-      <li class="nav-item"><a class="nav-link {% if active_tab == 'celulares' %}active{% endif %}" href="{{ url_for('familia.celulares', crianca_id=crianca.id) }}"><i class="bi bi-phone"></i> <span class="rotulo">Celulares</span></a></li>
+      <li class="nav-item"><a class="nav-link {% if active_tab == 'telefones' %}active{% endif %}" href="{{ url_for('familia.telefones', crianca_id=crianca.id) }}"><i class="bi bi-telephone-forward"></i> <span class="rotulo">Telefones</span></a></li>
       <li class="nav-item"><a class="nav-link {% if active_tab == 'telefone' %}active{% endif %}" href="{{ url_for('familia.telefone', crianca_id=crianca.id) }}"><i class="bi bi-telephone"></i> <span class="rotulo">Telefone</span></a></li>
     </ul>
   </div>

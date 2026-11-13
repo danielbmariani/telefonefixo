@@ -27,7 +27,7 @@ def test_por_dentro_e_publica_com_os_desenhos_e_as_secoes(client, app):
     assert 'O telefone confere a identidade do servidor pelo certificado' in html
     # as fontes de terceiros e a copia de seguranca passam a constar da politica de privacidade
     pol = client.get('/privacidade').get_data(as_text=True)
-    assert 'Google Fonts e jsDelivr' in pol and 'Cópias de segurança' in pol and 'versão 2026-11-a' in pol
+    assert 'Google Fonts e jsDelivr' in pol and 'Cópias de segurança' in pol and 'versão 2026-11-c' in pol and 'nome curto' in pol and 'DDD da casa' in pol and 'Vono' in pol
 
 
 def test_arquivos_citados_na_pagina_existem_no_repositorio():
@@ -47,7 +47,7 @@ def test_pagina_inicial_e_rodape_levam_ao_codigo_e_a_pagina_tecnica(client, app)
     assert 'Só toca para quem você conhece' in html and 'Por que não um telefone fixo comum?' in html
     assert 'rede é fechada' not in html and 'acesso externo' not in html and 'aprovou' not in html
     # a pergunta sobre celular nao pode contradizer a aba Celulares (fase de teste)
-    assert 'Só para os celulares que a família cadastrar' in final
+    assert 'Para os telefones que a família cadastrar' in final
     rodape = client.get('/entrar').get_data(as_text=True)
     rodape = rodape[rodape.index('<footer'):]
     assert 'href="/por-dentro"' in rodape and f'href="{GH}"' in rodape

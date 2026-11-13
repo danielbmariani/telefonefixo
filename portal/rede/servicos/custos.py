@@ -25,7 +25,11 @@ SEGUNDOS_MINIMOS = 60   # abaixo disso, nem comeca a ligacao
 
 
 def _saida(row):
-    return len(row['callee_ext']) == 7 and row['callee_ext'][0] in '98'
+    """Ligacao da crianca para fora: 9/8+ID (celular de casa) ou numero de 10/11 digitos (telefone da lista, doc 20)."""
+    c = row['callee_ext'] or ''
+    if len(c) == 7 and c[0] in '98':
+        return True
+    return c.isdigit() and len(c) in (10, 11) and not _entrada(row)
 
 
 def _entrada(row):

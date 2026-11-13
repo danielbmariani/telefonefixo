@@ -23,6 +23,19 @@ def test_ids():
     assert ids.classificar_discado('9345678') == ('familia1', '345678')
     assert ids.classificar_discado('100') == ('servico', '100')
     assert ids.classificar_discado('045678')[0] == 'invalido'
+    # telefones da lista (doc 20): local, DDD + numero, com 0 ou 55 na frente
+    assert ids.classificar_discado('34567890') == ('externo_local', '34567890')
+    assert ids.classificar_discado('987654321') == ('externo_local', '987654321')
+    assert ids.classificar_discado('1134567890') == ('externo', '1134567890')
+    assert ids.classificar_discado('11987654321') == ('externo', '11987654321')
+    assert ids.classificar_discado('01134567890') == ('externo', '1134567890')
+    assert ids.classificar_discado('011987654321') == ('externo', '11987654321')
+    assert ids.classificar_discado('551134567890') == ('externo', '1134567890')
+    assert ids.classificar_discado('5511987654321') == ('externo', '11987654321')
+    assert ids.classificar_discado('55987654321') == ('externo', '55987654321')   # DDD 55 (Santa Maria), nao prefixo
+    assert ids.classificar_discado('1234567890') == ('externo', '1234567890')     # DDD 12, fixo
+    for ruim in ('12345678', '887654321', '0134567890', '9090123456789', '0011987654321', '11887654321', '112345678'):
+        assert ids.classificar_discado(ruim) == ('invalido', None), ruim
 
 
 def test_xml():

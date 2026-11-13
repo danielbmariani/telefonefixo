@@ -19,9 +19,10 @@ def tempo_total(conn, id_rede):
         db.call_logs.c.status == 'ALLOWED', db.call_logs.c.duration_seconds > 0))).scalar()
 
 
-def nomes(conn, ids_rede):
+def nomes(conn, ids_rede, familia_id=None):
     """id_rede -> apelido. Tambem rotula o celular da familia: '9'+ID (saida pelo tronco) e o numero
-    do celular (entrada pelo tronco) viram 'Celular da família' com o numero formatado."""
+    do celular (entrada pelo tronco) viram 'Celular da família' com o numero formatado. Com familia_id, um numero
+    de 10/11 digitos ganha o nome que a familia deu a ele na lista de telefones (doc 20)."""
     if not ids_rede:
         return {}
     ids = list(ids_rede)
@@ -45,8 +46,9 @@ def nomes(conn, ids_rede):
         if len(i) == 7 and i[0] in '98' and i[1:].isdigit():
             res[i] = 'Celular 1 da família' if i[0] == '9' else 'Celular 2 da família'
         elif i.isdigit() and len(i) in (10, 11):
-            from .familia_telefones import formatar
-            res[i] = f'Celular da família {formatar(i)}'
+            from .familia_telefones import formatar, apelido_do_numero
+            nome = apelido_do_numero(conn, familia_id, i) if familia_id else None
+            res[i] = f'{nome} {formatar(i)}' if nome else f'Celular da família {formatar(i)}'
     return res
 
 

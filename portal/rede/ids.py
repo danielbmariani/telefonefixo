@@ -8,6 +8,7 @@ Plano de numeracao (doc 03):
     0[1-9]         grupo para ligar juntos (codigo do cartao da propria crianca, doc 16)
     9[2-7]XXXXX    celular 1 da familia da crianca
     8[2-7]XXXXX    celular 2 da familia da crianca
+    8 a 13 digitos telefone da lista da familia (doc 20): numero local, DDD + numero, com 0 ou 55 na frente
 """
 
 import re
@@ -58,7 +59,8 @@ def validar_nick(nick):
 def classificar_discado(digitos):
     """Interpreta o que a crianca discou. Retorna (tipo, id) ou (tipo, None):
         ('servico', '100'), ('crianca', '345678'), ('grupo', '1'),
-        ('familia1', '345678'), ('familia2', '345678'), ('invalido', None)."""
+        ('familia1', '345678'), ('familia2', '345678'),
+        ('externo_local', '34567890'), ('externo', '1134567890'), ('invalido', None)."""
     d = (digitos or '').strip()
     if re.match(r'^1\d{2}$', d):
         return ('servico', d)
@@ -68,6 +70,13 @@ def classificar_discado(digitos):
         return ('grupo', d[1])
     if len(d) == 7 and ID_RE.match(d[1:]) and d[0] in '98':
         return ('familia1' if d[0] == '9' else 'familia2', d[1:])
+    # Telefones da familia (doc 20): numero do DDD da casa (8 digitos fixo, 9 celular) ou DDD + numero
+    # (10 ou 11), com 0 ou 55 na frente por tolerancia. Tamanhos diferentes de tudo o que esta acima.
+    if re.match(r'^(?:[2-5]\d{7}|9\d{8})$', d):
+        return ('externo_local', d)
+    m = re.match(r'^(?:0|55)?([1-9][1-9](?:[2-5]\d{7}|9\d{8}))$', d)
+    if m:
+        return ('externo', m.group(1))
     return ('invalido', None)
 
 

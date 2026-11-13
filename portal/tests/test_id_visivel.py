@@ -9,7 +9,7 @@ def test_id_com_copiar_no_alto_de_todas_as_paginas_da_crianca(client, app):
     cadastrar_e_entrar(client, app)
     cid = criar_crianca(client)
     c = crianca_row(app, cid)
-    for pagina in ('contatos', 'contatos/pedir', 'turmas', 'horarios', 'historico', 'celulares', 'telefone'):
+    for pagina in ('contatos', 'contatos/pedir', 'turmas', 'horarios', 'historico', 'telefones', 'telefones/novo', 'telefones/novo-celular', 'telefone'):
         r = client.get(f'/crianca/{cid}/{pagina}')
         assert r.status_code == 200, pagina
         html = r.get_data(as_text=True)
@@ -60,12 +60,14 @@ def test_celulares_e_aba_da_crianca_e_cabecalho_fica_so_com_sair(client, app):
     cadastrar_e_entrar(client, app)
     cid = criar_crianca(client, 'ana')
     r = client.get('/celulares')                      # endereco antigo leva para a aba
-    assert r.status_code == 302 and r.headers['Location'].endswith(f'/crianca/{cid}/celulares')
-    html = client.get(f'/crianca/{cid}/celulares').get_data(as_text=True)
+    assert r.status_code == 302 and r.headers['Location'].endswith(f'/crianca/{cid}/telefones')
+    r = client.get(f'/crianca/{cid}/celulares')                      # endereco da aba ate 13/11/2026
+    assert r.status_code == 302 and r.headers['Location'].endswith(f'/crianca/{cid}/telefones')
+    html = client.get(f'/crianca/{cid}/telefones').get_data(as_text=True)
     cabecalho = html[html.index('<header'):html.index('</header>')]
     assert 'Sair' in cabecalho and 'Crianças' not in cabecalho and 'Celulares' not in cabecalho
     abas = html[html.index('class="abas'):html.index('</nav>', html.index('class="abas'))]
-    assert f'/crianca/{cid}/celulares' in abas and 'nav-link active' in abas and abas.count('nav-item') == 6
+    assert f'/crianca/{cid}/telefones' in abas and 'nav-link active' in abas and abas.count('nav-item') == 6
     # com uma crianca so, nao aparece "Trocar de crianca"; a lista continua acessivel pelo rodape
     assert 'Trocar de criança' not in html and 'href="/criancas"' in html
     r = client.get('/criancas')

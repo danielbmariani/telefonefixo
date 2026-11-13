@@ -1,5 +1,7 @@
 """criancas.py — E2: apelido + ID + ramal (ps_endpoints/ps_auths/ps_aors) na mesma transacao."""
 
+import re
+
 from sqlalchemy import select, insert, update, delete, and_
 
 from .. import db, auditoria, voz, seguranca, ids
@@ -37,7 +39,50 @@ def _id_existe(conn):
     return f
 
 
-def criar(conn, familia_id, apelido, cfg, ator_id=None):
+NOME_MAX = 30
+_NOME_RE = re.compile(r"^[^\W\d_][^\W\d_]*(?:[ '\-][^\W\d_]+)*$")
+
+
+def validar_nome(texto):
+    """Nome falado (opcional): 'Laura', 'Maria Clara', 'Zé'. So letras, espacos, hifen e apostrofo, ate 30 caracteres.
+    Vazio -> None. Invalido -> ErroUsuario."""
+    n = re.sub(r'\s+', ' ', (texto or '')).strip()
+    if not n:
+        return None
+    if len(n) > NOME_MAX or not _NOME_RE.match(n):
+        raise ErroUsuario('O nome é só para a voz falar: use letras e espaços, até 30 caracteres, sem números.')
+    return n
+
+
+def exibicao(crianca):
+    """Como a familia ve a crianca: 'Laura (laura01)' ou so 'laura01'."""
+    nome = crianca.get('nome') if hasattr(crianca, 'get') else crianca['nome']
+    return f"{nome} ({crianca['apelido']})" if nome else crianca['apelido']
+
+
+def nome_falado(crianca):
+    return crianca['nome'] or crianca['apelido']
+
+
+def definir_nome(conn, crianca, nome, cfg, familia_id=None):
+    """Troca o nome falado (ou apaga, com vazio). Regera o audio na hora; erro de voz nao derruba a troca."""
+    n = validar_nome(nome)
+    antes = crianca['nome']
+    conn.execute(update(db.criancas).where(db.criancas.c.id == crianca['id']).values(nome=n))
+    auditoria.registrar(conn, 'crianca_nome_alterado', 'familia', familia_id or crianca['familia_id'], 'crianca', crianca['id'],
+                        detalhes={'tinha': bool(antes), 'tem': bool(n)})
+    try:
+        if n:
+            voz.gerar_nome(cfg, crianca['id_rede'], n)
+        else:
+            voz.apagar_nome(cfg, crianca['id_rede'])
+    except Exception as e:
+        auditoria.registrar(conn, 'voz_falhou', 'sistema', None, 'crianca', crianca['id'], detalhes={'erro': str(e)[:200]})
+    return n
+
+
+def criar(conn, familia_id, apelido, cfg, ator_id=None, nome=None):
+    nome = validar_nome(nome)
     try:
         apelido = ids.validar_nick(apelido)
     except ValueError as e:
@@ -52,7 +97,7 @@ def criar(conn, familia_id, apelido, cfg, ator_id=None):
         raise ErroUsuario('Limite de crianças por conta atingido.')
     id_rede = ids.gerar_id(_id_existe(conn))
     senha = seguranca.senha_sip()
-    r = conn.execute(insert(db.criancas).values(familia_id=familia_id, apelido=apelido, id_rede=id_rede,
+    r = conn.execute(insert(db.criancas).values(familia_id=familia_id, apelido=apelido, id_rede=id_rede, nome=nome,
                                                 senha_sip=senha, criado_em=agora(), ativa=True))
     cid = r.inserted_primary_key[0]
     _criar_ramal(conn, id_rede, senha, apelido, cfg.SIP_CIFRAGEM)
@@ -60,8 +105,10 @@ def criar(conn, familia_id, apelido, cfg, ator_id=None):
                         detalhes={'id_rede': id_rede, 'apelido': apelido})
     auditoria.registrar(conn, 'ramal_criado', 'sistema', None, 'crianca', cid,
                         detalhes={'id_rede': id_rede, 'senha_sip_sha256': seguranca.sha256(senha)})
-    try:  # apelido falado para a chamada em grupo (doc 16); nunca derruba o cadastro
+    try:  # apelido (e nome) falados para a chamada em grupo e o menu de entrada; nunca derruba o cadastro
         voz.gerar_apelido(cfg, id_rede, apelido)
+        if nome:
+            voz.gerar_nome(cfg, id_rede, nome)
     except Exception as e:
         auditoria.registrar(conn, 'voz_falhou', 'sistema', None, 'crianca', cid, detalhes={'erro': str(e)[:200]})
     return por_id(conn, cid)
@@ -135,7 +182,7 @@ def desativar(conn, crianca_id, ator_tipo, ator_id):
                                            (db.amizades.c.para_crianca_id == crianca_id)))
     conn.execute(delete(db.horarios).where(db.horarios.c.crianca_id == crianca_id))
     conn.execute(update(db.criancas).where(db.criancas.c.id == crianca_id).values(
-        ativa=False, desativada_em=agora(), apelido=f'removido-{crianca_id}', senha_sip='x'))
+        ativa=False, desativada_em=agora(), apelido=f'removido-{crianca_id}', nome=None, senha_sip='x'))
     auditoria.registrar(conn, 'crianca_desativada', ator_tipo, ator_id, 'crianca', crianca_id,
                         detalhes={'id_rede': c['id_rede']})
 

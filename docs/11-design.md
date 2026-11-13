@@ -198,3 +198,33 @@ entender onde fica cada dado e como o telefone se registra.
 - Página inicial, mesma data: a pergunta sobre celular e o bloco "Só quem a família aprovou" passam a citar
   os celulares da própria família, para não contradizer a aba Celulares.
 - Testes em `tests/test_por_dentro.py` (inclui conferir que os arquivos citados existem no repositório).
+
+## Aba Telefones (13/11/2026): celulares de casa e outros telefones
+
+Doc 20, etapa C. A aba Celulares virou Telefones (ícone `bi-telephone-forward`, endereço antigo redireciona).
+Mesma hierarquia da aba Amigos: blocos com cabeçalho de linha grossa, ação no cabeçalho, listas em linhas,
+formulário em página própria.
+
+- Ordem: aviso dos dois números (12/11) e fase de teste no topo; "Celulares de casa" (os dois atalhos 9/8+ID);
+  "Outros telefones" (nome, número em cinza, "discar 3456 7890#" com dígitos agrupados, "liga para X" ou "só X
+  liga", ações "Deixar/Não deixar ligar para cá" e "Remover"); "Como X disca" (DDD da casa com origem e botão
+  Trocar/Confirmar/Escolher; duas frases de regra; link do cartão); "Quem liga para X" (quem recebe, com o
+  número da rede na caixa grande).
+- Página "Adicionar telefone": "Quem é" antes do número (decisão de 13/11); um campo de número só (padrão GOV.UK:
+  aceita colado, com ou sem DDD); texto de ajuda diz qual DDD vale e de onde veio; caixa "também pode ligar para
+  X" marcada por padrão. Erro volta com o que foi digitado. Confirmação diz o número entendido, o que a criança
+  disca e o DDD da casa quando foi usado.
+- Página "DDD da casa" (`/ddd`): molde da de fuso; sugestão com origem em uma frase; select dos 67 DDDs com a
+  cidade de referência.
+- Cartão: outros telefones entram na mesma tabela, com o que discar; dica do DDD no rodapé.
+- Capturas em 390 e 1280 conferidas em 13/11 (telefones cheia e vazia, novo, novo-celular, ddd, cartão), sem
+  estouro horizontal. O vídeo didático não passa por essa aba.
+
+## Nome falado da criança (13/11/2026, fim do dia)
+
+Pedido do Daniel depois do menu de entrada: além do apelido (único, é o que outras famílias veem), a família
+pode dar um nome curto opcional ("Ana"). A voz usa o nome nos grupos e no menu ("para falar com Ana, tecle
+1"); se duas opções do mesmo menu têm o mesmo nome, a voz volta ao apelido. A família vê "Ana (ana01)" na
+faixa do ID e na lista de crianças; nas frases das abas continua o apelido. Campo no passo 4 do cadastro e na
+página `/crianca/<id>/nome` (link na lista de crianças). Apelidos e nomes falados a 1,25 de ritmo.
+

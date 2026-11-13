@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Adicionar celular de casa para {{ crianca.apelido }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mt-3 mb-2">
+  <h1 class="h3 mb-0">Adicionar celular {{ posicao }}</h1>
+  <a class="small" href="{{ url_for('familia.telefones', crianca_id=crianca.id) }}">Voltar aos telefones</a>
+</div>
+<p class="text-muted mb-3">{{ crianca.apelido }} vai ligar para ele discando <span class="mono">{{ prefixo }}{{ crianca.id_rede }}#</span>, e dele dá para ligar para {{ crianca.apelido }} pelo número da rede.</p>
+<div class="card mb-3"><div class="card-body">
+<form method="post" data-enviando="Salvando…">
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+  <div class="mb-3"><label class="form-label" for="apelido">Como a criança vê</label>
+    <input class="form-control form-control-lg" id="apelido" name="apelido" maxlength="20" placeholder="Mãe, Pai, Vó, Vô" autocomplete="off" value="{{ valores.apelido if valores else '' }}"></div>
+  <div class="mb-4"><label class="form-label" for="numero">Número do celular</label>
+    <input class="form-control form-control-lg mono" id="numero" name="numero" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="11 98765 4321" required value="{{ valores.numero if valores else '' }}">
+    <div class="form-text">Com DDD. Só celular brasileiro. Número de outro país não pode ser cadastrado.</div></div>
+  <button class="btn btn-primary btn-lg">Cadastrar</button>
+</form>
+</div></div>
+{% endblock %}

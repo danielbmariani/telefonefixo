@@ -39,7 +39,7 @@ rm -rf /tmp/vono-envio
 echo "--- registros"; asterisk -rx "pjsip show registrations" | grep -E "nvoip|vono"
 echo "--- endpoint vono"; asterisk -rx "pjsip show endpoint vono" | grep -E "Endpoint:|Contact:|Identify|match" | head
 echo "--- globals"; asterisk -rx "dialplan show globals" | grep VONO
-echo "--- dialplan"; asterisk -rx "dialplan show telefones-criancas" | grep -c "vono" | sed 's/^/linhas com vono: /'
+echo "--- dialplan"; asterisk -rx "dialplan show saida-tronco" | grep -c "vono" | sed 's/^/linhas com vono em saida-tronco: /'
 echo "--- erros recentes"; journalctl -u asterisk --since "-1 min" --no-pager 2>/dev/null | grep -iE "error|warning" | grep -iv "deprecat" | tail -5 || true
 REMOTO
 echo "==> FIM"

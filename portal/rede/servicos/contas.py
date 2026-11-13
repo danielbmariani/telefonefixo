@@ -170,6 +170,21 @@ def definir_fuso(conn, familia_id, fuso):
     return nome
 
 
+def definir_ddd(conn, familia_id, ddd, origem='familia'):
+    """DDD da casa (pagina /ddd ou primeiro telefone cadastrado sem DDD). origem: de onde veio o valor confirmado
+    (rede/ddd.py). Retorna o DDD validado."""
+    from .. import ddd as svc_ddd
+    d = svc_ddd.validar(ddd)
+    if not d:
+        raise ErroUsuario('Escolha um DDD da lista.')
+    antes = por_id(conn, familia_id)['ddd']
+    conn.execute(update(db.familias).where(db.familias.c.id == familia_id).values(ddd=d, ddd_origem=origem))
+    if antes != d:
+        auditoria.registrar(conn, 'ddd_alterado', 'familia', familia_id, 'familia', familia_id,
+                            detalhes={'de': antes, 'para': d, 'origem': origem})
+    return d
+
+
 def db_utc(dt):
     from ..tempo import utc
     return utc(dt)

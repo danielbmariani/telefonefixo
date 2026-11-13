@@ -1,11 +1,12 @@
-"""geoip.py — Fuso provavel de um endereco IP, pela base GeoLite2-City da MaxMind lida no proprio servidor.
+"""geoip.py — Localizacao provavel de um endereco IP, pela base GeoLite2-City da MaxMind lida no proprio servidor.
 
 Nada sai para terceiros: a base (arquivo .mmdb) e baixada pelo geoipupdate (deploy/geoip.sh) e consultada
-localmente. Uso: conferencia. O fuso da familia vem do navegador no cadastro e da pagina /fuso (rede/fusos.py);
-o IP de onde o telefone busca a configuracao so serve para abrir um caso no painel quando os dois nao batem
-(telefones.conferir_fuso) e como ultimo recurso no cadastro, quando o navegador nao mandou fuso.
+localmente. Usos: (1) conferencia do fuso. O fuso da familia vem do navegador no cadastro e da pagina /fuso
+(rede/fusos.py); o IP de onde o telefone busca a configuracao so serve para abrir um caso no painel quando os
+dois nao batem (telefones.conferir_fuso) e como ultimo recurso no cadastro, quando o navegador nao mandou fuso.
+(2) Sugestao do DDD da casa (rede/ddd.py), pela cidade e pelas coordenadas do IP do telefone.
 Sem a base (REDE_GEOIP_DB inexistente) tudo devolve None e nada acontece. Limites: CGNAT e 4G costumam cair
-na capital do estado ou em Sao Paulo, por isso e aviso para gente olhar, nunca correcao automatica.
+na capital do estado ou em Sao Paulo, por isso e aviso ou sugestao para gente olhar, nunca correcao automatica.
 """
 
 import ipaddress
@@ -36,16 +37,37 @@ def _abrir(caminho):
         return _leitor
 
 
-def fuso_do_ip(ip, cfg):
-    """Nome IANA do fuso onde o IP parece estar, ou None (IP privado, fora da base, base ausente, erro)."""
+def _nome(bloco):
+    nomes = (bloco or {}).get('names') or {}
+    return nomes.get('pt-BR') or nomes.get('en') or None
+
+
+def registro(ip, cfg):
+    """O que a base diz do IP: {'pais', 'cidade', 'uf', 'lat', 'lon', 'raio_km', 'fuso'} (valores podem ser None),
+    ou None (IP privado ou invalido, fora da base, base ausente, erro)."""
     try:
         end = ipaddress.ip_address((ip or '').strip())
-        if not end.is_global:
+        if not end.is_global or not disponivel(cfg):
             return None
-        if not disponivel(cfg):
+        reg = _abrir(cfg.GEOIP_DB).get(str(end))
+        if not reg:
             return None
-        reg = _abrir(cfg.GEOIP_DB).get(str(end)) or {}
-        nome = (reg.get('location') or {}).get('time_zone')
+        loc = reg.get('location') or {}
+        subdivisoes = reg.get('subdivisions') or [{}]
+        return {'pais': (reg.get('country') or {}).get('iso_code'),
+                'cidade': _nome(reg.get('city')),
+                'uf': (subdivisoes[0] or {}).get('iso_code'),
+                'lat': loc.get('latitude'), 'lon': loc.get('longitude'), 'raio_km': loc.get('accuracy_radius'),
+                'fuso': loc.get('time_zone')}
+    except Exception:
+        return None
+
+
+def fuso_do_ip(ip, cfg):
+    """Nome IANA do fuso onde o IP parece estar, ou None (IP privado, fora da base, base ausente, erro)."""
+    reg = registro(ip, cfg)
+    nome = (reg or {}).get('fuso')
+    try:
         return nome if nome and zona(nome).key == nome else None
     except Exception:
         return None

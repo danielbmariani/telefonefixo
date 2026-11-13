@@ -63,7 +63,9 @@ class AppGrupo:
 
     # --- utilidades de audio ---
     def _apelido(self, id_rede):
-        return [som(f'apelidos/{id_rede}')] if voz.tem_apelido(self.cfg, id_rede) else []
+        """Nome falado da crianca (criancas.nome) se houver audio, senao o apelido."""
+        s = voz.som_da_crianca(self.cfg, id_rede)
+        return [som(s)] if s else []
 
     def _nome_grupo(self, grupo_id):
         return [som(f'grupos/{grupo_id}')] if voz.tem_grupo(self.cfg, grupo_id) else []

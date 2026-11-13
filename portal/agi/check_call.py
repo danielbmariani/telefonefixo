@@ -27,12 +27,14 @@ def main():
     A.agi_verbose(f'check_call: {resultado} {motivo or ""}')
     A.agi_set_variable('CALL_RESULT', resultado)
     if resultado == 'ALLOW' and motivo and motivo.startswith('PJSIP/'):
-        # 9/8+ID: celular da familia pelo tronco, com teto; 'vono=0' manda direto para a Nvoip (B30)
+        # Saida pelo tronco (9/8+ID ou telefone da lista, doc 20): Dial, teto em ms, 'vono=0' manda direto para a
+        # Nvoip (B30) e 'dest' e o numero normalizado que vai para call_logs no lugar do que foi discado.
         dial, *opcoes = motivo.split(';')
         o = dict(x.split('=', 1) for x in opcoes if '=' in x)
         A.agi_set_variable('FAMILIA_DIAL', dial)
         A.agi_set_variable('FAMILIA_LIMITE_MS', str(int(o.get('limite') or 1800) * 1000))
         A.agi_set_variable('FAMILIA_VONO', o.get('vono', '1'))
+        A.agi_set_variable('FAMILIA_DEST', o.get('dest', ''))
 
 
 if __name__ == '__main__':

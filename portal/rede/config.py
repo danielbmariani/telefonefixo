@@ -99,7 +99,7 @@ class Config:
 
         # Versoes dos textos legais (o hash do texto vai no consentimento)
         self.VERSAO_TERMOS = g('REDE_VERSAO_TERMOS', '2026-11-a')
-        self.VERSAO_PRIVACIDADE = g('REDE_VERSAO_PRIVACIDADE', '2026-11-a')
+        self.VERSAO_PRIVACIDADE = g('REDE_VERSAO_PRIVACIDADE', '2026-11-c')
         self.VERSAO_CONSENTIMENTO = g('REDE_VERSAO_CONSENTIMENTO', '2026-10-b')
         # LGPD / ECA Digital (doc 13): quem responde e por onde; retencao dos registros
         self.CONTROLADOR_NOME = g('REDE_CONTROLADOR_NOME', 'Daniel Mariani')
@@ -122,6 +122,9 @@ class Config:
         self.VONO_MIN_CANAL_MES = int(g('REDE_VONO_MIN_CANAL_MES', '5000'))
         self.VONO_FRACAO = float(g('REDE_VONO_FRACAO', '0.8'))
         self.ALERTA_FRACAO = float(g('REDE_ALERTA_FRACAO', '0.8'))              # avisa ao passar de 80% do teto
+        # Outros telefones da familia (doc 20): quantos numeros alem dos dois celulares de casa. 0 desliga o recurso
+        # (a crianca nao completa numero discado por extenso e a aba nao mostra o bloco).
+        self.MAX_OUTROS = int(g('REDE_MAX_OUTROS', '20'))
         # Copia do banco fora do servidor (deploy/copia-externa.sh): arquivo que o rede-backup-db atualiza a cada
         # envio que deu certo. Vazio = sem conferencia. O job diario avisa se ficar mais de COPIA_EXTERNA_MAX_H horas parado.
         self.COPIA_EXTERNA_STATUS = g('REDE_COPIA_EXTERNA_STATUS', '')

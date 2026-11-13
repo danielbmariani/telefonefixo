@@ -1,14 +1,15 @@
-POLÍTICA DE PRIVACIDADE (versão 2026-11-a)
+POLÍTICA DE PRIVACIDADE (versão 2026-11-c)
 
 1. Quem responde pelos dados
 Controlador: Daniel Mariani, pessoa física, até que uma associação sem fins lucrativos assuma o serviço. Canal para assuntos de dados pessoais, que cumpre o papel de encarregado: privacidade@telefonefixo.org. Servidor no Brasil (São Paulo).
 
 2. O que guardamos, para quê e por quanto tempo
 Do responsável: nome, e-mail, senha (só a versão embaralhada, que não permite recuperar a senha), endereço IP e horário das ações que você faz no site. Para login, avisos por e-mail e segurança. Enquanto a conta existir; IP das ações por 1 ano.
-Da criança: o apelido que você escolheu e um ID de 6 dígitos sorteado pelo serviço, além de uma senha técnica usada só pelo telefone. Para identificar o telefone na rede e mostrar quem está ligando. Enquanto a conta existir. Não pedimos nome completo, idade, escola, endereço, foto nem voz.
+Da criança: o apelido que você escolheu e um ID de 6 dígitos sorteado pelo serviço, além de uma senha técnica usada só pelo telefone. Para identificar o telefone na rede e mostrar quem está ligando. Enquanto a conta existir. Se você quiser, um nome curto (como a criança é chamada), usado só pela voz do telefone e nas suas telas; outras famílias não o veem. Não pedimos nome completo, idade, escola, endereço, foto nem voz.
 Do telefone: endereço MAC, número de série, modelo, versão do programa interno, IP de onde ele se conecta e horário das conexões. Para configurar o aparelho e descobrir por que ele não conecta. Registros técnicos por 180 dias.
 Das ligações: quem ligou para quem, data, hora, duração e, se foi bloqueada, o motivo. Para o histórico que a família vê e para proteger as crianças. Não gravamos áudio: a voz passa pelo servidor durante a ligação e não fica guardada. Registros por 90 dias; depois só totais por dia, sem identificar ninguém.
-Dos celulares da família: número e apelido ("Mãe", "Pai"). Para a criança ligar para eles e para reconhecer quando eles ligam. Enquanto estiverem cadastrados.
+Dos telefones que a família cadastra (celulares de casa, parentes, amigos, lugares): número e nome ("Mãe", "Vó Lúcia", "Padaria"). Para a criança ligar para eles e, quando a família marcar, para reconhecer quando eles ligam. Enquanto estiverem cadastrados.
+DDD da casa: escolhido por você ou sugerido pelos números cadastrados ou pela localização aproximada do endereço IP de onde o telefone se conecta, consultada numa base de cidades guardada no próprio servidor. Serve para a criança discar sem DDD. Você confirma ou troca a qualquer momento.
 Amizades, turmas e horários: o que você configurou. Enquanto a conta existir.
 Consentimentos: versão do texto aceito, data e IP. Como prova do aceite, por 5 anos após a exclusão da conta.
 Registros de acesso ao site: endereço IP e página acessada, por 6 meses.
@@ -23,7 +24,7 @@ Guarda de registros por prazo legal, quando houver (art. 7º, II).
 Não vendemos dados, não mostramos publicidade e não montamos perfil de ninguém. Os dados circulam só pelo necessário para o serviço funcionar:
 Oracle Cloud (São Paulo): hospeda o servidor e o banco de dados.
 Grandstream (fabricante do telefone, servidores nos Estados Unidos): recebe o MAC, o número de série e o modelo do aparelho para entregar a configuração inicial e nos avisar quando ele liga ou desliga. A configuração entregue por ela não contém nome, e-mail nem apelido. Essa transferência internacional é necessária para prestar o serviço (art. 33, IX, com o art. 7º, V).
-Nvoip (operadora de telefonia, Juiz de Fora): só quando a família usa os celulares cadastrados. Recebe o número do celular e os registros dessas ligações, como qualquer operadora.
+Nvoip (Juiz de Fora) e Vono (Belo Horizonte), operadoras de telefonia: só quando a família usa os telefones cadastrados. Recebem o número discado ou o número de quem ligou e os registros dessas ligações, como qualquer operadora.
 Google (envio de e-mails): recebe o seu e-mail e o texto dos avisos que mandamos.
 Cloudflare: registro do domínio e DNS. Não vê o conteúdo do site.
 Google Fonts e jsDelivr (servidores fora do Brasil): o seu navegador baixa deles as letras e os estilos das páginas do site. Por isso eles recebem o endereço IP e os dados técnicos do navegador de quem visita o site. Não recebem nome, e-mail nem dados da conta.
@@ -34,7 +35,7 @@ Autoridades: registros de ligações só com ordem judicial, por serem protegido
 Confirmar o que temos, acessar, corrigir, baixar uma cópia (link "Meus dados" no rodapé), excluir, revogar o consentimento, saber com quem compartilhamos e se opor a um tratamento. Exclusão e cópia funcionam na hora pelo site. Os demais pedidos, por privacidade@telefonefixo.org, são respondidos em até 15 dias. Você também pode reclamar à ANPD.
 
 6. O que acontece quando você exclui a conta
-Na hora: telefones desligados da rede, apelidos, amizades, horários, celulares cadastrados e registros de ligações das suas crianças apagados, e-mail e nome removidos da conta. Ficam, pelos prazos acima: a prova do aceite dos termos, os registros técnicos do telefone por 180 dias, a auditoria do que foi feito (sem nome e sem e-mail) e os totais diários sem identificação.
+Na hora: telefones desligados da rede, apelidos, amizades, horários, telefones cadastrados, DDD da casa e registros de ligações das suas crianças apagados, e-mail e nome removidos da conta. Ficam, pelos prazos acima: a prova do aceite dos termos, os registros técnicos do telefone por 180 dias, a auditoria do que foi feito (sem nome e sem e-mail) e os totais diários sem identificação.
 Cópias de segurança: o banco de dados é copiado todo dia e cada cópia é guardada por 14 dias na Oracle Cloud, em São Paulo. O que foi apagado some das cópias nesse prazo.
 
 7. Segurança

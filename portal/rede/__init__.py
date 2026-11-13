@@ -75,7 +75,9 @@ def create_app(cfg=None):
             from .servicos import criancas as svc_cri
             fid = session.get('familia_id')
             return bool(fid) and len(svc_cri.listar(conn(), fid)) > 1
-        return {'csrf_token': gerar_csrf_token, 'cfg': cfg, 'nome_rede': cfg.NOME_REDE, 'tem_outras_criancas': tem_outras_criancas}
+        from .servicos.criancas import exibicao
+        return {'csrf_token': gerar_csrf_token, 'cfg': cfg, 'nome_rede': cfg.NOME_REDE, 'tem_outras_criancas': tem_outras_criancas,
+                'exibicao': exibicao}
 
     from .web import filtros
     filtros.registrar(app)

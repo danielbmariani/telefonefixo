@@ -34,6 +34,20 @@ FRASES = {
     'grupo-nao-existe': 'Esse grupo não existe. Confira o cartão.',
     'fora-do-horario': 'Agora não é horário de telefone.',
     'nao-deu-certo': 'Não deu certo. Tente de novo.',
+    # Telefones da familia (doc 20)
+    'nao-esta-na-lista-de-casa': 'Esse telefone não está na lista de casa. Peça para cadastrar no site.',
+    'disque-com-ddd': 'Esse número existe em dois DDDs na sua lista. Disque com o DDD.',
+    # Menu de entrada quando o mesmo numero esta em mais de uma familia: 'Para falar com' + apelido + 'tecle N'
+    'para-falar-com': 'Para falar com',
+    'tecle-1': 'tecle 1.',
+    'tecle-2': 'tecle 2.',
+    'tecle-3': 'tecle 3.',
+    'tecle-4': 'tecle 4.',
+    'tecle-5': 'tecle 5.',
+    'tecle-6': 'tecle 6.',
+    'tecle-7': 'tecle 7.',
+    'tecle-8': 'tecle 8.',
+    'tecle-9': 'tecle 9.',
 }
 
 
@@ -59,8 +73,13 @@ def caminho(cfg, grupo, nome):
     return os.path.join(cfg.VOZ_DIR, grupo, f'{nome}.wav')
 
 
-def gerar(cfg, texto, destino):
-    """Sintetiza `texto` em `destino` (wav 8 kHz mono 16 bit). Devolve True se gravou."""
+RITMO_FRASES = '1.1'
+RITMO_NOMES = '1.25'    # apelidos e nomes mais devagar: 'testemenu' saiu rapido demais no menu (B31, 13/11/2026)
+
+
+def gerar(cfg, texto, destino, ritmo=RITMO_FRASES):
+    """Sintetiza `texto` em `destino` (wav 8 kHz mono 16 bit). Devolve True se gravou. ritmo: length_scale do piper
+    (maior = mais devagar)."""
     b = backend_disponivel(cfg)
     if not b or not shutil.which('sox'):
         return False
@@ -68,7 +87,7 @@ def gerar(cfg, texto, destino):
     with tempfile.TemporaryDirectory() as tmp:
         bruto = os.path.join(tmp, 'bruto.wav')
         if b == 'piper':
-            subprocess.run(['piper', '--model', cfg.VOZ_PIPER_MODELO, '--output_file', bruto, '--length_scale', '1.1'],
+            subprocess.run(['piper', '--model', cfg.VOZ_PIPER_MODELO, '--output_file', bruto, '--length_scale', str(ritmo)],
                            input=texto.encode('utf-8'), check=True, timeout=120, capture_output=True)
         else:
             subprocess.run(['espeak-ng', '-v', 'pt-br', '-s', '140', '-w', bruto, texto], check=True, timeout=60,
@@ -92,7 +111,32 @@ def gerar_frases(cfg):
 
 
 def gerar_apelido(cfg, id_rede, apelido):
-    return gerar(cfg, texto_do_apelido(apelido), caminho(cfg, 'apelidos', id_rede))
+    return gerar(cfg, texto_do_apelido(apelido), caminho(cfg, 'apelidos', id_rede), RITMO_NOMES)
+
+
+def gerar_nome(cfg, id_rede, nome):
+    """Nome falado da crianca (opcional, criancas.nome): o que a voz usa nos grupos e no menu de entrada."""
+    return gerar(cfg, nome, caminho(cfg, 'nomes', id_rede), RITMO_NOMES)
+
+
+def apagar_nome(cfg, id_rede):
+    try:
+        os.remove(caminho(cfg, 'nomes', id_rede))
+    except FileNotFoundError:
+        pass
+
+
+def tem_nome(cfg, id_rede):
+    return os.path.exists(caminho(cfg, 'nomes', id_rede))
+
+
+def som_da_crianca(cfg, id_rede):
+    """'nomes/<id>' se a familia deu um nome e o audio existe, senao 'apelidos/<id>' se existe, senao None."""
+    if tem_nome(cfg, id_rede):
+        return f'nomes/{id_rede}'
+    if tem_apelido(cfg, id_rede):
+        return f'apelidos/{id_rede}'
+    return None
 
 
 def gerar_grupo(cfg, grupo_id, nome):

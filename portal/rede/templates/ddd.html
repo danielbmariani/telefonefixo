@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}DDD da casa | {{ nome_rede }}{% endblock %}
+{% block avisos %}{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <h1 class="h2 mb-1 mt-2">DDD da casa</h1>
+  <p class="text-muted mb-3">É o DDD que {{ apelido_crianca or 'a criança' }} não precisa discar, e o que vale quando você cadastra um telefone sem DDD.</p>
+  {% if sugestao and origem != 'familia' %}<p class="mb-4">Sugestão: <strong class="mono">{{ sugestao }}</strong> ({{ rotulo }}), {{ descricao }}.</p>{% endif %}
+  {% include "_avisos.html" %}
+  <div class="card"><div class="card-body">
+    <form method="post" data-enviando="Salvando…">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-4"><label class="form-label" for="ddd">DDD</label>
+        <select class="form-select form-select-lg mono" id="ddd" name="ddd" required>
+          {% if not atual %}<option value="" selected>Escolha</option>{% endif %}
+          {% for d, r in opcoes %}<option value="{{ d }}" {% if d == atual %}selected{% endif %}>{{ d }} &nbsp;{{ r }}</option>{% endfor %}
+        </select>
+        <div class="form-text">Mudou de cidade? Troque aqui. As ligações continuam iguais; muda só o que {{ apelido_crianca or 'a criança' }} disca.</div></div>
+      <button class="btn btn-primary btn-lg w-100" type="submit">Salvar</button>
+    </form>
+  </div></div>
+  <p class="text-center mt-3"><a href="{{ voltar }}">Voltar</a></p>
+</div>
+{% endblock %}

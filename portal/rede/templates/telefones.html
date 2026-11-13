@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Telefones da família{% endblock %}
+{% block content %}
+{% macro acao(id, nome, rotulo, cls, confirmar=None, valor=None) %}
+<form method="post" class="d-inline"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="{{ nome }}"><input type="hidden" name="id" value="{{ id }}">{% if valor is not none %}<input type="hidden" name="valor" value="{{ valor }}">{% endif %}
+<button class="btn btn-sm {{ cls }}" {% if confirmar %}onclick="return confirm('{{ confirmar }}')"{% endif %}>{{ rotulo }}</button></form>
+{% endmacro %}
+<h1 class="h4 mt-3 mb-1">Telefones da família</h1>
+<p class="text-muted mb-3">Para quem {{ crianca.apelido }} liga além dos amigos da rede, e quem pode ligar para {{ crianca.apelido }}. Só o que estiver aqui completa.</p>
+{% if numero_saida and numero_saida != numero_rede %}
+<div class="alert alert-danger mb-3" id="aviso-dois-numeros">
+  <p class="fw-bold mb-1">Salve estes dois números nos contatos do celular</p>
+  <p class="mb-1"><span class="mono fw-bold text-nowrap">{{ numero_saida }}</span> e <span class="mono fw-bold text-nowrap">{{ numero_rede }}</span>, por exemplo com o nome "{{ nome_rede }}".</p>
+  <p class="mb-0">Quando {{ crianca.apelido }} liga, pode aparecer qualquer um dos dois. Celular costuma silenciar número que não está nos contatos, e aí a ligação não toca.</p>
+</div>
+{% elif numero_saida %}
+<div class="alert alert-danger mb-3" id="aviso-dois-numeros">
+  <p class="fw-bold mb-1">Salve este número nos contatos do celular</p>
+  <p class="mb-0"><span class="mono fw-bold text-nowrap">{{ numero_saida }}</span>, por exemplo com o nome "{{ nome_rede }}". É o que aparece quando {{ crianca.apelido }} liga. Celular costuma silenciar número que não está nos contatos, e aí a ligação não toca.</p>
+</div>
+{% endif %}
+<div class="alert alert-warning mb-2">
+  {% if usos %}<div class="mb-2">Este mês:{% for c, u in usos %} <span class="badge text-bg-light border">{{ c.apelido }}: usou {{ u.usados }} min, {% if u.restam %}restam cerca de {{ u.restam }} min{% else %}os minutos do mês acabaram{% endif %}</span>{% endfor %}</div>{% endif %}
+  <details><summary><strong>Fase de teste:</strong> as ligações com celular e telefone comum têm um limite de minutos por mês. <span class="text-decoration-underline">Saiba mais</span></summary>
+  <p class="mt-2 mb-0">Essas ligações passam pela telefonia comum e têm um limite por criança a cada mês{% if franquia %}: cerca de {{ franquia.saida }} minutos quando a criança liga, ou cerca de {{ franquia.entrada }} minutos quando ligam para ela{% else %} de minutos{% endif %}. Quando os minutos do mês acabam, o telefone avisa e essas ligações voltam no mês seguinte. Esta fase pode ser encerrada a qualquer momento, com aviso por e-mail; se isso acontecer, vamos buscar outra solução junto com as famílias.</p>
+  </details>
+</div>
+
+{# 1. Celulares de casa: os dois atalhos 9/8 + ID #}
+<section class="bloco" aria-labelledby="h-celulares">
+  <div class="bloco-cabeca">
+    <h2 id="h-celulares">Celulares de casa <span class="conta">{{ atalhos|length }} de {{ maximo }}</span></h2>
+    {% if atalhos|length < maximo %}<a class="btn btn-{{ 'primary' if not atalhos else 'outline-primary' }} btn-sm" href="{{ url_for('familia.celular_novo', crianca_id=crianca.id) }}"><i class="bi bi-phone me-1"></i> Adicionar celular</a>{% endif %}
+  </div>
+  <p class="bloco-sub">Os celulares de vocês, com um atalho curto: {{ crianca.apelido }} disca o 9 ou o 8 e o próprio ID. Eles também ligam para {{ crianca.apelido }} pelo número da rede.</p>
+  {% if atalhos %}
+  <ul class="lista">
+  {% for t in atalhos %}
+    <li><div><strong>{{ t.apelido or 'Celular ' ~ t.posicao }}</strong> <span class="mono text-muted small">{{ formatar(t.numero) }}</span> <span class="discar">discar <span class="mono">{{ prefixos[t.posicao] }}{{ crianca.id_rede }}#</span></span></div>
+      <div class="acoes">{{ acao(t.id, 'remover', 'Remover', 'btn-link perigo', 'Remover este número?') }}</div></li>
+  {% endfor %}
+  </ul>
+  {% if atalhos|length == 2 %}
+  <form method="post" class="mt-2" data-enviando="Trocando…"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="acao" value="trocar">
+    <button class="btn btn-link btn-sm p-0">Trocar a ordem (9 vira 8, 8 vira 9)</button></form>
+  {% endif %}
+  {% else %}
+  <p class="text-muted mb-0">Nenhum celular cadastrado. Quando houver um, {{ crianca.apelido }} vai ligar para ele discando <span class="mono">9{{ crianca.id_rede }}#</span>, e o segundo com <span class="mono">8{{ crianca.id_rede }}#</span>.</p>
+  {% endif %}
+</section>
+
+{# 2. Outros telefones: discados pelo numero (doc 20) #}
+{% if max_outros > 0 %}
+<section class="bloco" aria-labelledby="h-outros" id="outros">
+  <div class="bloco-cabeca">
+    <h2 id="h-outros">Outros telefones <span class="conta">{{ outros|length }}</span></h2>
+    {% if outros|length < max_outros %}<a class="btn btn-primary btn-sm" href="{{ url_for('familia.telefone_novo', crianca_id=crianca.id) }}"><i class="bi bi-plus-lg me-1"></i> Adicionar telefone</a>{% endif %}
+  </div>
+  <p class="bloco-sub">A vó, a casa de um amigo, a padaria: fixo ou celular do Brasil. {{ crianca.apelido }} disca o número e <span class="mono">#</span>.</p>
+  {% if outros %}
+  <ul class="lista">
+  {% for t in outros %}
+    <li class="quebra">
+      <div><strong>{{ t.apelido or formatar(t.numero) }}</strong> {% if t.apelido %}<span class="mono text-muted small">{{ formatar(t.numero) }}</span>{% endif %}
+        <br><span class="discar ms-0">discar <span class="mono">{{ discagem(t.numero) }}#</span></span>
+        <small class="text-muted"> · {% if t.recebe %}liga para {{ crianca.apelido }}{% else %}só {{ crianca.apelido }} liga{% endif %}</small></div>
+      <div class="acoes">{{ acao(t.id, 'recebe', 'Não deixar ligar para cá' if t.recebe else 'Deixar ligar para cá', 'btn-link', None, '0' if t.recebe else '1') }}{{ acao(t.id, 'remover', 'Remover', 'btn-link perigo', 'Remover este telefone?') }}</div>
+    </li>
+  {% endfor %}
+  </ul>
+  {% if outros|length < max_outros %}<p class="small text-muted mt-2 mb-0">Cabem mais {{ max_outros - outros|length }}.</p>{% else %}<p class="small text-muted mt-2 mb-0">A lista está cheia ({{ max_outros }}). Remova um para adicionar outro.</p>{% endif %}
+  {% else %}
+  <p class="text-muted mb-0">Nenhum ainda. Cadastre a vó, a casa de um amigo, a padaria.</p>
+  {% endif %}
+</section>
+
+{# 3. Como a crianca disca: DDD da casa #}
+<section class="bloco" aria-labelledby="h-disca">
+  <div class="bloco-cabeca">
+    <h2 id="h-disca">Como {{ crianca.apelido }} disca</h2>
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('familia.ddd', crianca_id=crianca.id) }}"><i class="bi bi-geo-alt me-1"></i> {% if ddd_casa and ddd_origem == 'familia' %}Trocar o DDD{% elif ddd_casa %}Confirmar ou trocar o DDD{% else %}Escolher o DDD{% endif %}</a>
+  </div>
+  {% if ddd_casa %}
+  <p class="mb-1">DDD da casa: <strong class="mono">{{ ddd_casa }}</strong> ({{ ddd_rotulo }}){% if ddd_origem != 'familia' %}<span class="text-muted">, sugerido {{ ddd_descricao }}</span>{% endif %}.</p>
+  <p class="mb-1">Telefone do mesmo DDD: só o número e <span class="mono">#</span>. De outro DDD: o DDD e o número, sem o 0 e sem código de operadora.</p>
+  {% else %}
+  <p class="mb-1">Ainda não sabemos o DDD da casa. Até lá, {{ crianca.apelido }} disca sempre com DDD, sem o 0 e sem código de operadora.</p>
+  {% endif %}
+  <p class="mb-0"><a href="{{ url_for('familia.cartao', crianca_id=crianca.id) }}" target="_blank"><i class="bi bi-printer me-1"></i>Imprimir o cartão</a> com todos os números, para deixar perto do telefone.</p>
+</section>
+{% endif %}
+
+{# 4. Entrada #}
+{% if atalhos or outros_recebem %}
+<section class="bloco" aria-labelledby="h-entrada">
+  <div class="bloco-cabeca"><h2 id="h-entrada">Quem liga para {{ crianca.apelido }}</h2></div>
+  <p class="mb-1">{% for n in (atalhos + outros_recebem) %}<strong>{{ n.apelido or formatar(n.numero) }}</strong>{{ ', ' if not loop.last }}{% endfor %}: {% if (atalhos + outros_recebem)|length == 1 %}disca{% else %}discam{% endif %} <span class="mono discar-caixa">{{ numero_rede }}</span></p>
+  <p class="mb-0 small text-muted">É o número da rede. Toca no telefone de {{ crianca.apelido }}{% if criancas|length > 1 %} e das outras crianças da família{% endif %}. De um número que não esteja aqui, não toca.</p>
+</section>
+{% endif %}
+
+<p class="mt-4 small text-muted">Fora do Brasil, o celular brasileiro continua recebendo as ligações de {{ crianca.apelido }}, mas a operadora dele pode cobrar roaming. Ligar do exterior para o número da rede é ligação internacional.</p>
+{% if criancas|length > 1 %}
+<p class="small text-muted">Os telefones valem para todas as crianças da família. Nos celulares de casa, cada uma disca com o próprio ID: {% for c in criancas %}{{ c.apelido }} disca <span class="mono">9{{ c.id_rede }}#</span>{{ ' e ' if not loop.last }}{% endfor %}.</p>
+{% endif %}
+{% endblock %}

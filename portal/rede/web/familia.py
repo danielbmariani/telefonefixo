@@ -121,13 +121,30 @@ def criancas():
 def crianca_nova():
     if request.method == 'POST':
         try:
-            c = svc_cri.criar(conn(), g.familia['id'], request.form.get('apelido'), _cfg())
+            c = svc_cri.criar(conn(), g.familia['id'], request.form.get('apelido'), _cfg(), nome=request.form.get('nome'))
         except ErroUsuario as e:
             flash(str(e), 'danger')
-            return render_template('crianca_nova.html', apelido=request.form.get('apelido', ''))
+            return render_template('crianca_nova.html', apelido=request.form.get('apelido', ''), nome=request.form.get('nome', ''))
         flash(f'{c["apelido"]} criado. O ID é {ids.formatar_id(c["id_rede"])}.', 'success')
         return redirect(url_for('familia.telefone', crianca_id=c['id']))
-    return render_template('crianca_nova.html', apelido='')
+    return render_template('crianca_nova.html', apelido='', nome='')
+
+
+@bp.route('/crianca/<int:crianca_id>/nome', methods=['GET', 'POST'])
+@login_obrigatorio
+@consentimento_obrigatorio
+def crianca_nome(crianca_id):
+    """Nome falado da crianca (opcional): o que a voz diz nos grupos e no menu de entrada, e o que a familia ve
+    antes do apelido. Nao aparece para outras familias."""
+    c = crianca_da_familia(crianca_id)
+    if request.method == 'POST':
+        try:
+            n = svc_cri.definir_nome(conn(), c, request.form.get('nome'), _cfg(), g.familia['id'])
+            flash(f'Nome de {c["apelido"]}: {n}.' if n else f'{c["apelido"]} fica sem nome; a voz usa o apelido.', 'success')
+            return redirect(url_for('familia.criancas'))
+        except ErroUsuario as e:
+            flash(str(e), 'danger')
+    return render_template('crianca_nome.html', crianca=c, nome=request.form.get('nome', c['nome'] or ''))
 
 
 # --- Telefone (E3, E6, E9, E10) ---
@@ -390,9 +407,14 @@ def turma_atalho(turma_id):
 def cartao(crianca_id):
     c = crianca_da_familia(crianca_id)
     lst = svc_ami.listar(conn(), c['id'])
+    from .. import ddd as svc_ddd
+    fid = g.familia['id']
     celulares = [(t['apelido'] or f'Celular {t["posicao"]}', svc_fam.PREFIXOS[t['posicao']] + c['id_rede'])
-                 for t in svc_fam.listar(conn(), g.familia['id']) if t['posicao'] in svc_fam.PREFIXOS]
-    return render_template('cartao.html', crianca=c, amigos=lst['amigos'], celulares=celulares,
+                 for t in svc_fam.listar_atalhos(conn(), fid)]
+    ddd_casa = svc_ddd.sugerir(conn(), fid, _cfg())[0] if _cfg().MAX_OUTROS > 0 else None
+    outros = [(t['apelido'] or svc_fam.formatar(t['numero']), svc_ddd.formatar_discagem(t['numero'], ddd_casa))
+              for t in svc_fam.listar_outros(conn(), fid)] if _cfg().MAX_OUTROS > 0 else []
+    return render_template('cartao.html', crianca=c, amigos=lst['amigos'], celulares=celulares, outros=outros,
                            grupos=svc_gru.para_cartao(conn(), c))
 
 
@@ -474,7 +496,7 @@ def historico(crianca_id):
     pagina = max(1, request.args.get('page', 1, type=int))
     logs, total = svc_hist.listar(conn(), c['id_rede'], pagina)
     exts = {l['caller_ext'] for l in logs} | {l['callee_ext'] for l in logs}
-    nomes = svc_hist.nomes(conn(), exts)
+    nomes = svc_hist.nomes(conn(), exts, g.familia['id'])
     nomes['100'] = 'Hora certa'
     chart = svc_hist.tempo_por_contato(conn(), c['id_rede'])
     nomes.update(svc_hist.nomes(conn(), {x['contact_ext'] for x in chart}))
@@ -488,48 +510,162 @@ def historico(crianca_id):
 
 # --- Conta ---
 
-# --- Celulares da familia (9+ID e entrada pelo tronco) ---
+# --- Telefones da familia: celulares de casa (9/8+ID), outros telefones pelo numero (doc 20), entrada pelo tronco ---
 
 @bp.route('/celulares')
 @login_obrigatorio
 @consentimento_obrigatorio
 def celulares_antigo():
-    """Endereco antigo (botao do cabecalho ate 05/11/2026): leva para a aba Celulares da primeira crianca."""
+    """Endereco antigo (botao do cabecalho ate 05/11/2026): leva para a aba Telefones da primeira crianca."""
     cs = svc_cri.listar(conn(), g.familia['id'])
     if not cs:
         return redirect(url_for('familia.crianca_nova'))
-    return redirect(url_for('familia.celulares', crianca_id=cs[0]['id']))
+    return redirect(url_for('familia.telefones', crianca_id=cs[0]['id']))
 
 
-@bp.route('/crianca/<int:crianca_id>/celulares', methods=['GET', 'POST'])
+@bp.route('/crianca/<int:crianca_id>/celulares')
 @login_obrigatorio
 @consentimento_obrigatorio
 def celulares(crianca_id):
-    """Aba Celulares. Os numeros sao da familia (valem para todas as criancas dela); a aba existe em cada crianca."""
+    """Endereco da aba ate 13/11/2026."""
+    return redirect(url_for('familia.telefones', crianca_id=crianca_id))
+
+
+def _ddd_da_casa(fid):
+    """(ddd, origem, descricao) para as telas: o escolhido pela familia ou a sugestao (celulares, IP do telefone,
+    IP do navegador). A sugestao so vira definitiva quando a familia confirma ou cadastra sem DDD."""
+    from .. import ddd as svc_ddd
+    d, origem, lugar = svc_ddd.sugerir(conn(), fid, _cfg(), ip_navegador=g.get('ip'))
+    apelido = next((c['apelido'] for c in svc_cri.listar(conn(), fid)), None)
+    return d, origem, svc_ddd.descrever_origem(origem, lugar, apelido)
+
+
+@bp.route('/crianca/<int:crianca_id>/telefones', methods=['GET', 'POST'])
+@login_obrigatorio
+@consentimento_obrigatorio
+def telefones(crianca_id):
+    """Aba Telefones. Os numeros sao da familia (valem para todas as criancas dela); a aba existe em cada crianca."""
+    from .. import ddd as svc_ddd
     c = crianca_da_familia(crianca_id)
     fid = g.familia['id']
     if request.method == 'POST':
         try:
-            if request.form.get('acao') == 'remover':
-                svc_fam.remover(conn(), fid, int(request.form.get('id', '0') or 0))
+            acao = request.form.get('acao')
+            tid = int(request.form.get('id', '0') or 0)
+            if acao == 'remover':
+                svc_fam.remover(conn(), fid, tid)
                 flash('Número removido.', 'success')
-            elif request.form.get('acao') == 'trocar':
+            elif acao == 'trocar':
                 svc_fam.trocar_ordem(conn(), fid)
                 flash('Ordem trocada.', 'success')
-            else:
-                n = svc_fam.adicionar(conn(), fid, request.form.get('numero', ''), request.form.get('apelido', ''))
-                flash(f'Número {svc_fam.formatar(n)} cadastrado.', 'success')
+            elif acao == 'recebe':
+                quer = request.form.get('valor') == '1'
+                tel = svc_fam.por_id(conn(), fid, tid)
+                if tel and svc_fam.mudar_recebe(conn(), fid, tid, quer):
+                    nome = tel['apelido'] or svc_fam.formatar(tel['numero'])
+                    flash(f'{nome} {"agora pode ligar para " + c["apelido"] if quer else "não liga mais para " + c["apelido"]}.', 'success')
         except ErroUsuario as e:
             flash(str(e), 'danger')
-        return redirect(url_for('familia.celulares', crianca_id=c['id']))
+        return redirect(url_for('familia.telefones', crianca_id=c['id']))
     cs = svc_cri.listar(conn(), fid)
     from ..servicos import custos
-    usos = [(c, custos.uso_crianca_mes(conn(), c['id_rede'], _cfg())) for c in cs]
-    return render_template('celulares.html', crianca=c, active_tab='celulares', numeros=svc_fam.listar(conn(), fid), criancas=cs, usos=usos,
+    usos = [(cr, custos.uso_crianca_mes(conn(), cr['id_rede'], _cfg())) for cr in cs]
+    ddd_casa, ddd_origem, ddd_descricao = _ddd_da_casa(fid)
+    outros = svc_fam.listar_outros(conn(), fid)
+    return render_template('telefones.html', crianca=c, active_tab='telefones', atalhos=svc_fam.listar_atalhos(conn(), fid),
+                           outros=outros, outros_recebem=[t for t in outros if t['recebe']], criancas=cs, usos=usos,
                            franquia=custos.franquia_minutos(conn(), _cfg()),
-                           maximo=svc_fam.MAX_POR_FAMILIA, formatar=svc_fam.formatar, prefixos=svc_fam.PREFIXOS,
+                           maximo=svc_fam.MAX_POR_FAMILIA, max_outros=_cfg().MAX_OUTROS, formatar=svc_fam.formatar, prefixos=svc_fam.PREFIXOS,
+                           discagem=lambda n: svc_ddd.formatar_discagem(n, ddd_casa),
+                           ddd_casa=ddd_casa, ddd_origem=ddd_origem, ddd_descricao=ddd_descricao, ddd_rotulo=svc_ddd.rotulo(ddd_casa or ''),
                            numero_rede=svc_fam.formatar(_cfg().TRONCO_NUMERO) or 'o número da rede',
                            numero_saida=svc_fam.formatar(_cfg().TRONCO_NUMERO_SAIDA) or '')
+
+
+@bp.route('/crianca/<int:crianca_id>/telefones/novo', methods=['GET', 'POST'])
+@login_obrigatorio
+@consentimento_obrigatorio
+def telefone_novo(crianca_id):
+    """Outro telefone da lista (doc 20): quem e, numero (com ou sem DDD) e se tambem pode ligar para a crianca."""
+    from .. import ddd as svc_ddd
+    c = crianca_da_familia(crianca_id)
+    fid = g.familia['id']
+    if _cfg().MAX_OUTROS <= 0:
+        abort(404)
+    ddd_casa, ddd_origem, ddd_descricao = _ddd_da_casa(fid)
+    valores = None
+    if request.method == 'POST':
+        valores = {'apelido': request.form.get('apelido', ''), 'numero': request.form.get('numero', ''), 'recebe': bool(request.form.get('recebe'))}
+        try:
+            if not svc_fam.limpar_apelido(valores['apelido']):
+                raise ErroUsuario('Diga quem é: o nome aparece para a criança e no visor do telefone.')
+            n = svc_fam.adicionar(conn(), fid, valores['numero'], valores['apelido'], atalho=False, recebe=valores['recebe'],
+                                  ddd_casa=ddd_casa, max_outros=_cfg().MAX_OUTROS)
+            sem_ddd = len(''.join(ch for ch in valores['numero'] if ch.isdigit())) in (8, 9)
+            if sem_ddd and ddd_casa and ddd_origem != 'familia':
+                # Cadastrou sem DDD confiando na sugestao: ela vira o DDD da casa, com a origem registrada
+                contas.definir_ddd(conn(), fid, ddd_casa, ddd_origem)
+            nome = svc_fam.limpar_apelido(valores['apelido'])
+            flash(f'{nome}: {svc_fam.formatar(n)}. {c["apelido"]} disca {svc_ddd.formatar_discagem(n, ddd_casa)}#.'
+                  + (f' DDD da casa: {ddd_casa}.' if sem_ddd else ''), 'success')
+            return redirect(url_for('familia.telefones', crianca_id=c['id']) + '#outros')
+        except ErroUsuario as e:
+            flash(str(e), 'danger')
+    return render_template('telefone_novo.html', crianca=c, active_tab='telefones', valores=valores, ddd_casa=ddd_casa,
+                           ddd_descricao=ddd_descricao if ddd_origem != 'familia' else '', max_outros=_cfg().MAX_OUTROS)
+
+
+@bp.route('/crianca/<int:crianca_id>/telefones/novo-celular', methods=['GET', 'POST'])
+@login_obrigatorio
+@consentimento_obrigatorio
+def celular_novo(crianca_id):
+    """Celular de casa: ganha o atalho 9 ou 8 + ID."""
+    c = crianca_da_familia(crianca_id)
+    fid = g.familia['id']
+    atalhos = svc_fam.listar_atalhos(conn(), fid)
+    posicao = min(set(svc_fam.PREFIXOS) - {t['posicao'] for t in atalhos}, default=None)
+    if posicao is None:
+        flash(f'No máximo {svc_fam.MAX_POR_FAMILIA} celulares de casa. Remova um para adicionar outro.', 'danger')
+        return redirect(url_for('familia.telefones', crianca_id=c['id']))
+    valores = None
+    if request.method == 'POST':
+        valores = {'apelido': request.form.get('apelido', ''), 'numero': request.form.get('numero', '')}
+        try:
+            n = svc_fam.adicionar(conn(), fid, valores['numero'], valores['apelido'])
+            flash(f'Número {svc_fam.formatar(n)} cadastrado. {c["apelido"]} disca {svc_fam.PREFIXOS[posicao]}{c["id_rede"]}#.', 'success')
+            return redirect(url_for('familia.telefones', crianca_id=c['id']))
+        except ErroUsuario as e:
+            flash(str(e), 'danger')
+    return render_template('celular_novo.html', crianca=c, active_tab='telefones', valores=valores, posicao=posicao,
+                           prefixo=svc_fam.PREFIXOS[posicao])
+
+
+@bp.route('/ddd', methods=['GET', 'POST'])
+@login_obrigatorio
+@consentimento_obrigatorio
+def ddd():
+    """DDD da casa (doc 20): o que a crianca nao precisa discar e o que vale no cadastro sem DDD. Sugerido pelos
+    celulares de casa ou pelo IP do telefone; aqui a familia confirma ou troca."""
+    from .. import ddd as svc_ddd
+    fid = g.familia['id']
+    crianca_id = request.args.get('crianca_id', type=int)
+    if crianca_id and request.args.get('voltar') == 'novo':
+        destino = url_for('familia.telefone_novo', crianca_id=crianca_id)
+    elif crianca_id:
+        destino = url_for('familia.telefones', crianca_id=crianca_id)
+    else:
+        destino = url_for('familia.inicio')
+    if request.method == 'POST':
+        try:
+            d = contas.definir_ddd(conn(), fid, request.form.get('ddd'), 'familia')
+            flash(f'DDD da casa: {d} ({svc_ddd.rotulo(d)}).', 'success')
+            return redirect(destino)
+        except ErroUsuario as e:
+            flash(str(e), 'danger')
+    sugestao, origem, descricao = _ddd_da_casa(fid)
+    apelido = next((cr['apelido'] for cr in svc_cri.listar(conn(), fid)), None)
+    return render_template('ddd.html', atual=sugestao, sugestao=sugestao, origem=origem, descricao=descricao,
+                           rotulo=svc_ddd.rotulo(sugestao or ''), opcoes=svc_ddd.opcoes(), voltar=destino, apelido_crianca=apelido)
 
 
 @bp.route('/meus-dados.json')
@@ -547,10 +683,11 @@ def meus_dados():
                            'verificado_em': texto_sp(fam['verificado_em']) if fam['verificado_em'] else None},
            'consentimentos': [{'tipo': r['tipo'], 'versao': r['versao'], 'quando': texto_sp(r['ts'])}
                               for r in c.execute(select(db.consentimentos).where(db.consentimentos.c.familia_id == fid)).mappings()],
-           'celulares': [{'numero': t['numero'], 'apelido': t['apelido'], 'posicao': t['posicao']} for t in svc_fam.listar(c, fid)],
+           'ddd_da_casa': fam['ddd'],
+           'celulares': [{'numero': t['numero'], 'apelido': t['apelido'], 'posicao': t['posicao'], 'recebe': t['recebe']} for t in svc_fam.listar(c, fid)],
            'criancas': []}
     for cr in svc_cri.listar(c, fid, incluir_inativas=True):
-        item = {'apelido': cr['apelido'], 'id': cr['id_rede'], 'ativa': bool(cr['ativa']), 'criado_em': texto_sp(cr['criado_em']),
+        item = {'apelido': cr['apelido'], 'nome': cr['nome'], 'id': cr['id_rede'], 'ativa': bool(cr['ativa']), 'criado_em': texto_sp(cr['criado_em']),
                 'telefones': [], 'amigos': [], 'pedidos': [], 'horarios': [], 'ligacoes': []}
         for t in svc_tel.listar_da_crianca(c, cr['id'], incluir_desativados=True):
             item['telefones'].append({'mac': t['mac'], 'serial': t['serial'], 'modelo': t['modelo'], 'estado': t['estado'],

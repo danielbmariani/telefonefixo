@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Nome de {{ crianca.apelido }} | {{ nome_rede }}{% endblock %}
+{% block avisos %}{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <h1 class="h2 mb-1 mt-2">Como {{ crianca.apelido }} é chamada</h1>
+  <p class="text-muted mb-4">É o que a voz do telefone fala nas chamadas em grupo e no "para falar com…, tecle 1", e o que você vê antes do apelido. Outras famílias continuam vendo só o apelido <span class="mono">{{ crianca.apelido }}</span>.</p>
+  {% include "_avisos.html" %}
+  <div class="card"><div class="card-body">
+    <form method="post" data-enviando="Salvando…">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-4"><label class="form-label" for="nome">Nome</label>
+        <input class="form-control form-control-lg" id="nome" name="nome" value="{{ nome }}" maxlength="30" placeholder="ex.: Laura" autocomplete="off" autofocus>
+        <div class="form-text">Letras e espaços, até 30 caracteres. Deixe vazio para a voz voltar a falar o apelido.</div></div>
+      <button class="btn btn-primary btn-lg w-100" type="submit">Salvar</button>
+    </form>
+  </div></div>
+  <p class="text-center mt-3"><a href="{{ url_for('familia.criancas') }}">Voltar</a></p>
+</div>
+{% endblock %}

@@ -8,9 +8,10 @@
 {% for c, tel in dados %}
   <div class="col-12 col-sm-6"><div class="card h-100"><div class="card-body">
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
-      <h2 class="h4 mb-1">{{ c.apelido }}</h2>
+      <h2 class="h4 mb-1">{{ exibicao(c) }}</h2>
       {{ etiqueta('ID', c.id_rede|idfmt, c.id_rede, 'o ID de ' ~ c.apelido, classe='media') }}
     </div>
+    <p class="small mb-1 mt-1"><a href="{{ url_for('familia.crianca_nome', crianca_id=c.id) }}">{% if c.nome %}Mudar o nome falado{% else %}Dar um nome falado{% endif %}</a><span class="text-muted"> · é o que a voz do telefone diz</span></p>
     <p class="small mb-3 mt-2">Telefone:
       {% if tel %}<span class="badge bg-{{ 'success' if tel.estado in ('registrado','ativo') else 'warning text-dark' }}">{{ tel.estado|replace('_', ' ') }}</span>
       {% else %}<span class="badge bg-secondary">não cadastrado</span>{% endif %}</p>

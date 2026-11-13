@@ -209,8 +209,22 @@ pendentes advogado, ONG como controladora, cobrança de minutos (Anatel/CDC).
     no doc 18, seção 4.1. Pendente: aplicar nas páginas inicial e "Por dentro" e nos textos legais.
 22. **Números fixos de amigos e parentes cadastrados pela família.** Descartado pelo Daniel
     (10/11): a rede segue só com os celulares da própria família. Raciocínio no doc 18, 4.2.
+    Reaberto em 12/11 pelo item 25, depois do áudio da uma mãe do piloto.
 23. **Turma com amizade automática.** Opção da turma, escolhida por quem administra; a família
     consente ao entrar vendo a lista; bloqueio sempre vence. Pendente: Daniel decidir; revisão com
     advogado (item 13) antes de virar padrão. Doc 18, 4.3.
 24. **Teste da Rita com fixo comum como braço do piloto.** Perguntas combinadas para 10/12/2026 no doc
     18, 4.4. O piloto do Felipe é o outro braço.
+25. **Outros telefones cadastrados pela família** (12/11/2026, a partir do áudio da uma mãe do piloto;
+    proposta em `docs/19-outros-telefones-da-familia.md`, plano em `docs/20-plano-telefones-da-familia.md`).
+    Direção dada pelo Daniel em 12/11 à noite: a família cadastra o número e a criança pode ligar; DDD da
+    casa estimado pelo IP para cadastrar só o número; a criança disca só o número no mesmo DDD e DDD +
+    número de fora (sem 0, sem operadora). Plano: lista fechada, casamento pelo fim do número, DDD vindo
+    dos celulares de casa antes do IP, aparelho sem mudança, entrada com "recebe" e menu pelos nomes.
+    Decidido em 13/11 (doc 20, seção 8): tudo como recomendado. Tudo no ar e provado em 13/11 (B31):
+    saída pela lista, aba Telefones, política 2026-11-b e menu de entrada pelos nomes (o Daniel confirmou em
+    13/11 que prefere o menu a um número por linha, que custaria R$ 33 por linha por mês). Pendente: fixo
+    pela Vono.
+26. **Emergência (190, 192, 193) pelo telefone da criança.** Hoje nenhum 1XX além do 100 completa. A Tin
+    Can libera 911 sempre. Levantado no doc 20 (2.1) ao mapear a numeração; decisão de produto do Daniel,
+    com implicações (endereço da casa para o atendimento, trote). Decisão de 13/11: fica fora, como hoje.

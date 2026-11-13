@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Adicionar telefone para {{ crianca.apelido }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mt-3 mb-2">
+  <h1 class="h3 mb-0">Adicionar telefone</h1>
+  <a class="small" href="{{ url_for('familia.telefones', crianca_id=crianca.id) }}#outros">Voltar aos telefones</a>
+</div>
+<p class="text-muted mb-3">{{ crianca.apelido }} vai poder ligar para esse número. Só o que estiver na lista completa.</p>
+<div class="card mb-3"><div class="card-body">
+<form method="post" data-enviando="Salvando…">
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+  <div class="mb-3"><label class="form-label" for="apelido">Quem é</label>
+    <input class="form-control form-control-lg" id="apelido" name="apelido" maxlength="20" placeholder="Vó Lúcia, Casa do Théo, Padaria" required autocomplete="off" value="{{ valores.apelido if valores else '' }}">
+    <div class="form-text">Como aparece para {{ crianca.apelido }}, no cartão e no visor do telefone.</div></div>
+  <div class="mb-3"><label class="form-label" for="numero">Número</label>
+    <input class="form-control form-control-lg mono" id="numero" name="numero" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="{% if ddd_casa %}3456 7890 ou 19 3456 7890{% else %}11 3456 7890{% endif %}" required value="{{ valores.numero if valores else '' }}">
+    <div class="form-text">Fixo ou celular do Brasil. {% if ddd_casa %}Com ou sem DDD: sem DDD, vale o <strong>{{ ddd_casa }}</strong>, DDD da casa{% if ddd_descricao %} ({{ ddd_descricao }}){% endif %}. <a href="{{ url_for('familia.ddd', crianca_id=crianca.id, voltar='novo') }}">Trocar o DDD da casa</a>.{% else %}Com DDD. <a href="{{ url_for('familia.ddd', crianca_id=crianca.id, voltar='novo') }}">Escolha o DDD da casa</a> para cadastrar sem DDD.{% endif %}</div></div>
+  <div class="form-check mb-4">
+    <input class="form-check-input" type="checkbox" id="recebe" name="recebe" value="1" {% if not valores or valores.recebe %}checked{% endif %}>
+    <label class="form-check-label" for="recebe">Esse telefone também pode ligar para {{ crianca.apelido }}</label>
+    <div class="form-text">Desmarque para lojas e serviços: eles não precisam ligar para cá. Quem pode, liga para o número da rede e toca no telefone de {{ crianca.apelido }}.</div>
+  </div>
+  <button class="btn btn-primary btn-lg">Cadastrar</button>
+</form>
+</div></div>
+<p class="text-muted small">Número de serviço (0800, 0300, 4004) e número de outro país não entram. Até {{ max_outros }} telefones, além dos celulares de casa.</p>
+{% endblock %}

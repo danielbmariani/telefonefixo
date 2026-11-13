@@ -11,7 +11,7 @@ append-only: em producao o papel do portal nao tem UPDATE/DELETE nelas
 from flask import g, current_app
 from sqlalchemy import (
     MetaData, Table, Column, Integer, Text, Boolean, DateTime, JSON,
-    ForeignKey, UniqueConstraint, Index, create_engine, event, text,
+    ForeignKey, UniqueConstraint, Index, create_engine, event, text, true
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -35,6 +35,8 @@ familias = Table('familias', metadata,
     _ts('criado_em', nullable=False),
     Column('suspensa', Boolean, nullable=False, default=False),
     Column('fuso', Text),                                       # IANA (rede/fusos.py); NULL = America/Sao_Paulo
+    Column('ddd', Text),                                        # DDD da casa (rede/ddd.py); NULL = ainda nao definido
+    Column('ddd_origem', Text),                                 # familia | celulares | telefone_ip | navegador_ip
 )
 
 verificacoes_email = Table('verificacoes_email', metadata,
@@ -75,6 +77,7 @@ criancas = Table('criancas', metadata,
     Column('familia_id', Integer, ForeignKey('familias.id'), nullable=False),
     Column('apelido', Text, nullable=False, unique=True),
     Column('id_rede', Text, nullable=False, unique=True),     # 6 digitos, [2-7]XXXXX
+    Column('nome', Text),                                     # como a crianca e chamada (opcional): so na voz e nas telas da familia
     Column('senha_sip', Text, nullable=False),                # o Asterisk precisa dela em claro (ps_auths)
     _ts('criado_em', nullable=False),
     Column('ativa', Boolean, nullable=False, default=True),
@@ -121,7 +124,8 @@ familia_telefones = Table('familia_telefones', metadata,
     Column('familia_id', Integer, ForeignKey('familias.id', ondelete='CASCADE'), nullable=False),
     Column('numero', Text, nullable=False),
     Column('apelido', Text, nullable=False, default=''),      # 'Mae', 'Pai', 'Casa da vo'
-    Column('posicao', Integer),                               # 1 = disca 9+ID, 2 = disca 8+ID
+    Column('posicao', Integer),                               # 1 = disca 9+ID, 2 = disca 8+ID; NULL = outros telefones (doc 20)
+    Column('recebe', Boolean, nullable=False, default=True, server_default=true()),   # pode ligar para as criancas da familia
     Column('ativo', Boolean, nullable=False, default=True),
     _ts('criado_em', nullable=False),
     _ts('verificado_em'),                                     # reservado: confirmacao por ligacao/SMS
@@ -409,7 +413,13 @@ def colunas_faltando(engine_ou_conn):
                 continue
             if not col.nullable and col.default is None and col.server_default is None:
                 raise RuntimeError(f'{tabela.name}.{col.name}: coluna NOT NULL nova precisa de migracao manual')
-            faltam.append((tabela.name, col.name, col.type.compile(dialect=engine_ou_conn.dialect)))
+            tipo = col.type.compile(dialect=engine_ou_conn.dialect)
+            if col.server_default is not None:
+                # DEFAULT (e NOT NULL) vao no ALTER: as linhas que ja existem ganham o valor padrao
+                tipo += ' DEFAULT ' + str(col.server_default.arg.compile(dialect=engine_ou_conn.dialect))
+                if not col.nullable:
+                    tipo += ' NOT NULL'
+            faltam.append((tabela.name, col.name, tipo))
     return faltam
 
 
